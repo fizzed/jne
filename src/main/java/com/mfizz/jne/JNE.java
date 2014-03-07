@@ -38,6 +38,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JNE {
     
+    public static enum FindType {
+        EXECUTABLE,
+        LIBRARY,
+        FILE
+    }
+    
     public static class Options {
         
         private File extractDir;
@@ -121,12 +127,15 @@ public class JNE {
      * the path /jne/[os]/[arch]/[exe].
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
+     * @param findType The type of file to find. For example, on Windows, searching
+     *      for an EXECUTABLE will result in a search of "name.exe". Or on Linux,
+     *      searching for a LIBRARY will result in a search for "name.so".
      * @return The executable file or null if no executable found.
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name) throws IOException, NativeExecutableException {
-        return find(name, DEFAULT_OPTIONS);
+    synchronized static public File find(String name, FindType findType) throws IOException, NativeExecutableException {
+        return find(name, findType, DEFAULT_OPTIONS);
     }
     
     /**
@@ -141,23 +150,27 @@ public class JNE {
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name, Options options) throws IOException, NativeExecutableException {
+    synchronized static public File find(String name, FindType findType, Options options) throws IOException, NativeExecutableException {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
         
         // always search for specific arch first
-        File f = doFind(name, os, arch, options);
+        File f = doFind(name, os, arch, findType, options);
         
         // for x64 fallback to x86 if an exe was not found
         if (f == null && options.isX86FallbackEnabled() && arch == Arch.X64) {
-            f = doFind(name, os, Arch.X86, options);
+            f = doFind(name, os, Arch.X86, findType, options);
         }
         
         return f;
     }
     
-    static private File doFind(String name, OS os, Arch arch, Options options) throws IOException, NativeExecutableException {
+    static private File doFind(String name, OS os, Arch arch, FindType findType, Options options) throws IOException, NativeExecutableException {
+        if (findType == null) {
+            findType = FindType.FILE;
+        }
+        
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
@@ -170,13 +183,17 @@ public class JNE {
             throw new NativeExecutableException("Unable to detect hardware architecture (e.g. x86)");
         }
         
-        // adjust executable name for windows
-        String exeName = name;
-        if (options.isAppendExeOnWindows() && os == OS.WINDOWS) {
-            exeName += ".exe";
+        // adjust name of resource to search for
+        switch (findType) {
+            case EXECUTABLE:
+                name = createExecutableName(name, os);
+                break;
+            case LIBRARY:
+                name = createLibraryName(name, os);
+                break;
         }
         
-        String resourcePath = "/jne/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + exeName;
+        String resourcePath = "/jne/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
     
         URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
@@ -199,7 +216,7 @@ public class JNE {
             }
             
             // create both exe and hash files
-            File exeFile = new File(d, exeName);
+            File exeFile = new File(d, name);
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
             // if we aren't using a 1-time temp dir then verify the exe hash matches
@@ -259,6 +276,28 @@ public class JNE {
             }
         } else {
             throw new NativeExecutableException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
+        }
+    }
+    
+    static private String createExecutableName(String name, OS os) {
+        // adjust executable name for windows
+        if (os == OS.WINDOWS) {
+            return name + ".exe";
+        } else {
+            return name;
+        }
+    }
+    
+    static private String createLibraryName(String name, OS os) {
+        // adjust executable name for windows
+        if (os == OS.WINDOWS) {
+            return name + ".dll";
+        } else if (os == OS.LINUX) {
+            return name + ".so";
+        } else if (os == OS.MAC) {
+            return name + ".dylib";
+        } else {
+            return name;
         }
     }
     

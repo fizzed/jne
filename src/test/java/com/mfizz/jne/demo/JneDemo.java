@@ -41,10 +41,10 @@ public class JneDemo {
         JNE.Options options = new JNE.Options();
         options.setExtractDir(extractDir);
         options.setDeleteExtractedOnExit(false);
-        File catExeFile = JNE.find("cat", options);
+        File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE, options);
         
         // use one-time use temporary directory
-        //File catExeFile = JNE.find("cat");
+        //File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE);
         
         if (catExeFile == null) {
             logger.error("Unable to find executable!");
