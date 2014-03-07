@@ -54,8 +54,6 @@ please see features below.
    executable is not found/included.  Useful in the case where an x86 executable
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
- - Support for .dll/.so resources by simply disabling "appendExeOnWindows" option
-   when searching for an executable.
 
 ### Demo
 

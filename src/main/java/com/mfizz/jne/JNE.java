@@ -46,14 +46,29 @@ public class JNE {
     
     public static class Options {
         
+        private String resourcePrefix;
         private File extractDir;
         private boolean x86FallbackEnabled;
         private boolean deleteExtractedOnExit;
         
         public Options() {
+            this.resourcePrefix = "/jne";
             this.extractDir = null;
             this.x86FallbackEnabled = true;
             this.deleteExtractedOnExit = true;
+        }
+
+        public String getResourcePrefix() {
+            return resourcePrefix;
+        }
+
+        /**
+         * Sets the prefix of the resource to being search from. Defaults to
+         * "/jne".
+         * @param resourcePrefix The prefix of the resource to search from
+         */
+        public void setResourcePrefix(String resourcePrefix) {
+            this.resourcePrefix = resourcePrefix;
         }
 
         public File getExtractDir() {
@@ -176,7 +191,7 @@ public class JNE {
                 break;
         }
         
-        String resourcePath = "/jne/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
+        String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
     
         URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
