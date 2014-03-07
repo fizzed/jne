@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -106,6 +107,18 @@ public class JNE {
             }
             // is it executable?
             return exeFile;
+        } else if (url.getProtocol().equals("file")) {
+            try {
+                File exeFile = new File(url.toURI());
+                if (!exeFile.canExecute()) {
+                    if (!exeFile.setExecutable(true)) {
+                        throw new NativeExecutableException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
+                    }
+                }
+                return exeFile;
+            } catch (URISyntaxException e) {
+                throw new NativeExecutableException("Unable to create executable file from uri", e);
+            }
         } else {
             throw new NativeExecutableException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
         }
