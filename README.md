@@ -8,12 +8,13 @@ Java Native Executable Library
 
 ### Overview
 
-Utility Java library for finding, extracting, and using native executables 
-that are packaged as resources within jar files. Allows them to be easily
-included as part of a Java application and extracted/used at runtime. Basically,
-this library makes it easy to build your own custom "bin" directory based on
-the runtime operating system and architecture.  You can package .exe and .dll/.so
-resources within jars and then use something like maven for dependency management.
+Utility Java library for finding, extracting, and using os and architecture
+dependent files (executables, libraries, and/or other files) that are packaged
+as resources within jar files. Allows them to be easily included as part of a
+Java application and extracted/used at runtime. Basically, this library makes
+it easy to build your own custom "bin" directory based on the runtime operating
+system and architecture.  You can package .exe and .dll/.so resources within
+jars and then use something like maven for dependency management.
 
 Here is how it works. At runtime, Java let's you find resources in directories
 and/or JARS (if they are included on the classpath). Let's say you wanted to call
