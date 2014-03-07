@@ -36,15 +36,17 @@ public class JneDemo {
     static public void main(String[] args) throws Exception {
         
         // use same directory between app runs!
+        /**
         File extractDir = new File(System.getProperty("java.io.tmpdir"), "jnetemp");
         extractDir.mkdirs();
         JNE.Options options = new JNE.Options();
         options.setExtractDir(extractDir);
         options.setDeleteExtractedOnExit(false);
         File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE, options);
+        */
         
         // use one-time use temporary directory
-        //File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE);
+        File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE);
         
         if (catExeFile == null) {
             logger.error("Unable to find executable!");

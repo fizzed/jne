@@ -49,13 +49,11 @@ public class JNE {
         private File extractDir;
         private boolean x86FallbackEnabled;
         private boolean deleteExtractedOnExit;
-        private boolean appendExeOnWindows;
         
         public Options() {
             this.extractDir = null;
             this.x86FallbackEnabled = true;
             this.deleteExtractedOnExit = true;
-            this.appendExeOnWindows = true;
         }
 
         public File getExtractDir() {
@@ -99,21 +97,6 @@ public class JNE {
         public void setDeleteExtractedOnExit(boolean deleteExtractedOnExit) {
             this.deleteExtractedOnExit = deleteExtractedOnExit;
         }
-
-        public boolean isAppendExeOnWindows() {
-            return appendExeOnWindows;
-        }
-
-        /**
-         * Sets whether ".exe" will be append to an executable name on Windows
-         * platforms. Defaults to true.
-         * @param appendExeOnWindows If true then ".exe" will be appended to 
-         *      names on Windows.
-         */
-        public void setAppendExeOnWindows(boolean appendExeOnWindows) {
-            this.appendExeOnWindows = appendExeOnWindows;
-        }
-        
     }
     
     private static final int TEMP_DIR_ATTEMPTS = 100;

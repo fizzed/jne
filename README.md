@@ -39,6 +39,9 @@ please see features below.
 
  - Support for multiple operating systems and architectures so that a single
    JAR dependency can support them all.
+ - Support for finding executables (e.g. cat or cat.exe)
+ - Support for finding libraries (e.g. lib.dll or lib.dylib or lib.so)
+ - Support for finding exact files (e.g. movie.swf)
  - Use a one-time temporary directory for extracted executables (thus same apps
    running multiple instances get their own executable copy)
  - Specify a directory to extract executables to (useful for single instance
@@ -58,6 +61,8 @@ please see features below.
 
 Since this project primarily requires a compiled jar for testing, a simple method
 of testing is to use the "mfz-jne-cat" sample project (in a subdir of this project).
+It will build and install a jar to your local Maven repository that includes
+the "cat" executable.
 
     cd mfz-jne-cat
     mvn install
@@ -75,11 +80,16 @@ You'll probably want to package your executables as statically compiled (e.g. it
 doesn't rely on external DLLs / shared objects to be available on the runtime system).
 However, since this library does essentially build a "bin" directory by extracting
 resources, you could find all dependencies first before trying to execute it.
-For example, 
+For example:
 
-    File dllFile = JNE.find("cat-dependency.dll", options);
-    File dllFile = JNE.find("cat-dependency.so", options);
-    File exeFile = JNE.find("cat", options);
+    File libFile = JNE.find("mylib", FindType.LIBRARY, options);
+    File exeFile = JNE.find("myapp", FindType.EXECUTABLE, options);
+
+If this was run on Linux with the extractDir as null (which then uses a temp dir)
+you would have the following example result:
+
+    /tmp/1394227238992-0/mylib.so
+    /tmp/1394227238992-0/myapp
 
 ### License
 
