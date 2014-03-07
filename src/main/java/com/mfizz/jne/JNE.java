@@ -35,14 +35,19 @@ package com.mfizz.jne;
  * #L%
  */
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -52,6 +57,7 @@ public class JNE {
     
     private static final int TEMP_DIR_ATTEMPTS = 100;
     private static File _tempDir;
+    private static ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
  
     /**
      * Finds (or extracts) a named executable for the runtime operating system
@@ -62,11 +68,37 @@ public class JNE {
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name) throws NativeExecutableException {
-        // build path to resource
+    synchronized static public File find(String name) throws IOException, NativeExecutableException {
+        // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
-        
+        return doFind(name, os, arch, null, true);
+    }
+    
+    /**
+     * Finds (or extracts) a named executable for the runtime operating system
+     * and architecture. The executable should be a regular Java resource at
+     * the path /jne/[os]/[arch]/[exe].
+     * @param name The executable name you would normally type on the command-line.
+     *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
+     * @param extractDir The directory an executable will be extracted to.  If
+     *      null, a one-time use temporary directory will be created and used
+     *      for extracted excutables.
+     * @param deleteOnExit If true then extracted files (and temporary directory
+     *      if one was created) will be scheduled for deletion on VM exit via
+     *      (File.deleteOnExit()).
+     * @return The executable file or null if no executable found.
+     * @throws NativeExecutableException Thrown if a runtime exception occurs while
+     *      finding or extracting the executable.
+     */
+    synchronized static public File find(String name, File extractDir, boolean deleteOnExit) throws IOException, NativeExecutableException {
+        // get current os and arch
+        OS os = OS.getOS();
+        Arch arch = Arch.getArch();
+        return doFind(name, os, arch, extractDir, deleteOnExit);
+    }
+    
+    static private File doFind(String name, OS os, Arch arch, File extractDir, boolean deleteOnExit) throws IOException, NativeExecutableException {
         if (os == null || os == OS.UNKNOWN) {
             throw new NativeExecutableException("Unable to detect operating system (e.g. Windows)");
         }
@@ -90,22 +122,65 @@ public class JNE {
         
         // support for "file" and "jar"
         if (url.getProtocol().equals("jar")) {
-            // we will need to extract the executable file
-            File tempDir = getOrCreateTempDirectory();
-            File exeFile = new File(tempDir, exeName);
+            // in the case of where the app specifies an extract directory and
+            // does not request deleteOnExit we need a way to detect if the 
+            // executables changed from the previous app run -- we do this with
+            // a very basic "hash" for an extracted resource. We basically combine
+            // the path of the jar and manifest version of when the exe was extracted
+            String versionHash = getJarVersionHashForResource(url);
+            
+            // where should we extract the executable?
+            File d = extractDir;
+            if (d == null) {
+                d = getOrCreateTempDirectory(deleteOnExit);
+            }
+            
+            // create both exe and hash files
+            File exeFile = new File(d, exeName);
+            File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
+            
+            // if we aren't using a 1-time temp dir then verify the exe hash matches
+            if (extractDir != null && exeFile.exists()) {
+                // verify the version hash still matches
+                if (!exeHashFile.exists()) {
+                    // hash file missing -- we will force a new extract to be safe
+                    exeFile.delete();
+                } else {
+                    // hash file exists, verify it matches what we expect
+                    String existingHash = readFileToString(exeHashFile);
+                    if (existingHash == null || !existingHash.equals(versionHash)) {
+                        // hash mismatch -- will force an overwrite of both files
+                        exeFile.delete();
+                        exeHashFile.delete();
+                    } else {
+                        // hash match (exeFile and exeHashFile are both perrrrfect)
+                        //System.out.println("exe already extracted AND hash matched -- reusing same exe");
+                        return exeFile;
+                    }
+                }
+            }
+            
             // does exe already exist? (previously extracted)
             if (!exeFile.exists()) {
                 try {
                     extractTo(url, exeFile);
-                    // schedule this extract file for deletion
-                    exeFile.deleteOnExit();
+                    
                     // set file to "executable"
                     exeFile.setExecutable(true);
+                    
+                    // create corrosponding hash file
+                    writeStringToFile(exeHashFile, versionHash);
+                    
+                    // schedule files for deletion?
+                    if (deleteOnExit) {
+                        exeFile.deleteOnExit();
+                        exeHashFile.deleteOnExit();
+                    }
                 } catch (IOException e) {
                     throw new NativeExecutableException("Unable to cleanly extract executable from jar", e);
                 }
             }
-            // is it executable?
+            
             return exeFile;
         } else if (url.getProtocol().equals("file")) {
             try {
@@ -127,7 +202,7 @@ public class JNE {
     static private void extractTo(URL url, File file) throws IOException {
         final InputStream in = url.openStream();
         try {
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+            final OutputStream out = new BufferedOutputStream(new FileOutputStream(file, false));
             try {
                 int len;
                 byte[] buffer = new byte[8192];
@@ -147,10 +222,66 @@ public class JNE {
         }
     }
     
+    static private String readFileToString(File file) throws IOException {
+        StringBuilder result = new StringBuilder();
+        BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
+        try {
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = is.read(buf)) > -1) {
+                result.append(new String(buf, 0, len, "UTF-8"));
+            }
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+        return result.toString();
+    }
+    
+    static private void writeStringToFile(File file, String s) throws IOException {
+        FileOutputStream os = new FileOutputStream(file, false);
+        try {
+            os.write(s.getBytes("UTF-8"));
+            os.flush();
+        } finally {
+            if (os != null) {
+                os.close();
+            }
+        }
+    }
+    
+    static private String getJarVersionHashForResource(URL resource) throws IOException {
+        // get the file that points to the underlying jar for this resource
+        File jarFile = JarUtil.getJarFileForResource(resource);
+        
+        if (jarVersionHashes.containsKey(jarFile)) {
+            return jarVersionHashes.get(jarFile);
+        } else {
+            // calculate new hash for jar
+            String manifestVersion = JarUtil.getManifestVersionNumber(jarFile);
+            
+            StringBuilder hashBuilder = new StringBuilder();
+            hashBuilder.append("file:");
+            hashBuilder.append(jarFile.getAbsolutePath());
+            hashBuilder.append("|last_modified:");
+            hashBuilder.append(jarFile.lastModified());
+            hashBuilder.append("|version:");
+            hashBuilder.append(manifestVersion);
+            
+            String hash = hashBuilder.toString();
+            
+            jarVersionHashes.put(jarFile, hash);
+            
+            return hash;
+        }
+    }
+    
+    
     /**
      * Attempts to create a temporary directory that did not exist previously.
      */
-    synchronized static private File getOrCreateTempDirectory() throws NativeExecutableException {
+    static private File getOrCreateTempDirectory(boolean deleteOnExit) throws NativeExecutableException {
         // return the single instance if already created
         if (_tempDir != null) {
             return _tempDir;
@@ -163,7 +294,9 @@ public class JNE {
 	    File d = new File(baseDir, baseName + counter);
 	    if (d.mkdir()) {
                 // schedule this directory to be deleted on exit
-                d.deleteOnExit();
+                if (deleteOnExit) {
+                    d.deleteOnExit();
+                }
                 _tempDir = d;
 		return d;
 	    }

@@ -34,6 +34,12 @@ public class JneDemo {
     
     static public void main(String[] args) throws Exception {
         
+        // use same directory between app runs!
+        //File extractDir = new File(System.getProperty("java.io.tmpdir"), "jnetemp");
+        //extractDir.mkdirs();
+        //File catExeFile = JNE.find("cat", extractDir, false);
+        
+        // use one-time use temporary directory
         File catExeFile = JNE.find("cat");
         
         if (catExeFile == null) {
