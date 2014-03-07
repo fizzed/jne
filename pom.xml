@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mfizz</groupId>
+    <artifactId>mfz-jne</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0.0</version>
+    <name>mfz-jne</name>
+    <description>Utility library for using executables embedded in jars on Windows, Linux, and Mac.</description>
+  
+    <parent>
+        <groupId>com.mfizz</groupId>
+        <artifactId>mfz-maven-parent</artifactId>
+        <version>1.7</version>
+    </parent>
+    
+    <!--
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+    </build>
+    -->
+    
+    <dependencies>
+        <!-- compile -->
+        <!-- provided -->
+        <!-- testing -->
+        
+        <dependency>
+            <groupId>com.mfizz</groupId>
+            <artifactId>mfz-jne-cat</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.0.13</version>
+            <scope>test</scope>
+        </dependency><dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.13</version>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+
+    <properties>
+        <license.skip>false</license.skip>
+        <main.java.package>com.mfizz.ffmpeg</main.java.package>
+    </properties>
+</project>
