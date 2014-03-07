@@ -1,10 +1,12 @@
 Java Native Executable Library
 =================================
 
-### Overview
+### Contributors
 
  - [Mfizz, Inc.](http://mfizz.com)
  - Joe Lauer (Twitter: [@jjlauer](http://twitter.com/jjlauer))
+
+### Overview
 
 Utility Java library for finding, extracting, and using native executables 
 that are packaged as resources within jar files. Allows them to be easily
@@ -17,7 +19,7 @@ Here is how it works. At runtime, Java let's you find resources in directories
 and/or JARS (if they are included on the classpath). Let's say you wanted to call
 an external "cat" executable. With this library, you'd do the following:
 
-    File catExeFile = JNE.find("cat", options);
+    File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE, options);
 
 The library would then search for the following resource:
 
