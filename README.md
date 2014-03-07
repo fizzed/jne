@@ -82,8 +82,8 @@ However, since this library does essentially build a "bin" directory by extracti
 resources, you could find all dependencies first before trying to execute it.
 For example:
 
-    File libFile = JNE.find("mylib", FindType.LIBRARY, options);
-    File exeFile = JNE.find("myapp", FindType.EXECUTABLE, options);
+    File libFile = JNE.find("mylib", JNE.FindType.LIBRARY, options);
+    File exeFile = JNE.find("myapp", JNE.FindType.EXECUTABLE, options);
 
 If this was run on Linux with the extractDir as null (which then uses a temp dir)
 you would have the following example result:
