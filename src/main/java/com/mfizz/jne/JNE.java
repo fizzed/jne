@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JNE {
     
-    static class Options {
+    public static class Options {
         
         private File extractDir;
         private boolean x86FallbackEnabled;
