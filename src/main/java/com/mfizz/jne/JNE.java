@@ -37,11 +37,9 @@ package com.mfizz.jne;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,13 +53,71 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JNE {
     
+    static class Options {
+        
+        private File extractDir;
+        private boolean x86FallbackEnabled;
+        private boolean deleteExtractedOnExit;
+        
+        public Options() {
+            this.extractDir = null;
+            this.x86FallbackEnabled = true;
+            this.deleteExtractedOnExit = true;
+        }
+
+        public File getExtractDir() {
+            return extractDir;
+        }
+
+        /**
+         * Sets the directory an executable will be extracted to.  If
+         * null, a one-time use temporary directory will be created and used
+         * for extracted executables. Defaults to null.
+         * @param extractDir The directory to extract files to
+         */
+        public void setExtractDir(File extractDir) {
+            this.extractDir = extractDir;
+        }
+
+        public boolean isX86FallbackEnabled() {
+            return x86FallbackEnabled;
+        }
+
+        /**
+         * If an executable is not found on an x64 platform whether a fallback
+         * search will occur for an x86 executable. Defaults to true.
+         * @param x86FallbackEnabled If an x86 will be searched for on an x64
+         *      platform if an x64 version is not found.
+         */
+        public void setX86FallbackEnabled(boolean x86FallbackEnabled) {
+            this.x86FallbackEnabled = x86FallbackEnabled;
+        }
+
+        public boolean isDeleteExtractedOnExit() {
+            return deleteExtractedOnExit;
+        }
+
+        /**
+         * Sets whether extracted files will be scheduled for deletion on VM
+         * exit via (File.deleteOnExit()). Defaults to true.
+         * @param deleteExtractedOnExit  If true files scheduled for delete on
+         *      VM exit.
+         */
+        public void setDeleteExtractedOnExit(boolean deleteExtractedOnExit) {
+            this.deleteExtractedOnExit = deleteExtractedOnExit;
+        }
+        
+    }
+    
     private static final int TEMP_DIR_ATTEMPTS = 100;
     private static File _tempDir;
+    public static Options DEFAULT_OPTIONS = new Options();
     private static ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
  
     /**
      * Finds (or extracts) a named executable for the runtime operating system
-     * and architecture.
+     * and architecture. The executable should be a regular Java resource at
+     * the path /jne/[os]/[arch]/[exe].
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
      * @return The executable file or null if no executable found.
@@ -69,10 +125,7 @@ public class JNE {
      *      finding or extracting the executable.
      */
     synchronized static public File find(String name) throws IOException, NativeExecutableException {
-        // get current os and arch
-        OS os = OS.getOS();
-        Arch arch = Arch.getArch();
-        return doFind(name, os, arch, null, true);
+        return find(name, DEFAULT_OPTIONS);
     }
     
     /**
@@ -81,24 +134,33 @@ public class JNE {
      * the path /jne/[os]/[arch]/[exe].
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
-     * @param extractDir The directory an executable will be extracted to.  If
-     *      null, a one-time use temporary directory will be created and used
-     *      for extracted excutables.
-     * @param deleteOnExit If true then extracted files (and temporary directory
-     *      if one was created) will be scheduled for deletion on VM exit via
-     *      (File.deleteOnExit()).
+     * @param options The options to use when finding an executable. If null then
+     *      the default options will be used.
      * @return The executable file or null if no executable found.
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name, File extractDir, boolean deleteOnExit) throws IOException, NativeExecutableException {
+    synchronized static public File find(String name, Options options) throws IOException, NativeExecutableException {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
-        return doFind(name, os, arch, extractDir, deleteOnExit);
+        
+        // always search for specific arch first
+        File f = doFind(name, os, arch, options);
+        
+        // for x64 fallback to x86 if an exe was not found
+        if (f == null && options.isX86FallbackEnabled() && arch == Arch.X64) {
+            f = doFind(name, os, Arch.X86, options);
+        }
+        
+        return f;
     }
     
-    static private File doFind(String name, OS os, Arch arch, File extractDir, boolean deleteOnExit) throws IOException, NativeExecutableException {
+    static private File doFind(String name, OS os, Arch arch, Options options) throws IOException, NativeExecutableException {
+        if (options == null) {
+            options = DEFAULT_OPTIONS;
+        }
+        
         if (os == null || os == OS.UNKNOWN) {
             throw new NativeExecutableException("Unable to detect operating system (e.g. Windows)");
         }
@@ -130,9 +192,9 @@ public class JNE {
             String versionHash = getJarVersionHashForResource(url);
             
             // where should we extract the executable?
-            File d = extractDir;
+            File d = options.getExtractDir();
             if (d == null) {
-                d = getOrCreateTempDirectory(deleteOnExit);
+                d = getOrCreateTempDirectory(options.isDeleteExtractedOnExit());
             }
             
             // create both exe and hash files
@@ -140,7 +202,7 @@ public class JNE {
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
             // if we aren't using a 1-time temp dir then verify the exe hash matches
-            if (extractDir != null && exeFile.exists()) {
+            if (options.getExtractDir() != null && exeFile.exists()) {
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -172,7 +234,7 @@ public class JNE {
                     writeStringToFile(exeHashFile, versionHash);
                     
                     // schedule files for deletion?
-                    if (deleteOnExit) {
+                    if (options.isDeleteExtractedOnExit()) {
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }

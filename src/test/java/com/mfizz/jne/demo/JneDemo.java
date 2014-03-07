@@ -21,6 +21,7 @@ package com.mfizz.jne.demo;
  */
 
 import com.mfizz.jne.JNE;
+import com.mfizz.jne.StreamGobbler;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,18 @@ public class JneDemo {
         ProcessBuilder pb = new ProcessBuilder(catExeFile.getAbsolutePath(), expectedTxtFile.getAbsolutePath());
         pb.redirectErrorStream(true);
         Process p = pb.start();
+        StreamGobbler streamLogger = new StreamGobbler(p.getInputStream()) {
+            @Override
+            public void onLine(String line) {
+                logger.debug(line);
+            }
+            @Override
+            public void onException(Exception e) {
+                logger.error("Unable to cleanly gobble process output", e);
+            }
+        };
+        streamLogger.start();
+        
         int retVal = p.waitFor();
         
         logger.info("ret val: " + retVal);
