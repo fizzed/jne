@@ -6,7 +6,15 @@ included as part of a Java application and extracted at runtime.
 
 ### Demo
 
-mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.jne.demo.JneDemo" -Dexec.args=""
+Since this project requires a compiled jar to work, a simple method of testing
+is to use the "mfz-jne-cat" sample project (in a subdir of this project).
+
+Simply do:
+    cd mfz-jne-cat
+    mvn install
+
+Then you can go back to the main project:
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.jne.demo.JneDemo" -Dexec.args=""
 
 ### Packaging as jar
 

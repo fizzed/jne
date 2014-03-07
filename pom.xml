@@ -14,16 +14,6 @@
         <version>1.7</version>
     </parent>
     
-    <!--
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
-    </build>
-    -->
-    
     <dependencies>
         <!-- compile -->
         <!-- provided -->
@@ -63,6 +53,6 @@
 
     <properties>
         <license.skip>false</license.skip>
-        <main.java.package>com.mfizz.ffmpeg</main.java.package>
+        <main.java.package>com.mfizz.jne</main.java.package>
     </properties>
 </project>
