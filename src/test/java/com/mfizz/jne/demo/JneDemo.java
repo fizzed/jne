@@ -37,9 +37,12 @@ public class JneDemo {
         File catExeFile = JNE.find("cat");
         
         if (catExeFile == null) {
-            throw new Exception("Unable to find executable!");
+            logger.error("Unable to find executable!");
+            System.exit(1);
         }
         
+        logger.info("java version: " + System.getProperty("java.version"));
+        logger.info("java home: " + System.getProperty("java.home"));
         logger.info("using exe: " + catExeFile.getAbsolutePath());
         
         // use "cat" to print out an expected file
@@ -48,7 +51,6 @@ public class JneDemo {
         
         ProcessBuilder pb = new ProcessBuilder(catExeFile.getAbsolutePath(), expectedTxtFile.getAbsolutePath());
         pb.redirectErrorStream(true);
-        pb.redirectOutput(actualTxtFile);
         Process p = pb.start();
         int retVal = p.waitFor();
         
