@@ -1,18 +1,3 @@
-/*
- * Copyright 2014 mfizz.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.mfizz.jne;
 
 /*
@@ -58,11 +43,13 @@ public class JNE {
         private File extractDir;
         private boolean x86FallbackEnabled;
         private boolean deleteExtractedOnExit;
+        private boolean appendExeOnWindows;
         
         public Options() {
             this.extractDir = null;
             this.x86FallbackEnabled = true;
             this.deleteExtractedOnExit = true;
+            this.appendExeOnWindows = true;
         }
 
         public File getExtractDir() {
@@ -105,6 +92,20 @@ public class JNE {
          */
         public void setDeleteExtractedOnExit(boolean deleteExtractedOnExit) {
             this.deleteExtractedOnExit = deleteExtractedOnExit;
+        }
+
+        public boolean isAppendExeOnWindows() {
+            return appendExeOnWindows;
+        }
+
+        /**
+         * Sets whether ".exe" will be append to an executable name on Windows
+         * platforms. Defaults to true.
+         * @param appendExeOnWindows If true then ".exe" will be appended to 
+         *      names on Windows.
+         */
+        public void setAppendExeOnWindows(boolean appendExeOnWindows) {
+            this.appendExeOnWindows = appendExeOnWindows;
         }
         
     }
@@ -171,7 +172,7 @@ public class JNE {
         
         // adjust executable name for windows
         String exeName = name;
-        if (os == OS.WINDOWS) {
+        if (options.isAppendExeOnWindows() && os == OS.WINDOWS) {
             exeName += ".exe";
         }
         
