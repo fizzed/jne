@@ -25,6 +25,7 @@ package com.mfizz.jne;
  */
 public enum Arch {
     
+    ANY,
     UNKNOWN,
     X32,
     X64,

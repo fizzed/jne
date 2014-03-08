@@ -38,7 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JNE {
     
+    static public final String SYSPROP_RESOURCE_PREFIX = "jne.resource.prefix";
     static public final String SYSPROP_EXTRACT_DIR = "jne.extract.dir";
+    static public final String SYSPROP_CLEANUP_EXTRACTED = "jne.cleanup.extracted";
+    static public final String SYSPROP_X32_EXE_FALLBACK = "jne.x32.exe.fallback";
     
     public static enum FindType {
         EXECUTABLE,
@@ -50,19 +53,15 @@ public class JNE {
         
         private String resourcePrefix;
         private File extractDir;
-        private boolean x32ExecutableFallbackEnabled;
-        private boolean deleteExtractedOnExit;
+        private boolean x32ExecutableFallback;
+        private boolean cleanupExtracted;
         
         public Options() {
             // defaults
-            this.resourcePrefix = "/jne";
-            // set default extract dir via system property
-            String extractDirString = System.getProperty(SYSPROP_EXTRACT_DIR);
-            if (extractDirString != null && !extractDirString.equals("")) {
-                this.extractDir = new File(extractDirString);
-            }
-            this.x32ExecutableFallbackEnabled = true;
-            this.deleteExtractedOnExit = true;
+            this.resourcePrefix = System.getProperty(SYSPROP_RESOURCE_PREFIX, "/jne");
+            this.extractDir = getSystemPropertyAsFile(SYSPROP_EXTRACT_DIR, null);
+            this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, true);
+            this.cleanupExtracted = getSystemPropertyAsBoolean(SYSPROP_CLEANUP_EXTRACTED, true);
         }
 
         public String getResourcePrefix() {
@@ -92,32 +91,32 @@ public class JNE {
             this.extractDir = extractDir;
         }
 
-        public boolean isX32ExecutableFallbackEnabled() {
-            return x32ExecutableFallbackEnabled;
+        public boolean isX32ExecutableFallback() {
+            return x32ExecutableFallback;
         }
 
         /**
          * If an executable is not found on an x64 platform whether a fallback
-         * search will occur for an x86 executable. Defaults to true.
-         * @param x86FallbackEnabled If an x86 will be searched for on an x64
-         *      platform if an x64 version is not found.
+         * search will occur for an x32 executable. Defaults to true.
+         * @param x32ExecutableFallback If an x32 executable will be searched for
+         *      on an x64 platform if an x64 version is not found.
          */
-        public void setX32ExecutableFallbackEnabled(boolean x32ExecutableFallbackEnabled) {
-            this.x32ExecutableFallbackEnabled = x32ExecutableFallbackEnabled;
+        public void setX32ExecutableFallback(boolean x32ExecutableFallback) {
+            this.x32ExecutableFallback = x32ExecutableFallback;
         }
 
-        public boolean isDeleteExtractedOnExit() {
-            return deleteExtractedOnExit;
+        public boolean isCleanupExtracted() {
+            return cleanupExtracted;
         }
 
         /**
          * Sets whether extracted files will be scheduled for deletion on VM
          * exit via (File.deleteOnExit()). Defaults to true.
-         * @param deleteExtractedOnExit  If true files scheduled for delete on
-         *      VM exit.
+         * @param cleanupExtracted  If true then extracted files will be scheduled
+         *      for delete on VM exit.
          */
-        public void setDeleteExtractedOnExit(boolean deleteExtractedOnExit) {
-            this.deleteExtractedOnExit = deleteExtractedOnExit;
+        public void setCleanupExtracted(boolean cleanupExtracted) {
+            this.cleanupExtracted = cleanupExtracted;
         }
         
         public String createExecutableName(String name, OS os) {
@@ -141,6 +140,45 @@ public class JNE {
                 return name;
             }
         }
+        
+        public String createResourcePath(OS os, Arch arch, String name) {
+            StringBuilder s = new StringBuilder();
+            s.append(getResourcePrefix());
+            s.append("/");
+            s.append(os.name().toLowerCase());
+            s.append("/");
+            // only append arch if its not null and not any...
+            if (arch != null && arch != Arch.ANY) {
+                s.append(arch.name().toLowerCase());
+                s.append("/");
+            }
+            s.append(name);
+            return s.toString();
+        }
+    }
+    
+    static private File getSystemPropertyAsFile(String key, File defaultValue) {
+        String v = System.getProperty(key);
+        if (v != null && !v.equals("")) {
+            return new File(v);
+        } else {
+            return defaultValue;
+        }
+    }
+    
+    static private boolean getSystemPropertyAsBoolean(String key, boolean defaultValue) {
+        String v = System.getProperty(key);
+        if (v != null) {
+            if (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("1")) {
+                return true;
+            } else if (v.equalsIgnoreCase("false") || v.equalsIgnoreCase("0")) {
+                return false;
+            } else {
+                throw new IllegalArgumentException("Invalid boolean value for system property [" + key + "]");
+            }
+        } else {
+            return defaultValue;
+        }
     }
     
     private static final int TEMP_DIR_ATTEMPTS = 100;
@@ -149,20 +187,21 @@ public class JNE {
     private static ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
  
     /**
-     * Finds (or extracts) a named executable for the runtime operating system
+     * Finds (extracts if necessary) a named executable for the runtime operating system
      * and architecture. The executable should be a regular Java resource at
-     * the path /jne/[os]/[arch]/[exe].
+     * the path /jne/[os]/[arch]/[exe]. The name of the file will be automatically
+     * adjusted for the target platform. For example, on Windows, to find the "cat"
+     * application, this method will actually search for "cat.exe".
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
      * @param findType The type of file to find. For example, on Windows, searching
-     *      for an EXECUTABLE will result in a search of "name.exe". Or on Linux,
-     *      searching for a LIBRARY will result in a search for "name.so".
+     *      for an EXECUTABLE will result in a search of "name.exe". 
      * @return The executable file or null if no executable found.
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name, FindType findType) throws IOException, NativeExecutableException {
-        return find(name, findType, DEFAULT_OPTIONS);
+    synchronized static public File findExecutable(String name) throws IOException, NativeExecutableException {
+        return findExecutable(name, DEFAULT_OPTIONS);
     }
     
     /**
@@ -177,23 +216,72 @@ public class JNE {
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File find(String name, FindType findType, Options options) throws IOException, NativeExecutableException {
+    synchronized static public File findExecutable(String name, Options options) throws IOException, NativeExecutableException {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
         
         // always search for specific arch first
-        File f = doFind(name, os, arch, findType, options);
+        File f = find(name, FindType.EXECUTABLE, options, os, arch);
         
         // for x64 fallback to x86 if an exe was not found
-        if (f == null && findType == FindType.EXECUTABLE && options.isX32ExecutableFallbackEnabled() && arch == Arch.X64) {
-            f = doFind(name, os, Arch.X32, findType, options);
+        if (f == null && options.isX32ExecutableFallback() && arch == Arch.X64) {
+            f = find(name, FindType.EXECUTABLE, options, os, Arch.X32);
         }
         
         return f;
     }
     
-    static private File doFind(String name, OS os, Arch arch, FindType findType, Options options) throws IOException, NativeExecutableException {
+    /**
+     * Finds and loads (extracts if necessary) a named library for the runtime operating system
+     * and architecture. The library will then be dynamically loaded via 
+     * System.load(String name). The library should be a regular Java resource at
+     * the path /jne/[os]/[arch]/[lib]. The name of the file will be automatically
+     * adjusted for the target platform. For example, on Windows, to find the "cat"
+     * library, this method will search for "cat.dll". On Linux, to find
+     * the "cat" library, this method will search for "libcat.so". On Mac, to
+     * find the "cat" library, this method will search for "libcat.dylib".
+     * @param name The library name to find and load
+     * @param options The options to use when finding the library. If null then
+     *      the default options will be used.
+     * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
+     *      finding or extracting the executable.
+     */
+    synchronized static public void loadLibrary(String name, Options options) throws UnsatisfiedLinkError {
+        // get current os and arch
+        OS os = OS.getOS();
+        Arch arch = Arch.getArch();
+        
+        // always search for specific arch first
+        File f = null;
+        try {
+            f = find(name, FindType.LIBRARY, options, os, arch);
+        } catch (Exception e) {
+            throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "]");
+        }
+        
+        if (f == null) {
+            throw new UnsatisfiedLinkError("Unable to find (or extract) library [" + name + "]");
+        }
+        
+        // call underlying load of dynamic library
+        System.load(f.getAbsolutePath());
+    }
+    
+    /**
+     * Underlying method used by findExecutable and loadLibrary to find and
+     * extract executables as needed. Although public, it's NOT recommended
+     * to use this method unless you know what you're doing.
+     * @param name
+     * @param findType
+     * @param options
+     * @param os
+     * @param arch
+     * @return
+     * @throws IOException
+     * @throws NativeExecutableException 
+     */
+    synchronized static public File find(String name, FindType findType, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
         if (findType == null) {
             findType = FindType.FILE;
         }
@@ -220,8 +308,9 @@ public class JNE {
                 break;
         }
         
-        String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
-    
+        //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
+        String resourcePath = options.createResourcePath(os, arch, name);
+        
         URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
             return null;
@@ -239,15 +328,23 @@ public class JNE {
             // where should we extract the executable?
             File d = options.getExtractDir();
             if (d == null) {
-                d = getOrCreateTempDirectory(options.isDeleteExtractedOnExit());
+                d = getOrCreateTempDirectory(options.isCleanupExtracted());
+            } else {
+                // does the extract dir exist?
+                if (!d.exists()) {
+                    d.mkdirs();
+                }
+                if (!d.isDirectory()) {
+                    throw new NativeExecutableException("Extract dir [" + d + "] is not a directory");
+                }
             }
             
             // create both exe and hash files
             File exeFile = new File(d, name);
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
-            // if we aren't using a 1-time temp dir then verify the exe hash matches
-            if (options.getExtractDir() != null && exeFile.exists()) {
+            // if file already exists verify its hash
+            if (exeFile.exists()) {
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -279,7 +376,7 @@ public class JNE {
                     writeStringToFile(exeHashFile, versionHash);
                     
                     // schedule files for deletion?
-                    if (options.isDeleteExtractedOnExit()) {
+                    if (options.isCleanupExtracted()) {
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }

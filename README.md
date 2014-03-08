@@ -67,7 +67,11 @@ the "cat" executable.
 
 Then you can go back to the main project:
 
-    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.jne.demo.JneDemo" -Dexec.args=""
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.jne.demo.JneDemo"
+
+With overridden extract dir via system property:
+
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.jne.demo.JneDemo" -Djne.extract.dir="target/jne"
 
 ### Packaging as a JAR
 

@@ -46,7 +46,7 @@ public class JneDemo {
         */
         
         // use one-time use temporary directory
-        File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE);
+        File catExeFile = JNE.findExecutable("cat");
         
         if (catExeFile == null) {
             logger.error("Unable to find executable!");
