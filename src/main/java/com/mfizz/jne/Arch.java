@@ -26,7 +26,7 @@ package com.mfizz.jne;
 public enum Arch {
     
     UNKNOWN,
-    X86,
+    X32,
     X64,
     SPARC;
     
@@ -38,7 +38,7 @@ public enum Arch {
             if (osArch.contains("amd64") || osArch.contains("x86_64")) {
                 return X64;
             } else if (osArch.contains("i386") || osArch.contains("x86")) {
-                return X86;
+                return X32;
             } else if (osArch.contains("sparc")) {
                 return SPARC;
             }

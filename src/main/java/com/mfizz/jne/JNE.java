@@ -33,10 +33,12 @@ import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * 
  * @author joelauer
  */
 public class JNE {
+    
+    static public final String SYSPROP_EXTRACT_DIR = "jne.extract.dir";
     
     public static enum FindType {
         EXECUTABLE,
@@ -48,13 +50,18 @@ public class JNE {
         
         private String resourcePrefix;
         private File extractDir;
-        private boolean x86FallbackEnabled;
+        private boolean x32ExecutableFallbackEnabled;
         private boolean deleteExtractedOnExit;
         
         public Options() {
+            // defaults
             this.resourcePrefix = "/jne";
-            this.extractDir = null;
-            this.x86FallbackEnabled = true;
+            // set default extract dir via system property
+            String extractDirString = System.getProperty(SYSPROP_EXTRACT_DIR);
+            if (extractDirString != null && !extractDirString.equals("")) {
+                this.extractDir = new File(extractDirString);
+            }
+            this.x32ExecutableFallbackEnabled = true;
             this.deleteExtractedOnExit = true;
         }
 
@@ -85,8 +92,8 @@ public class JNE {
             this.extractDir = extractDir;
         }
 
-        public boolean isX86FallbackEnabled() {
-            return x86FallbackEnabled;
+        public boolean isX32ExecutableFallbackEnabled() {
+            return x32ExecutableFallbackEnabled;
         }
 
         /**
@@ -95,8 +102,8 @@ public class JNE {
          * @param x86FallbackEnabled If an x86 will be searched for on an x64
          *      platform if an x64 version is not found.
          */
-        public void setX86FallbackEnabled(boolean x86FallbackEnabled) {
-            this.x86FallbackEnabled = x86FallbackEnabled;
+        public void setX32ExecutableFallbackEnabled(boolean x32ExecutableFallbackEnabled) {
+            this.x32ExecutableFallbackEnabled = x32ExecutableFallbackEnabled;
         }
 
         public boolean isDeleteExtractedOnExit() {
@@ -111,6 +118,28 @@ public class JNE {
          */
         public void setDeleteExtractedOnExit(boolean deleteExtractedOnExit) {
             this.deleteExtractedOnExit = deleteExtractedOnExit;
+        }
+        
+        public String createExecutableName(String name, OS os) {
+            // adjust executable name for windows
+            if (os == OS.WINDOWS) {
+                return name + ".exe";
+            } else {
+                return name;
+            }
+        }
+
+        public String createLibraryName(String name, OS os) {
+            // adjust executable name for windows
+            if (os == OS.WINDOWS) {
+                return name + ".dll";
+            } else if (os == OS.LINUX) {
+                return "lib" + name + ".so";
+            } else if (os == OS.MAC) {
+                return "lib" + name + ".dylib";
+            } else {
+                return name;
+            }
         }
     }
     
@@ -157,8 +186,8 @@ public class JNE {
         File f = doFind(name, os, arch, findType, options);
         
         // for x64 fallback to x86 if an exe was not found
-        if (f == null && options.isX86FallbackEnabled() && arch == Arch.X64) {
-            f = doFind(name, os, Arch.X86, findType, options);
+        if (f == null && findType == FindType.EXECUTABLE && options.isX32ExecutableFallbackEnabled() && arch == Arch.X64) {
+            f = doFind(name, os, Arch.X32, findType, options);
         }
         
         return f;
@@ -184,10 +213,10 @@ public class JNE {
         // adjust name of resource to search for
         switch (findType) {
             case EXECUTABLE:
-                name = createExecutableName(name, os);
+                name = options.createExecutableName(name, os);
                 break;
             case LIBRARY:
-                name = createLibraryName(name, os);
+                name = options.createLibraryName(name, os);
                 break;
         }
         
@@ -274,28 +303,6 @@ public class JNE {
             }
         } else {
             throw new NativeExecutableException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
-        }
-    }
-    
-    static private String createExecutableName(String name, OS os) {
-        // adjust executable name for windows
-        if (os == OS.WINDOWS) {
-            return name + ".exe";
-        } else {
-            return name;
-        }
-    }
-    
-    static private String createLibraryName(String name, OS os) {
-        // adjust executable name for windows
-        if (os == OS.WINDOWS) {
-            return name + ".dll";
-        } else if (os == OS.LINUX) {
-            return name + ".so";
-        } else if (os == OS.MAC) {
-            return name + ".dylib";
-        } else {
-            return name;
         }
     }
     

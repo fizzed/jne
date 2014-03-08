@@ -40,7 +40,7 @@ please see features below.
  - Support for multiple operating systems and architectures so that a single
    JAR dependency can support them all.
  - Support for finding executables (e.g. cat or cat.exe)
- - Support for finding libraries (e.g. lib.dll or lib.dylib or lib.so)
+ - Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
  - Support for finding exact files (e.g. movie.swf)
  - Use a one-time temporary directory for extracted executables (thus same apps
    running multiple instances get their own executable copy)

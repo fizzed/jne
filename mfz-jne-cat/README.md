@@ -1,7 +1,7 @@
 ### Overview
 
-Utility library to fetch video info from YouTube for Java and Android
+Sample JNE library for simple "cat" executable.
 
-### Demos
+### Build
 
-mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.mfizz.ffmpeg.demo.FfmpegDemo" -Dexec.args=""
+mvn install
