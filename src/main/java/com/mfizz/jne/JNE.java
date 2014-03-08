@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JNE {
     
+    static public final String SYSPROP_DEBUG = "jne.debug";
     static public final String SYSPROP_RESOURCE_PREFIX = "jne.resource.prefix";
     static public final String SYSPROP_EXTRACT_DIR = "jne.extract.dir";
     static public final String SYSPROP_CLEANUP_EXTRACTED = "jne.cleanup.extracted";
@@ -181,10 +182,11 @@ public class JNE {
         }
     }
     
-    private static final int TEMP_DIR_ATTEMPTS = 100;
-    private static File _tempDir;
-    public static Options DEFAULT_OPTIONS = new Options();
-    private static ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
+    static public boolean DEBUG = getSystemPropertyAsBoolean(SYSPROP_DEBUG, false);
+    static private final int TEMP_DIR_ATTEMPTS = 100;
+    static private File _tempDir;
+    static public Options DEFAULT_OPTIONS = new Options();
+    static private ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
  
     /**
      * Finds (extracts if necessary) a named executable for the runtime operating system
@@ -232,15 +234,50 @@ public class JNE {
         return f;
     }
     
+    
     /**
-     * Finds and loads (extracts if necessary) a named library for the runtime operating system
-     * and architecture. The library will then be dynamically loaded via 
-     * System.load(String name). The library should be a regular Java resource at
-     * the path /jne/[os]/[arch]/[lib]. The name of the file will be automatically
+     * <p>
+     * Loads a dynamic library. Attempts to find (extracts if necessary)
+     * a named library for the runtime operating system and architecture.  If
+     * the library was found as a resource and/or extracted, it will then be
+     * loaded via System.load().  If the library was not found as a resource,
+     * this method will simply fallback to System.loadLibrary(). Thus, this
+     * method should be safe as a drop-in replacement for calls to System.loadLibrary().
+     * </p>
+     * <p>
+     * If including the library as a Java resource, the resource path will be
+     * /jne/[os]/[arch]/[lib]. The name of the file will be automatically
      * adjusted for the target platform. For example, on Windows, to find the "cat"
      * library, this method will search for "cat.dll". On Linux, to find
      * the "cat" library, this method will search for "libcat.so". On Mac, to
      * find the "cat" library, this method will search for "libcat.dylib".
+     * </p>
+     * @param name The library name to find and load
+     * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
+     *      finding or extracting the executable.
+     */
+    synchronized static public void loadLibrary(String name) throws UnsatisfiedLinkError {
+        loadLibrary(name, null);
+    }
+    
+    
+    /**
+     * <p>
+     * Loads a dynamic library. Attempts to find (extracts if necessary)
+     * a named library for the runtime operating system and architecture.  If
+     * the library was found as a resource and/or extracted, it will then be
+     * loaded via System.load().  If the library was not found as a resource,
+     * this method will simply fallback to System.loadLibrary(). Thus, this
+     * method should be safe as a drop-in replacement for calls to System.loadLibrary().
+     * </p>
+     * <p>
+     * If including the library as a Java resource, the resource path will be
+     * /jne/[os]/[arch]/[lib]. The name of the file will be automatically
+     * adjusted for the target platform. For example, on Windows, to find the "cat"
+     * library, this method will search for "cat.dll". On Linux, to find
+     * the "cat" library, this method will search for "libcat.so". On Mac, to
+     * find the "cat" library, this method will search for "libcat.dylib".
+     * </p>
      * @param name The library name to find and load
      * @param options The options to use when finding the library. If null then
      *      the default options will be used.
@@ -257,15 +294,16 @@ public class JNE {
         try {
             f = find(name, FindType.LIBRARY, options, os, arch);
         } catch (Exception e) {
-            throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "]");
+            throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
         
-        if (f == null) {
-            throw new UnsatisfiedLinkError("Unable to find (or extract) library [" + name + "]");
+        if (f != null) {
+            // call underlying load of dynamic library
+            System.load(f.getAbsolutePath());
+        } else {
+            // fallback to java method
+            System.loadLibrary(name);
         }
-        
-        // call underlying load of dynamic library
-        System.load(f.getAbsolutePath());
     }
     
     /**
