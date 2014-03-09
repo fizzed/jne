@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
@@ -256,7 +257,7 @@ public class JNE {
      * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public void loadLibrary(String name) throws UnsatisfiedLinkError {
+    synchronized static public void loadLibrary(String name) {
         loadLibrary(name, null);
     }
     
@@ -284,7 +285,7 @@ public class JNE {
      * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public void loadLibrary(String name, Options options) throws UnsatisfiedLinkError {
+    synchronized static public void loadLibrary(String name, Options options) {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
@@ -294,17 +295,52 @@ public class JNE {
         try {
             f = find(name, FindType.LIBRARY, options, os, arch);
         } catch (Exception e) {
+            debug("JNE: exception while finding library: " + e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
         
+        // temporarily append library path to load library if found
         if (f != null) {
-            // call underlying load of dynamic library
             System.load(f.getAbsolutePath());
+            /**
+            debug("JNE: modifying java.library.path to load [" + f + "]");
+            String initialLibraryPath = System.getProperty("java.library.path");
+            try {
+                setJavaLibraryPath(initialLibraryPath + ":" + f.getParentFile().getAbsolutePath());
+                System.loadLibrary(name);
+            } finally {
+                // set java.library.path back to the original value
+                setJavaLibraryPath(initialLibraryPath);
+            }
+            */
         } else {
+            debug("JNE: falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
             System.loadLibrary(name);
         }
+        
+        debug("JNE: library [" + name + "] loaded!");
     }
+    
+    
+    /**
+     * Set the java.library.path System variable.
+     * ADAPTED FROM: http://blog.cedarsoft.com/2010/11/setting-java-library-path-programmatically/
+     */
+    /**
+    static private void setJavaLibraryPath(String path) throws SecurityException, IllegalAccessException {
+	try {
+	    System.setProperty("java.library.path", path);
+	    Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+	    fieldSysPath.setAccessible(true);
+	    fieldSysPath.set(null, null);
+	    debug("New java.library.path = "+System.getProperty("java.library.path"));
+	} catch (NoSuchFieldException e) {
+	    debug("This shouldn't happen. sys_paths is always present in ClassLoader");
+	}
+    }
+    */
+    
     
     /**
      * Underlying method used by findExecutable and loadLibrary to find and
@@ -336,6 +372,10 @@ public class JNE {
             throw new NativeExecutableException("Unable to detect hardware architecture (e.g. x86)");
         }
         
+        if (DEBUG) {
+            debug("JNE: finding name [" + name + "] findType [" + findType + "] os [" + os + "] arch [" + arch + "]...");
+        }
+        
         // adjust name of resource to search for
         switch (findType) {
             case EXECUTABLE:
@@ -349,19 +389,26 @@ public class JNE {
         //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
         String resourcePath = options.createResourcePath(os, arch, name);
         
+        debug("JNE: finding resource [" + resourcePath + "]");
+        
         URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
+            debug("JNE: resource [" + resourcePath + "] not found");
             return null;
         }
         
         // support for "file" and "jar"
+        debug("JNE: resource found @ " + url);
         if (url.getProtocol().equals("jar")) {
+            debug("JNE: resource in jar; extracting file if necessary...");
+            
             // in the case of where the app specifies an extract directory and
             // does not request deleteOnExit we need a way to detect if the 
             // executables changed from the previous app run -- we do this with
             // a very basic "hash" for an extracted resource. We basically combine
             // the path of the jar and manifest version of when the exe was extracted
             String versionHash = getJarVersionHashForResource(url);
+            debug("JNE: version hash [" + versionHash + "]");
             
             // where should we extract the executable?
             File d = options.getExtractDir();
@@ -377,12 +424,15 @@ public class JNE {
                 }
             }
             
+            debug("JNE: using dir [" + d + "]");
+            
             // create both exe and hash files
             File exeFile = new File(d, name);
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
             // if file already exists verify its hash
             if (exeFile.exists()) {
+                debug("JNE: file already exists; verifying if hash matches");
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -391,10 +441,12 @@ public class JNE {
                     // hash file exists, verify it matches what we expect
                     String existingHash = readFileToString(exeHashFile);
                     if (existingHash == null || !existingHash.equals(versionHash)) {
+                        debug("JNE: hash mismatch; deleting files; will freshly extract file");
                         // hash mismatch -- will force an overwrite of both files
                         exeFile.delete();
                         exeHashFile.delete();
                     } else {
+                        debug("JNE: hash matches; will use existing file");
                         // hash match (exeFile and exeHashFile are both perrrrfect)
                         //System.out.println("exe already extracted AND hash matched -- reusing same exe");
                         return exeFile;
@@ -405,39 +457,56 @@ public class JNE {
             // does exe already exist? (previously extracted)
             if (!exeFile.exists()) {
                 try {
+                    debug("JNE: extracting [" + url + "] to [" + exeFile + "]...");
                     extractTo(url, exeFile);
                     
                     // set file to "executable"
+                    debug("JNE: setting to executable");
                     exeFile.setExecutable(true);
                     
                     // create corrosponding hash file
+                    debug("JNE: writing hash file");
                     writeStringToFile(exeHashFile, versionHash);
                     
                     // schedule files for deletion?
                     if (options.isCleanupExtracted()) {
+                        debug("JNE: scheduling file and hash for delete on exit");
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }
                 } catch (IOException e) {
+                    debug("JNE: failed to extract file");
                     throw new NativeExecutableException("Unable to cleanly extract executable from jar", e);
                 }
             }
             
+            debug("JNE: returning [" + exeFile + "]");
             return exeFile;
         } else if (url.getProtocol().equals("file")) {
+            debug("JNE: resource in file");
             try {
                 File exeFile = new File(url.toURI());
                 if (!exeFile.canExecute()) {
+                    debug("JNE: setting file to executable");
                     if (!exeFile.setExecutable(true)) {
+                        debug("JNE: unable to cleanly set file to executable");
                         throw new NativeExecutableException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
                     }
                 }
+                debug("JNE: returning [" + exeFile + "]");
                 return exeFile;
             } catch (URISyntaxException e) {
+                debug("JNE: uri syntax error");
                 throw new NativeExecutableException("Unable to create executable file from uri", e);
             }
         } else {
             throw new NativeExecutableException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
+        }
+    }
+    
+    static private void debug(String line) {
+        if (DEBUG) {
+            System.out.println(line);
         }
     }
     
