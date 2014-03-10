@@ -32,6 +32,8 @@ import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -259,7 +261,7 @@ public class JNE {
     }
     
     
-    synchronized static public File findLibrary(String name, Options options, Integer majorVersion) throws IOException, NativeExecutableException {
+    synchronized static public File findLibrary(String name, Options options, Integer majorVersion) {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
@@ -267,8 +269,14 @@ public class JNE {
         // file name to try and find/extract (only support major for now since linux 99% of the time links to major)
         String fileName = options.createLibraryName(name, os, majorVersion, null, null);
         
-        // always search for specific arch first
-        return find(fileName, options, os, arch);
+        try {
+            // always search for specific arch first
+            return find(fileName, options, os, arch);
+        } catch (IOException e) {
+            throw new UnsatisfiedLinkError(e.getMessage());
+        } catch (NativeExecutableException e) {
+            throw new UnsatisfiedLinkError(e.getMessage());
+        }
     }
     
     
