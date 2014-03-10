@@ -359,6 +359,7 @@ public class JNE {
                     if (initialLdLibraryPath != null) {
                         // prepend to LD_LIBRARY_PATH for dependent libs too
                         String newLdLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialLdLibraryPath;
+                        debug("JNE: setting LD_LIBRARY_PATH to [" + newLdLibraryPath + "]");
                         Posix.setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
                     }
                     
@@ -370,6 +371,7 @@ public class JNE {
                 } finally {
                     // reset ld_library_path as well
                     if (initialJavaLibraryPath != null) {
+                        debug("JNE: setting LD_LIBRARY_PATH back to [" + initialJavaLibraryPath + "]");
                         Posix.setenv("LD_LIBRARY_PATH", initialJavaLibraryPath, true);
                     }
                     // set java.library.path back to the original value
