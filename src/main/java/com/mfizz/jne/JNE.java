@@ -251,12 +251,12 @@ public class JNE {
     }
     
     
-    synchronized static public File findLibrary(String name) throws IOException, NativeExecutableException {
+    synchronized static public File findLibrary(String name) {
         return findLibrary(name, null, null);
     }
     
     
-    synchronized static public File findLibrary(String name, Integer majorVersion) throws IOException, NativeExecutableException {
+    synchronized static public File findLibrary(String name, Integer majorVersion) {
         return findLibrary(name, null, majorVersion);
     }
     
