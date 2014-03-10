@@ -353,14 +353,27 @@ public class JNE {
             //System.load(f.getAbsolutePath());
             debug("JNE: modifying java.library.path to load [" + f + "]");
             try {
-                String initialLibraryPath = System.getProperty("java.library.path");
+                String initialLdLibraryPath = System.getenv("LD_LIBRARY_PATH");
+                String initialJavaLibraryPath = System.getProperty("java.library.path");
                 try {
+                    if (initialLdLibraryPath != null) {
+                        // prepend to LD_LIBRARY_PATH for dependent libs too
+                        String newLdLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialLdLibraryPath;
+                        Posix.setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
+                    }
+                    
                     // prepend out path to library (so they are loaded first)
-                    setJavaLibraryPath(f.getParentFile().getAbsolutePath() + ":" + initialLibraryPath);
+                    String newLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialJavaLibraryPath;
+                    setJavaLibraryPath(newLibraryPath);
+                    
                     System.loadLibrary(name);
                 } finally {
+                    // reset ld_library_path as well
+                    if (initialJavaLibraryPath != null) {
+                        Posix.setenv("LD_LIBRARY_PATH", initialJavaLibraryPath, true);
+                    }
                     // set java.library.path back to the original value
-                    setJavaLibraryPath(initialLibraryPath);
+                    setJavaLibraryPath(initialJavaLibraryPath);
                 }
             } catch (IllegalAccessException e) {
                 throw new UnsatisfiedLinkError(e.getMessage());
