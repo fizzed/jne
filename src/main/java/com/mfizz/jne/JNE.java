@@ -130,12 +130,23 @@ public class JNE {
             }
         }
 
-        public String createLibraryName(String name, OS os) {
+        public String createLibraryName(String name, OS os, Integer majorVersion, Integer minorVersion, Integer revisionVersion) {
             // adjust executable name for windows
             if (os == OS.WINDOWS) {
                 return name + ".dll";
             } else if (os == OS.LINUX) {
-                return "lib" + name + ".so";
+                // build up the name of the file we want to load
+                String soname = "lib" + name + ".so";
+                if (majorVersion != null) {
+                    soname += "." + majorVersion;
+                    if (minorVersion != null) {
+                        soname += "." + minorVersion;
+                        if (revisionVersion != null) {
+                            soname += "." + revisionVersion;
+                        }  
+                    }
+                }            
+                return soname;
             } else if (os == OS.MAC) {
                 return "lib" + name + ".dylib";
             } else {
@@ -224,15 +235,40 @@ public class JNE {
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
         
+        String fileName = options.createExecutableName(name, os);
+        
         // always search for specific arch first
-        File f = find(name, FindType.EXECUTABLE, options, os, arch);
+        File f = find(fileName, options, os, arch);
         
         // for x64 fallback to x86 if an exe was not found
         if (f == null && options.isX32ExecutableFallback() && arch == Arch.X64) {
-            f = find(name, FindType.EXECUTABLE, options, os, Arch.X32);
+            f = find(fileName, options, os, Arch.X32);
         }
         
         return f;
+    }
+    
+    
+    synchronized static public File findLibrary(String name) throws IOException, NativeExecutableException {
+        return findLibrary(name, null, null);
+    }
+    
+    
+    synchronized static public File findLibrary(String name, Integer majorVersion) throws IOException, NativeExecutableException {
+        return findLibrary(name, null, majorVersion);
+    }
+    
+    
+    synchronized static public File findLibrary(String name, Options options, Integer majorVersion) throws IOException, NativeExecutableException {
+        // get current os and arch
+        OS os = OS.getOS();
+        Arch arch = Arch.getArch();
+        
+        // file name to try and find/extract (only support major for now since linux 99% of the time links to major)
+        String fileName = options.createLibraryName(name, os, majorVersion, null, null);
+        
+        // always search for specific arch first
+        return find(fileName, options, os, arch);
     }
     
     
@@ -258,7 +294,12 @@ public class JNE {
      *      finding or extracting the executable.
      */
     synchronized static public void loadLibrary(String name) {
-        loadLibrary(name, null);
+        loadLibrary(name, null, null);
+    }
+    
+    
+    synchronized static public void loadLibrary(String name, Integer majorVersion) {
+        loadLibrary(name, null, majorVersion);
     }
     
     
@@ -285,34 +326,33 @@ public class JNE {
      * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public void loadLibrary(String name, Options options) {
-        // get current os and arch
-        OS os = OS.getOS();
-        Arch arch = Arch.getArch();
-        
-        // always search for specific arch first
+    synchronized static public void loadLibrary(String name, Options options, Integer majorVersion) {
+        // search for specific library
         File f = null;
         try {
-            f = find(name, FindType.LIBRARY, options, os, arch);
+            f = findLibrary(name, options, majorVersion);
         } catch (Exception e) {
             debug("JNE: exception while finding library: " + e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
         
-        // temporarily append library path to load library if found
+        // temporarily prepend library path to load library if found
         if (f != null) {
-            System.load(f.getAbsolutePath());
-            /**
+            //System.load(f.getAbsolutePath());
             debug("JNE: modifying java.library.path to load [" + f + "]");
-            String initialLibraryPath = System.getProperty("java.library.path");
             try {
-                setJavaLibraryPath(initialLibraryPath + ":" + f.getParentFile().getAbsolutePath());
-                System.loadLibrary(name);
-            } finally {
-                // set java.library.path back to the original value
-                setJavaLibraryPath(initialLibraryPath);
+                String initialLibraryPath = System.getProperty("java.library.path");
+                try {
+                    // prepend out path to library (so they are loaded first)
+                    setJavaLibraryPath(f.getParentFile().getAbsolutePath() + ":" + initialLibraryPath);
+                    System.loadLibrary(name);
+                } finally {
+                    // set java.library.path back to the original value
+                    setJavaLibraryPath(initialLibraryPath);
+                }
+            } catch (IllegalAccessException e) {
+                throw new UnsatisfiedLinkError(e.getMessage());
             }
-            */
         } else {
             debug("JNE: falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
@@ -327,20 +367,20 @@ public class JNE {
      * Set the java.library.path System variable.
      * ADAPTED FROM: http://blog.cedarsoft.com/2010/11/setting-java-library-path-programmatically/
      */
-    /**
-    static private void setJavaLibraryPath(String path) throws SecurityException, IllegalAccessException {
+    static private void setJavaLibraryPath(String path) throws IllegalAccessException {
 	try {
 	    System.setProperty("java.library.path", path);
 	    Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
 	    fieldSysPath.setAccessible(true);
 	    fieldSysPath.set(null, null);
 	    debug("New java.library.path = "+System.getProperty("java.library.path"));
-	} catch (NoSuchFieldException e) {
+        } catch (SecurityException e) {
+            throw e;
+	} catch (Exception e) {
 	    debug("This shouldn't happen. sys_paths is always present in ClassLoader");
 	}
     }
-    */
-    
+
     
     /**
      * Underlying method used by findExecutable and loadLibrary to find and
@@ -355,11 +395,7 @@ public class JNE {
      * @throws IOException
      * @throws NativeExecutableException 
      */
-    synchronized static public File find(String name, FindType findType, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
-        if (findType == null) {
-            findType = FindType.FILE;
-        }
-        
+    synchronized static public File find(String fileName, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
@@ -373,21 +409,11 @@ public class JNE {
         }
         
         if (DEBUG) {
-            debug("JNE: finding name [" + name + "] findType [" + findType + "] os [" + os + "] arch [" + arch + "]...");
-        }
-        
-        // adjust name of resource to search for
-        switch (findType) {
-            case EXECUTABLE:
-                name = options.createExecutableName(name, os);
-                break;
-            case LIBRARY:
-                name = options.createLibraryName(name, os);
-                break;
+            debug("JNE: finding fileName [" + fileName + "] os [" + os + "] arch [" + arch + "]...");
         }
         
         //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
-        String resourcePath = options.createResourcePath(os, arch, name);
+        String resourcePath = options.createResourcePath(os, arch, fileName);
         
         debug("JNE: finding resource [" + resourcePath + "]");
         
@@ -427,7 +453,7 @@ public class JNE {
             debug("JNE: using dir [" + d + "]");
             
             // create both exe and hash files
-            File exeFile = new File(d, name);
+            File exeFile = new File(d, fileName);
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
             // if file already exists verify its hash
