@@ -356,12 +356,12 @@ public class JNE {
                 String initialLdLibraryPath = System.getenv("LD_LIBRARY_PATH");
                 String initialJavaLibraryPath = System.getProperty("java.library.path");
                 try {
-                    if (initialLdLibraryPath != null) {
+ //                   if (initialLdLibraryPath != null) {
                         // prepend to LD_LIBRARY_PATH for dependent libs too
-                        String newLdLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialLdLibraryPath;
-                        debug("JNE: setting LD_LIBRARY_PATH to [" + newLdLibraryPath + "]");
-                        Posix.setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
-                    }
+//                        String newLdLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialLdLibraryPath;
+//                        debug("JNE: setting LD_LIBRARY_PATH to [" + newLdLibraryPath + "]");
+//                        Posix.setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
+//                    }
                     
                     // prepend out path to library (so they are loaded first)
                     String newLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialJavaLibraryPath;
@@ -370,10 +370,10 @@ public class JNE {
                     System.loadLibrary(name);
                 } finally {
                     // reset ld_library_path as well
-                    if (initialJavaLibraryPath != null) {
-                        debug("JNE: setting LD_LIBRARY_PATH back to [" + initialJavaLibraryPath + "]");
-                        Posix.setenv("LD_LIBRARY_PATH", initialJavaLibraryPath, true);
-                    }
+//                    if (initialJavaLibraryPath != null) {
+//                        debug("JNE: setting LD_LIBRARY_PATH back to [" + initialJavaLibraryPath + "]");
+//                        Posix.setenv("LD_LIBRARY_PATH", initialJavaLibraryPath, true);
+//                    }
                     // set java.library.path back to the original value
                     setJavaLibraryPath(initialJavaLibraryPath);
                 }
