@@ -266,6 +266,10 @@ public class JNE {
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
         
+        if (options == null) {
+            options = DEFAULT_OPTIONS;
+        }
+        
         // file name to try and find/extract (only support major for now since linux 99% of the time links to major)
         String fileName = options.createLibraryName(name, os, majorVersion, null, null);
         
