@@ -350,9 +350,16 @@ public class JNE {
         
         // temporarily prepend library path to load library if found
         if (f != null) {
-            //System.load(f.getAbsolutePath());
-            debug("JNE: modifying java.library.path to load [" + f + "]");
-            try {
+            // since loading of dependencies of a library cannot dynamically happen
+            // and the user would be required to provide a valid LD_LIBRARY_PATH when
+            // launching the java process -- we don't need to do use loadLibrary
+            // and can just tell it to load a specific library file
+            debug("JNE: System.load(" + f.getAbsolutePath() + ")");
+            System.load(f.getAbsolutePath());
+            
+            //debug("JNE: modifying java.library.path to load [" + f + "]");
+            /**
+            try {    
                 String initialLdLibraryPath = System.getenv("LD_LIBRARY_PATH");
                 String initialJavaLibraryPath = System.getProperty("java.library.path");
                 try {
@@ -380,6 +387,7 @@ public class JNE {
             } catch (IllegalAccessException e) {
                 throw new UnsatisfiedLinkError(e.getMessage());
             }
+            */
         } else {
             debug("JNE: falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
