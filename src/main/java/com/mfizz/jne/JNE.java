@@ -149,7 +149,7 @@ public class JNE {
                     }
                 }            
                 return soname;
-            } else if (os == OS.MAC) {
+            } else if (os == OS.OSX) {
                 return "lib" + name + ".dylib";
             } else {
                 return name;

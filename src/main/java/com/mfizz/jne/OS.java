@@ -29,7 +29,7 @@ public enum OS {
     
     UNKNOWN,
     WINDOWS,
-    MAC,
+    OSX,
     LINUX,
     SOLARIS;
     
@@ -41,7 +41,7 @@ public enum OS {
             if (osName.contains("windows")) {
                 return WINDOWS;
             } else if (osName.contains("mac") || osName.contains("darwin")) {
-                return MAC;
+                return OSX;
             } else if (osName.contains("linux")) {
                 return LINUX;
             } else if (osName.contains("sun") || osName.contains("solaris")) {
