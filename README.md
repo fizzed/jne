@@ -1,5 +1,5 @@
 Java Native Executable Library
-=================================
+==============================
 
 ### Contributors
 
@@ -20,14 +20,14 @@ Here is how it works. At runtime, Java let's you find resources in directories
 and/or JARS (if they are included on the classpath). Let's say you wanted to call
 an external "cat" executable. With this library, you'd do the following:
 
-    File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE, options);
+    File catExeFile = JNE.findExecutable("cat", options);
 
 The library would then search for the following resource:
 
-    /jne/<os>/<arch>/<exe>
+    /jne/<os>/<arch>/<exe|lib|file>
 
-Where "os" would be either "windows", "mac", or "linux" and "arch" would either
-be "x86" or "x64". If we were running on Linux with a 64-bit operating system
+Where "os" would be either "windows", "osx", or "linux" and "arch" would either
+be "x32" or "x64". If we were running on Linux with a 64-bit operating system
 then the library would search for "/jne/linux/x64/cat". If found and contained
 within a jar file then this executable would be extracted to either a specific
 or temporary directory and returned as a File object. This File object can then
@@ -84,8 +84,8 @@ However, since this library does essentially build a "bin" directory by extracti
 resources, you could find all dependencies first before trying to execute it.
 For example:
 
-    File libFile = JNE.find("mylib", JNE.FindType.LIBRARY, options);
-    File exeFile = JNE.find("myapp", JNE.FindType.EXECUTABLE, options);
+    File libFile = JNE.findLibrary("mylib", options);
+    File exeFile = JNE.findExecutable("myapp", options);
 
 If this was run on Linux with the extractDir as null (which then uses a temp dir)
 you would have the following example result:
