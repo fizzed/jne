@@ -32,8 +32,6 @@ import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 
@@ -210,14 +208,30 @@ public class JNE {
      * application, this method will actually search for "cat.exe".
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
-     * @param findType The type of file to find. For example, on Windows, searching
-     *      for an EXECUTABLE will result in a search of "name.exe". 
      * @return The executable file or null if no executable found.
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
     synchronized static public File findExecutable(String name) throws IOException, NativeExecutableException {
-        return findExecutable(name, DEFAULT_OPTIONS);
+        return findExecutable(name, null, DEFAULT_OPTIONS);
+    }
+    
+    /**
+     * Finds (extracts if necessary) a named executable for the runtime operating system
+     * and architecture. The executable should be a regular Java resource at
+     * the path /jne/[os]/[arch]/[exe]. The name of the file will be automatically
+     * adjusted for the target platform. For example, on Windows, to find the "cat"
+     * application, this method will actually search for "cat.exe".
+     * @param name The executable name you would normally type on the command-line.
+     *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
+     * @param targetName The executable name you would like the resource (if found)
+     *      to be named on extract.
+     * @return The executable file or null if no executable found.
+     * @throws NativeExecutableException Thrown if a runtime exception occurs while
+     *      finding or extracting the executable.
+     */
+    synchronized static public File findExecutable(String name, String targetName) throws IOException, NativeExecutableException {
+        return findExecutable(name, targetName, DEFAULT_OPTIONS);
     }
     
     /**
@@ -226,25 +240,31 @@ public class JNE {
      * the path /jne/[os]/[arch]/[exe].
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
+     * @param targetName The executable name you would like the resource (if found)
+     *      to be named on extract.
      * @param options The options to use when finding an executable. If null then
      *      the default options will be used.
      * @return The executable file or null if no executable found.
      * @throws NativeExecutableException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, Options options) throws IOException, NativeExecutableException {
+    synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException, NativeExecutableException {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
         
         String fileName = options.createExecutableName(name, os);
+        String targetFileName = null;
+        if (targetName != null) {
+            targetFileName = options.createExecutableName(targetName, os);
+        }
         
         // always search for specific arch first
-        File f = find(fileName, options, os, arch);
+        File f = find(fileName, targetFileName, options, os, arch);
         
         // for x64 fallback to x86 if an exe was not found
         if (f == null && options.isX32ExecutableFallback() && arch == Arch.X64) {
-            f = find(fileName, options, os, Arch.X32);
+            f = find(fileName, targetFileName, options, os, Arch.X32);
         }
         
         return f;
@@ -275,7 +295,7 @@ public class JNE {
         
         try {
             // always search for specific arch first
-            return find(fileName, options, os, arch);
+            return find(fileName, null, options, os, arch);
         } catch (IOException e) {
             throw new UnsatisfiedLinkError(e.getMessage());
         } catch (NativeExecutableException e) {
@@ -430,7 +450,7 @@ public class JNE {
      * @throws IOException
      * @throws NativeExecutableException 
      */
-    synchronized static public File find(String fileName, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
+    synchronized static public File find(String fileName, String targetFileName, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
@@ -443,8 +463,12 @@ public class JNE {
             throw new NativeExecutableException("Unable to detect hardware architecture (e.g. x86)");
         }
         
+        if (targetFileName == null) {
+            targetFileName = fileName;
+        }
+        
         if (DEBUG) {
-            debug("JNE: finding fileName [" + fileName + "] os [" + os + "] arch [" + arch + "]...");
+            debug("JNE: finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
         }
         
         //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
@@ -487,8 +511,8 @@ public class JNE {
             
             debug("JNE: using dir [" + d + "]");
             
-            // create both exe and hash files
-            File exeFile = new File(d, fileName);
+            // create both target exe and hash files
+            File exeFile = new File(d, targetFileName);
             File exeHashFile = new File(exeFile.getAbsolutePath() + ".hash");
             
             // if file already exists verify its hash

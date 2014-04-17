@@ -31,6 +31,8 @@ public enum OS {
     WINDOWS,
     OSX,
     LINUX,
+    FREEBSD,
+    OPENBSD,
     SOLARIS;
     
     public static OS getOS() {
@@ -46,6 +48,10 @@ public enum OS {
                 return LINUX;
             } else if (osName.contains("sun") || osName.contains("solaris")) {
                 return SOLARIS;
+            } else if (osName.contains("freebsd")) {
+                return FREEBSD;
+            } else if (osName.contains("OPENBSD")) {
+                return OPENBSD;
             }
         }
         

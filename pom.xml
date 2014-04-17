@@ -4,7 +4,7 @@
     <groupId>com.mfizz</groupId>
     <artifactId>mfz-jne</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <name>mfz-jne</name>
     <description>Utility library for using executables embedded in jars on Windows, Linux, and Mac.</description>
   
