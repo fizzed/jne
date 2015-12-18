@@ -15,13 +15,19 @@ jars and then use something like maven for dependency management.
 
 Here is how it works. At runtime, Java let's you find resources in directories
 and/or jars (if they are included on the classpath). Let's say you wanted to call
-an external "cat" executable. With this library, you'd do the following:
+an external "cat" executable.  With a properly packaged resource on the classpath
+this executable can found with
 
-    File catExeFile = JNE.findExecutable("cat", options);
+    File catExeFile = JNE.findExecutable("cat");
 
-The library would then search for the following resource:
+The library would search for the resource using the following path
 
-    /jne/<os>/<arch>/<exe|lib|file>
+    /jne/<os>/<arch>/<exe>
+
+If found the resource would be intelligently extracted (only if its changed) to
+a temporary directory so it can be executed.
+
+    /tmp/1394227238992-0/cat
 
 Where "os" would be either "windows", "osx", or "linux" and "arch" would either
 be "x32" or "x64". If we were running on Linux with a 64-bit operating system
