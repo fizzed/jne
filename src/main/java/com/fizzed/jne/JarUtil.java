@@ -1,10 +1,10 @@
-package com.mfizz.jne;
+package com.fizzed.jne;
 
 /*
  * #%L
- * mfz-jne
+ * jne
  * %%
- * Copyright (C) 2012 - 2014 mfizz
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ package com.mfizz.jne;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.jar.Attributes;
@@ -29,7 +31,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
- *
+ * Utilities for working with jar files.
+ * 
  * @author joelauer
  */
 public class JarUtil {
@@ -54,7 +57,9 @@ public class JarUtil {
             //System.out.println("jarFile: " + jarFile);
             //System.out.println("exists? " + jarFile.exists());
             return jarFile;
-        } catch (Exception e) {
+        } catch (MalformedURLException e) {
+            throw new IOException("Unable to create uri for jar file", e);
+        } catch (URISyntaxException e) {
             throw new IOException("Unable to create uri for jar file", e);
         }
     }

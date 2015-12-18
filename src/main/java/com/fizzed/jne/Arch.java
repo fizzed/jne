@@ -1,10 +1,10 @@
-package com.mfizz.jne;
+package com.fizzed.jne;
 
 /*
  * #%L
- * mfz-ffmpeg
+ * jne
  * %%
- * Copyright (C) 2012 - 2014 mfizz
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

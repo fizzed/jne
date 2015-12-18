@@ -1,10 +1,10 @@
-package com.mfizz.jne;
+package com.fizzed.jne;
 
 /*
  * #%L
- * mfz-jne
+ * jne
  * %%
- * Copyright (C) 2012 - 2014 mfizz
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ package com.mfizz.jne;
  *
  * @author joelauer
  */
-public class NativeExecutableException extends Exception {
+public class ExtractException extends Exception {
 
-    public NativeExecutableException(String msg) {
+    public ExtractException(String msg) {
         super(msg);
     }
     
-    public NativeExecutableException(String msg, Exception e) {
+    public ExtractException(String msg, Exception e) {
         super(msg, e);
     }
 }

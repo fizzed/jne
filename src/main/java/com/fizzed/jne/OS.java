@@ -1,10 +1,10 @@
-package com.mfizz.jne;
+package com.fizzed.jne;
 
 /*
  * #%L
- * ch-jni-loader
+ * jne
  * %%
- * Copyright (C) 2012 - 2013 Cloudhopper by Twitter
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ package com.mfizz.jne;
 
 /**
  * Operating system that Java is running on.
- * 
- * @author garth
  */
 public enum OS {
     

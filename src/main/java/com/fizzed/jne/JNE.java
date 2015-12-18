@@ -1,10 +1,10 @@
-package com.mfizz.jne;
+package com.fizzed.jne;
 
 /*
  * #%L
- * mfz-jne
+ * jne
  * %%
- * Copyright (C) 2012 - 2014 mfizz
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  * @author joelauer
  */
 public class JNE {
+    static private final Logger log = LoggerFactory.getLogger(JNE.class);
     
     static public final String SYSPROP_DEBUG = "jne.debug";
     static public final String SYSPROP_RESOURCE_PREFIX = "jne.resource.prefix";
@@ -131,26 +133,26 @@ public class JNE {
         }
 
         public String createLibraryName(String name, OS os, Integer majorVersion, Integer minorVersion, Integer revisionVersion) {
-            // adjust executable name for windows
-            if (os == OS.WINDOWS) {
-                return name + ".dll";
-            } else if (os == OS.LINUX) {
-                // build up the name of the file we want to load
-                String soname = "lib" + name + ".so";
-                if (majorVersion != null) {
-                    soname += "." + majorVersion;
-                    if (minorVersion != null) {
-                        soname += "." + minorVersion;
-                        if (revisionVersion != null) {
-                            soname += "." + revisionVersion;
-                        }  
+            switch (os) {
+                case WINDOWS:
+                    return name + ".dll";
+                case LINUX:
+                    // build up the name of the file we want to load
+                    String soname = "lib" + name + ".so";
+                    if (majorVersion != null) {
+                        soname += "." + majorVersion;
+                        if (minorVersion != null) {
+                            soname += "." + minorVersion;
+                            if (revisionVersion != null) {
+                                soname += "." + revisionVersion;  
+                            }
+                        }
                     }
-                }            
-                return soname;
-            } else if (os == OS.OSX) {
-                return "lib" + name + ".dylib";
-            } else {
-                return name;
+                    return soname;
+                case OSX:
+                    return "lib" + name + ".dylib";
+                default:
+                    return name;
             }
         }
         
@@ -194,11 +196,10 @@ public class JNE {
         }
     }
     
-    static public boolean DEBUG = getSystemPropertyAsBoolean(SYSPROP_DEBUG, false);
+    static public Options DEFAULT_OPTIONS = new Options();
     static private final int TEMP_DIR_ATTEMPTS = 100;
     static private File _tempDir;
-    static public Options DEFAULT_OPTIONS = new Options();
-    static private ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<File,String>();
+    static private final ConcurrentHashMap<File,String> jarVersionHashes = new ConcurrentHashMap<>();
  
     /**
      * Finds (extracts if necessary) a named executable for the runtime operating system
@@ -209,10 +210,11 @@ public class JNE {
      * @param name The executable name you would normally type on the command-line.
      *      For example, "cat" or "ping" would search for "ping.exe" on windows and "ping" on linux/mac.
      * @return The executable file or null if no executable found.
-     * @throws NativeExecutableException Thrown if a runtime exception occurs while
+     * @throws java.io.IOException
+     * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name) throws IOException, NativeExecutableException {
+    synchronized static public File findExecutable(String name) throws IOException, ExtractException {
         return findExecutable(name, null, DEFAULT_OPTIONS);
     }
     
@@ -227,10 +229,11 @@ public class JNE {
      * @param targetName The executable name you would like the resource (if found)
      *      to be named on extract.
      * @return The executable file or null if no executable found.
-     * @throws NativeExecutableException Thrown if a runtime exception occurs while
+     * @throws java.io.IOException
+     * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, String targetName) throws IOException, NativeExecutableException {
+    synchronized static public File findExecutable(String name, String targetName) throws IOException, ExtractException {
         return findExecutable(name, targetName, DEFAULT_OPTIONS);
     }
     
@@ -245,10 +248,11 @@ public class JNE {
      * @param options The options to use when finding an executable. If null then
      *      the default options will be used.
      * @return The executable file or null if no executable found.
-     * @throws NativeExecutableException Thrown if a runtime exception occurs while
+     * @throws java.io.IOException
+     * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException, NativeExecutableException {
+    synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException, ExtractException {
         // get current os and arch
         OS os = OS.getOS();
         Arch arch = Arch.getArch();
@@ -296,9 +300,7 @@ public class JNE {
         try {
             // always search for specific arch first
             return find(fileName, null, options, os, arch);
-        } catch (IOException e) {
-            throw new UnsatisfiedLinkError(e.getMessage());
-        } catch (NativeExecutableException e) {
+        } catch (IOException | ExtractException e) {
             throw new UnsatisfiedLinkError(e.getMessage());
         }
     }
@@ -355,6 +357,7 @@ public class JNE {
      * @param name The library name to find and load
      * @param options The options to use when finding the library. If null then
      *      the default options will be used.
+     * @param majorVersion
      * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
@@ -364,7 +367,7 @@ public class JNE {
         try {
             f = findLibrary(name, options, majorVersion);
         } catch (Exception e) {
-            debug("JNE: exception while finding library: " + e.getMessage());
+            log.debug("exception while finding library: " + e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
         
@@ -374,10 +377,10 @@ public class JNE {
             // and the user would be required to provide a valid LD_LIBRARY_PATH when
             // launching the java process -- we don't need to do use loadLibrary
             // and can just tell it to load a specific library file
-            debug("JNE: System.load(" + f.getAbsolutePath() + ")");
+            log.debug("System.load(" + f.getAbsolutePath() + ")");
             System.load(f.getAbsolutePath());
             
-            //debug("JNE: modifying java.library.path to load [" + f + "]");
+            //log.debug("modifying java.library.path to load [" + f + "]");
             /**
             try {    
                 String initialLdLibraryPath = System.getenv("LD_LIBRARY_PATH");
@@ -386,7 +389,7 @@ public class JNE {
  //                   if (initialLdLibraryPath != null) {
                         // prepend to LD_LIBRARY_PATH for dependent libs too
 //                        String newLdLibraryPath = f.getParentFile().getAbsolutePath() + ":" + initialLdLibraryPath;
-//                        debug("JNE: setting LD_LIBRARY_PATH to [" + newLdLibraryPath + "]");
+//                        log.debug("setting LD_LIBRARY_PATH to [" + newLdLibraryPath + "]");
 //                        Posix.setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
 //                    }
                     
@@ -398,7 +401,7 @@ public class JNE {
                 } finally {
                     // reset ld_library_path as well
 //                    if (initialJavaLibraryPath != null) {
-//                        debug("JNE: setting LD_LIBRARY_PATH back to [" + initialJavaLibraryPath + "]");
+//                        log.debug("setting LD_LIBRARY_PATH back to [" + initialJavaLibraryPath + "]");
 //                        Posix.setenv("LD_LIBRARY_PATH", initialJavaLibraryPath, true);
 //                    }
                     // set java.library.path back to the original value
@@ -409,12 +412,12 @@ public class JNE {
             }
             */
         } else {
-            debug("JNE: falling back to System.loadLibrary(" + name + ")");
+            log.debug("falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
             System.loadLibrary(name);
         }
         
-        debug("JNE: library [" + name + "] loaded!");
+        log.debug("library [" + name + "] loaded!");
     }
     
     
@@ -422,70 +425,74 @@ public class JNE {
      * Set the java.library.path System variable.
      * ADAPTED FROM: http://blog.cedarsoft.com/2010/11/setting-java-library-path-programmatically/
      */
+    /**
     static private void setJavaLibraryPath(String path) throws IllegalAccessException {
 	try {
 	    System.setProperty("java.library.path", path);
 	    Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
 	    fieldSysPath.setAccessible(true);
 	    fieldSysPath.set(null, null);
-	    debug("New java.library.path = "+System.getProperty("java.library.path"));
+	    log.debug("New java.library.path = "+System.getProperty("java.library.path"));
         } catch (SecurityException e) {
             throw e;
-	} catch (Exception e) {
-	    debug("This shouldn't happen. sys_paths is always present in ClassLoader");
-	}
+	} catch (NoSuchFieldException e) {
+	    log.debug("This shouldn't happen. sys_paths is always present in ClassLoader");
+	} catch (IllegalArgumentException e) {
+            log.debug("This shouldn't happen. sys_paths is always present in ClassLoader");
+        } catch (IllegalAccessException e) {
+            log.debug("This shouldn't happen. sys_paths is always present in ClassLoader");
+        }
     }
-
+    */
     
     /**
      * Underlying method used by findExecutable and loadLibrary to find and
      * extract executables as needed. Although public, it's NOT recommended
      * to use this method unless you know what you're doing.
-     * @param name
-     * @param findType
+     * @param fileName
+     * @param targetFileName
      * @param options
      * @param os
      * @param arch
      * @return
      * @throws IOException
-     * @throws NativeExecutableException 
+     * @throws ExtractException 
      */
-    synchronized static public File find(String fileName, String targetFileName, Options options, OS os, Arch arch) throws IOException, NativeExecutableException {
+    synchronized static public File find(String fileName, String targetFileName, Options options, OS os, Arch arch) throws IOException, ExtractException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
         
         if (os == null || os == OS.UNKNOWN) {
-            throw new NativeExecutableException("Unable to detect operating system (e.g. Windows)");
+            throw new ExtractException("Unable to detect operating system (e.g. Windows)");
         }
         
         if (arch == null || arch == Arch.UNKNOWN) {
-            throw new NativeExecutableException("Unable to detect hardware architecture (e.g. x86)");
+            throw new ExtractException("Unable to detect hardware architecture (e.g. x86)");
         }
         
         if (targetFileName == null) {
             targetFileName = fileName;
         }
         
-        if (DEBUG) {
-            debug("JNE: finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
-        }
+        log.debug("finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
         
         //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
         String resourcePath = options.createResourcePath(os, arch, fileName);
         
-        debug("JNE: finding resource [" + resourcePath + "]");
+        log.debug("finding resource [" + resourcePath + "]");
         
         URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
-            debug("JNE: resource [" + resourcePath + "] not found");
+            log.debug("resource [" + resourcePath + "] not found");
             return null;
         }
         
         // support for "file" and "jar"
-        debug("JNE: resource found @ " + url);
+        log.debug("resource found @ " + url);
+        
         if (url.getProtocol().equals("jar")) {
-            debug("JNE: resource in jar; extracting file if necessary...");
+            log.debug("resource in jar; extracting file if necessary...");
             
             // in the case of where the app specifies an extract directory and
             // does not request deleteOnExit we need a way to detect if the 
@@ -493,7 +500,7 @@ public class JNE {
             // a very basic "hash" for an extracted resource. We basically combine
             // the path of the jar and manifest version of when the exe was extracted
             String versionHash = getJarVersionHashForResource(url);
-            debug("JNE: version hash [" + versionHash + "]");
+            log.debug("version hash [" + versionHash + "]");
             
             // where should we extract the executable?
             File d = options.getExtractDir();
@@ -505,11 +512,11 @@ public class JNE {
                     d.mkdirs();
                 }
                 if (!d.isDirectory()) {
-                    throw new NativeExecutableException("Extract dir [" + d + "] is not a directory");
+                    throw new ExtractException("Extract dir [" + d + "] is not a directory");
                 }
             }
             
-            debug("JNE: using dir [" + d + "]");
+            log.debug("using dir [" + d + "]");
             
             // create both target exe and hash files
             File exeFile = new File(d, targetFileName);
@@ -517,7 +524,7 @@ public class JNE {
             
             // if file already exists verify its hash
             if (exeFile.exists()) {
-                debug("JNE: file already exists; verifying if hash matches");
+                log.debug("file already exists; verifying if hash matches");
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -526,12 +533,12 @@ public class JNE {
                     // hash file exists, verify it matches what we expect
                     String existingHash = readFileToString(exeHashFile);
                     if (existingHash == null || !existingHash.equals(versionHash)) {
-                        debug("JNE: hash mismatch; deleting files; will freshly extract file");
+                        log.debug("hash mismatch; deleting files; will freshly extract file");
                         // hash mismatch -- will force an overwrite of both files
                         exeFile.delete();
                         exeHashFile.delete();
                     } else {
-                        debug("JNE: hash matches; will use existing file");
+                        log.debug("hash matches; will use existing file");
                         // hash match (exeFile and exeHashFile are both perrrrfect)
                         //System.out.println("exe already extracted AND hash matched -- reusing same exe");
                         return exeFile;
@@ -542,74 +549,63 @@ public class JNE {
             // does exe already exist? (previously extracted)
             if (!exeFile.exists()) {
                 try {
-                    debug("JNE: extracting [" + url + "] to [" + exeFile + "]...");
+                    log.debug("extracting [" + url + "] to [" + exeFile + "]...");
                     extractTo(url, exeFile);
                     
                     // set file to "executable"
-                    debug("JNE: setting to executable");
+                    log.debug("setting to executable");
                     exeFile.setExecutable(true);
                     
                     // create corrosponding hash file
-                    debug("JNE: writing hash file");
+                    log.debug("writing hash file");
                     writeStringToFile(exeHashFile, versionHash);
                     
                     // schedule files for deletion?
                     if (options.isCleanupExtracted()) {
-                        debug("JNE: scheduling file and hash for delete on exit");
+                        log.debug("scheduling file and hash for delete on exit");
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }
                 } catch (IOException e) {
-                    debug("JNE: failed to extract file");
-                    throw new NativeExecutableException("Unable to cleanly extract executable from jar", e);
+                    log.debug("failed to extract file");
+                    throw new ExtractException("Unable to cleanly extract executable from jar", e);
                 }
             }
             
-            debug("JNE: returning [" + exeFile + "]");
+            log.debug("returning [" + exeFile + "]");
             return exeFile;
         } else if (url.getProtocol().equals("file")) {
-            debug("JNE: resource in file");
+            log.debug("resource in file");
             try {
                 File exeFile = new File(url.toURI());
                 if (!exeFile.canExecute()) {
-                    debug("JNE: setting file to executable");
+                    log.debug("setting file to executable");
                     if (!exeFile.setExecutable(true)) {
-                        debug("JNE: unable to cleanly set file to executable");
-                        throw new NativeExecutableException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
+                        log.debug("unable to cleanly set file to executable");
+                        throw new ExtractException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
                     }
                 }
-                debug("JNE: returning [" + exeFile + "]");
+                log.debug("returning [" + exeFile + "]");
                 return exeFile;
             } catch (URISyntaxException e) {
-                debug("JNE: uri syntax error");
-                throw new NativeExecutableException("Unable to create executable file from uri", e);
+                log.debug("uri syntax error");
+                throw new ExtractException("Unable to create executable file from uri", e);
             }
         } else {
-            throw new NativeExecutableException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
-        }
-    }
-    
-    static private void debug(String line) {
-        if (DEBUG) {
-            System.out.println(line);
+            throw new ExtractException("Unsupported executable resource protocol [" + url.getProtocol() + "]");
         }
     }
     
     static private void extractTo(URL url, File file) throws IOException {
         final InputStream in = url.openStream();
         try {
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(file, false));
-            try {
+            try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file, false))) {
                 int len;
                 byte[] buffer = new byte[8192];
                 while ((len = in.read(buffer)) > -1) {
                     out.write(buffer, 0, len);
                 }
                 out.flush();
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
             }
         } finally {
             if (in != null) {
@@ -620,30 +616,20 @@ public class JNE {
     
     static private String readFileToString(File file) throws IOException {
         StringBuilder result = new StringBuilder();
-        BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
-        try {
+        try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = is.read(buf)) > -1) {
                 result.append(new String(buf, 0, len, "UTF-8"));
-            }
-        } finally {
-            if (is != null) {
-                is.close();
             }
         }
         return result.toString();
     }
     
     static private void writeStringToFile(File file, String s) throws IOException {
-        FileOutputStream os = new FileOutputStream(file, false);
-        try {
+        try (FileOutputStream os = new FileOutputStream(file, false)) {
             os.write(s.getBytes("UTF-8"));
             os.flush();
-        } finally {
-            if (os != null) {
-                os.close();
-            }
         }
     }
     
@@ -677,7 +663,7 @@ public class JNE {
     /**
      * Attempts to create a temporary directory that did not exist previously.
      */
-    static private File getOrCreateTempDirectory(boolean deleteOnExit) throws NativeExecutableException {
+    static private File getOrCreateTempDirectory(boolean deleteOnExit) throws ExtractException {
         // return the single instance if already created
         if (_tempDir != null) {
             return _tempDir;
@@ -698,7 +684,7 @@ public class JNE {
 	    }
 	}
         
-	throw new NativeExecutableException("Failed to create temporary directory within " + TEMP_DIR_ATTEMPTS + " attempts (tried " + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
+	throw new ExtractException("Failed to create temporary directory within " + TEMP_DIR_ATTEMPTS + " attempts (tried " + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
     }
     
 }

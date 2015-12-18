@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   #%L
-  social-demo
+  jne
   %%
-  Copyright (C) 2012 - 2013 mfizz
+  Copyright (C) 2015 Fizzed, Inc
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
     </encoder>
   </appender>
 
-  <logger name="com.mfizz" level="DEBUG"/>
+  <logger name="com.fizzed" level="DEBUG"/>
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

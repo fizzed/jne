@@ -1,10 +1,10 @@
-package com.mfizz.jne.demo;
+package com.fizzed.jne.demo;
 
 /*
  * #%L
- * mfz-ffmpeg
+ * jne
  * %%
- * Copyright (C) 2012 - 2014 mfizz
+ * Copyright (C) 2015 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ package com.mfizz.jne.demo;
  * #L%
  */
 
-import com.mfizz.jne.JNE;
-import com.mfizz.jne.StreamGobbler;
+import com.fizzed.jne.JNE;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zeroturnaround.exec.ProcessExecutor;
 
 /**
  *
@@ -33,18 +33,7 @@ import org.slf4j.LoggerFactory;
 public class JneDemo {
     private static final Logger logger = LoggerFactory.getLogger(JneDemo.class);
     
-    static public void main(String[] args) throws Exception {
-        
-        // use same directory between app runs!
-        /**
-        File extractDir = new File(System.getProperty("java.io.tmpdir"), "jnetemp");
-        extractDir.mkdirs();
-        JNE.Options options = new JNE.Options();
-        options.setExtractDir(extractDir);
-        options.setDeleteExtractedOnExit(false);
-        File catExeFile = JNE.find("cat", JNE.FindType.EXECUTABLE, options);
-        */
-        
+    static public void main(String[] args) throws Exception {        
         // use one-time use temporary directory
         File catExeFile = JNE.findExecutable("cat", "prime-cat");
         
@@ -61,24 +50,13 @@ public class JneDemo {
         File expectedTxtFile = new File(JneDemo.class.getResource("/test.txt").toURI());
         File actualTxtFile = new File("target", "actual.txt");
         
-        ProcessBuilder pb = new ProcessBuilder(catExeFile.getAbsolutePath(), expectedTxtFile.getAbsolutePath());
-        pb.redirectErrorStream(true);
-        Process p = pb.start();
-        StreamGobbler streamLogger = new StreamGobbler(p.getInputStream()) {
-            @Override
-            public void onLine(String line) {
-                logger.debug(line);
-            }
-            @Override
-            public void onException(Exception e) {
-                logger.error("Unable to cleanly gobble process output", e);
-            }
-        };
-        streamLogger.start();
+        int exitValue
+            = new ProcessExecutor()
+                .command(catExeFile.getAbsolutePath(), expectedTxtFile.getAbsolutePath())
+                .execute()
+                .getExitValue();
         
-        int retVal = p.waitFor();
-        
-        logger.info("ret val: " + retVal);
+        logger.info("exit value: {}", exitValue);
     }
     
 }
