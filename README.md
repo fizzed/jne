@@ -52,6 +52,18 @@ please see features below.
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
 
+## Usage
+
+Published to maven central use the following
+
+```xml
+<dependency>
+    <groupId>com.fizzed</groupId>
+    <artifactId>jne</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
 ## Demo
 
 To run a demo of a "cat" executable
