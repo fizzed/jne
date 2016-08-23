@@ -1,6 +1,9 @@
 Java Native Extractor by Fizzed
 ===============================
 
+#### 2.0.1 - 2016-08-23
+ - Verify temp dir exists (mpanthony)
+
 #### 2.0.0 - 2015-12-18
  - Refactored package to com.fizzed
  - Added slf4j for logging
