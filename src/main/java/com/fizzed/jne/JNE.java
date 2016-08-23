@@ -665,7 +665,7 @@ public class JNE {
      */
     static private File getOrCreateTempDirectory(boolean deleteOnExit) throws ExtractException {
         // return the single instance if already created
-        if (_tempDir != null) {
+        if ((_tempDir != null) && _tempDir.exists()) {
             return _tempDir;
         }
         
