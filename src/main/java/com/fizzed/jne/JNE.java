@@ -55,7 +55,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name) throws IOException, ExtractException {
+    synchronized static public File findExecutable(String name) throws IOException {
         return findExecutable(name, null, null);
     }
     
@@ -74,7 +74,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, String targetName) throws IOException, ExtractException {
+    synchronized static public File findExecutable(String name, String targetName) throws IOException {
         return findExecutable(name, targetName, null);
     }
     
@@ -91,7 +91,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, Options options) throws IOException, ExtractException {
+    synchronized static public File findExecutable(String name, Options options) throws IOException {
         return findExecutable(name, null, options);
     }
     
@@ -110,7 +110,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException, ExtractException {
+    synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
@@ -138,7 +138,7 @@ public class JNE {
      * Same as findExecutable but throws an exception if the executable was
      * not found.
      */
-    synchronized static public File requireExecutable(String name) throws IOException, ExtractException {
+    synchronized static public File requireExecutable(String name) throws IOException {
         return requireExecutable(name, null, null);
     }
     
@@ -146,7 +146,7 @@ public class JNE {
      * Same as findExecutable but throws an exception if the executable was
      * not found.
      */
-    synchronized static public File requireExecutable(String name, Options options) throws IOException, ExtractException {
+    synchronized static public File requireExecutable(String name, Options options) throws IOException {
         return requireExecutable(name, null, options);
     }
     
@@ -154,7 +154,7 @@ public class JNE {
      * Same as findExecutable but throws an exception if the executable was
      * not found.
      */
-    synchronized static public File requireExecutable(String name, String targetName, Options options) throws IOException, ExtractException {
+    synchronized static public File requireExecutable(String name, String targetName, Options options) throws IOException {
         File file = findExecutable(name, targetName, options);
         if (file == null) {
             throw new ResourceNotFoundException("Resource executable " + name + " not found");
@@ -183,7 +183,7 @@ public class JNE {
         try {
             // always search for specific arch first
             return find(fileName, null, options, options.getOperatingSystem(), options.getHardwareArchitecture());
-        } catch (IOException | ExtractException e) {
+        } catch (IOException e) {
             throw new UnsatisfiedLinkError(e.getMessage());
         }
     }
@@ -288,7 +288,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findFile(String name) throws IOException, ExtractException {
+    synchronized static public File findFile(String name) throws IOException {
         return JNE.findFile(name, null);
     }
     
@@ -311,7 +311,7 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findFile(String name, Options options) throws IOException, ExtractException {
+    synchronized static public File findFile(String name, Options options) throws IOException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
@@ -336,7 +336,7 @@ public class JNE {
      * Same as findFile but throws an exception if the file was
      * not found.
      */
-    synchronized static public File requireFile(String name) throws IOException, ExtractException {
+    synchronized static public File requireFile(String name) throws IOException {
         return JNE.requireFile(name, null);
     }
     
@@ -344,7 +344,7 @@ public class JNE {
      * Same as findFile but throws an exception if the file was
      * not found.
      */
-    synchronized static public File requireFile(String name, Options options) throws IOException, ExtractException {
+    synchronized static public File requireFile(String name, Options options) throws IOException {
         File file = findFile(name, options);
         if (file == null) {
             throw new ResourceNotFoundException("Resource file " + name + " not found");
@@ -365,7 +365,7 @@ public class JNE {
      * @throws IOException
      * @throws ExtractException 
      */
-    synchronized static public File find(String fileName, String targetFileName, Options options, OperatingSystem os, HardwareArchitecture arch) throws IOException, ExtractException {
+    synchronized static public File find(String fileName, String targetFileName, Options options, OperatingSystem os, HardwareArchitecture arch) throws IOException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
