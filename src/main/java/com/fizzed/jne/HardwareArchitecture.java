@@ -1,10 +1,10 @@
 package com.fizzed.jne;
 
-/*
+/*-
  * #%L
  * jne
  * %%
- * Copyright (C) 2015 Fizzed, Inc
+ * Copyright (C) 2016 - 2017 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ package com.fizzed.jne;
 /**
  * Architecture of hardware & operating system.
  */
-public enum Arch {
+public enum HardwareArchitecture {
     
     ANY,
     UNKNOWN,
@@ -31,20 +31,21 @@ public enum Arch {
     X64,
     SPARC;
     
-    public static Arch getArch() {
-        String osArch = System.getProperty("os.arch");
-        
-        if (osArch != null) {
-            osArch = osArch.toLowerCase();
-            if (osArch.contains("amd64") || osArch.contains("x86_64")) {
+    public static HardwareArchitecture detect() {
+        return parseSystemProperty(System.getProperty("os.arch"));
+    }
+    
+    public static HardwareArchitecture parseSystemProperty(String value) {
+        if (value != null) {
+            value = value.toLowerCase();
+            if (value.contains("amd64") || value.contains("x86_64")) {
                 return X64;
-            } else if (osArch.contains("i386") || osArch.contains("x86")) {
+            } else if (value.contains("i386") || value.contains("x86")) {
                 return X32;
-            } else if (osArch.contains("sparc")) {
+            } else if (value.contains("sparc")) {
                 return SPARC;
             }
         }
-        
         return UNKNOWN;
     }
 

@@ -1,10 +1,10 @@
 package com.fizzed.jne;
 
-/*
+/*-
  * #%L
  * jne
  * %%
- * Copyright (C) 2015 Fizzed, Inc
+ * Copyright (C) 2016 - 2017 Fizzed, Inc
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ package com.fizzed.jne;
 /**
  * Operating system that Java is running on.
  */
-public enum OS {
+public enum OperatingSystem {
     
+    ANY,
     UNKNOWN,
     WINDOWS,
     OSX,
@@ -33,26 +34,27 @@ public enum OS {
     OPENBSD,
     SOLARIS;
     
-    public static OS getOS() {
-        String osName = System.getProperty("os.name");
-        
-        if (osName != null) {
-            osName = osName.toLowerCase();
-            if (osName.contains("windows")) {
+    public static OperatingSystem detect() {
+        return parseSystemProperty(System.getProperty("os.name"));
+    }
+    
+    public static OperatingSystem parseSystemProperty(String value) {
+        if (value != null) {
+            value = value.toLowerCase();
+            if (value.contains("windows")) {
                 return WINDOWS;
-            } else if (osName.contains("mac") || osName.contains("darwin")) {
+            } else if (value.contains("mac") || value.contains("darwin")) {
                 return OSX;
-            } else if (osName.contains("linux")) {
+            } else if (value.contains("linux")) {
                 return LINUX;
-            } else if (osName.contains("sun") || osName.contains("solaris")) {
+            } else if (value.contains("sun") || value.contains("solaris")) {
                 return SOLARIS;
-            } else if (osName.contains("freebsd")) {
+            } else if (value.contains("freebsd")) {
                 return FREEBSD;
-            } else if (osName.contains("OPENBSD")) {
+            } else if (value.contains("OPENBSD")) {
                 return OPENBSD;
             }
         }
-        
 	return UNKNOWN;
     }
 

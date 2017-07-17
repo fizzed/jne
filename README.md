@@ -44,7 +44,7 @@ please see features below.
    jar dependency can support them all.
  - Support for finding executables (e.g. cat or cat.exe)
  - Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
- - Support for finding exact files (e.g. movie.swf)
+ - Support for finding generic files (e.g. movie.swf)
  - Use a one-time temporary directory for extracted executables (thus same apps
    running multiple instances get their own executable copy)
  - Specify a directory to extract executables to (useful for single instance
@@ -66,7 +66,7 @@ Published to maven central use the following
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -92,6 +92,7 @@ You can easily include these for use with JNE by putting them at
     src/main/resources/jne/osx/x64/cat
     src/main/resources/jne/linux/x32/cat
     src/main/resources/jne/linux/x64/cat
+    src/main/resources/jne/generic-resource.txt
 
 To find and extract these resources for use in your app
 
@@ -112,8 +113,12 @@ you would have the following example result:
     /tmp/1394227238992-0/mylib.so
     /tmp/1394227238992-0/myapp
 
+To extract a generic resource
+
+    File resourceFile = JNE.findFile("generic-resource.txt", options);
+
 ## License
 
-Copyright (C) 2015 Fizzed, Inc.
+Copyright (C) 2015+ Fizzed, Inc.
 
 This work is licensed under the Apache License, Version 2.0. See LICENSE for details.

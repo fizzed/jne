@@ -1,6 +1,14 @@
 Java Native Extractor by Fizzed
 ===============================
 
+#### 3.0.0 - 2017-07-17
+ - Bump parent to v2.1.0
+ - Add ANY enum for OS
+ - New `findFile` feature to extract generic resources
+ - Initial unit tests
+ - Renamed Arch class to HardwareArchitecture
+ - Renamed OS class to OperatingSystem
+
 #### 2.0.1 - 2016-08-23
  - Verify temp dir exists (mpanthony)
 
