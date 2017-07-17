@@ -134,6 +134,33 @@ public class JNE {
         return file;
     }
     
+    /**
+     * Same as findExecutable but throws an exception if the executable was
+     * not found.
+     */
+    synchronized static public File requireExecutable(String name) throws IOException, ExtractException {
+        return requireExecutable(name, null, null);
+    }
+    
+    /**
+     * Same as findExecutable but throws an exception if the executable was
+     * not found.
+     */
+    synchronized static public File requireExecutable(String name, Options options) throws IOException, ExtractException {
+        return requireExecutable(name, null, options);
+    }
+    
+    /**
+     * Same as findExecutable but throws an exception if the executable was
+     * not found.
+     */
+    synchronized static public File requireExecutable(String name, String targetName, Options options) throws IOException, ExtractException {
+        File file = findExecutable(name, targetName, options);
+        if (file == null) {
+            throw new ResourceNotFoundException("Resource executable " + name + " not found");
+        }
+        return file;
+    }
     
     synchronized static public File findLibrary(String name) {
         return findLibrary(name, null, null);
@@ -261,8 +288,8 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findFile(String fileName) throws IOException, ExtractException {
-        return JNE.findFile(fileName, null);
+    synchronized static public File findFile(String name) throws IOException, ExtractException {
+        return JNE.findFile(name, null);
     }
     
     /**
@@ -284,24 +311,44 @@ public class JNE {
      * @throws ExtractException Thrown if a runtime exception occurs while
      *      finding or extracting the executable.
      */
-    synchronized static public File findFile(String fileName, Options options) throws IOException, ExtractException {
+    synchronized static public File findFile(String name, Options options) throws IOException, ExtractException {
         if (options == null) {
             options = DEFAULT_OPTIONS;
         }
         
         // 1. try with os & arch
-        File file = JNE.find(fileName, fileName, options, options.getOperatingSystem(), options.getHardwareArchitecture());
+        File file = JNE.find(name, name, options, options.getOperatingSystem(), options.getHardwareArchitecture());
         
         // 2. try with os & any arch
         if (file == null) {
-            file = JNE.find(fileName, fileName, options, options.getOperatingSystem(), HardwareArchitecture.ANY);
+            file = JNE.find(name, name, options, options.getOperatingSystem(), HardwareArchitecture.ANY);
         }
         
         // 3. try with os & any arch
         if (file == null) {
-            file = JNE.find(fileName, fileName, options, OperatingSystem.ANY, HardwareArchitecture.ANY); 
+            file = JNE.find(name, name, options, OperatingSystem.ANY, HardwareArchitecture.ANY); 
         }
         
+        return file;
+    }
+    
+    /**
+     * Same as findFile but throws an exception if the file was
+     * not found.
+     */
+    synchronized static public File requireFile(String name) throws IOException, ExtractException {
+        return JNE.requireFile(name, null);
+    }
+    
+    /**
+     * Same as findFile but throws an exception if the file was
+     * not found.
+     */
+    synchronized static public File requireFile(String name, Options options) throws IOException, ExtractException {
+        File file = findFile(name, options);
+        if (file == null) {
+            throw new ResourceNotFoundException("Resource file " + name + " not found");
+        }
         return file;
     }
     
