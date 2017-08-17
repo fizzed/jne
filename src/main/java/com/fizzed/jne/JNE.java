@@ -31,6 +31,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +42,8 @@ public class JNE {
     static private final Logger log = LoggerFactory.getLogger(JNE.class);
 
     static public Options DEFAULT_OPTIONS = new Options();
-    static private final int TEMP_DIR_ATTEMPTS = 3;
-    static private File tempDirectory;
-    static private final ConcurrentHashMap<File, String> jarVersionHashes = new ConcurrentHashMap<>();
+    static private File TEMP_DIRECTORY;
+    static private final ConcurrentHashMap<File, String> JAR_VERSION_HASHES = new ConcurrentHashMap<>();
 
     /**
      * Finds (extracts if necessary) a named executable for the runtime
@@ -548,8 +549,8 @@ public class JNE {
         // get the file that points to the underlying jar for this resource
         File jarFile = JarUtil.getJarFileForResource(resource);
 
-        if (jarVersionHashes.containsKey(jarFile)) {
-            return jarVersionHashes.get(jarFile);
+        if (JAR_VERSION_HASHES.containsKey(jarFile)) {
+            return JAR_VERSION_HASHES.get(jarFile);
         } else {
             // calculate new hash for jar
             String manifestVersion = JarUtil.getManifestVersionNumber(jarFile);
@@ -564,7 +565,7 @@ public class JNE {
 
             String hash = hashBuilder.toString();
 
-            jarVersionHashes.put(jarFile, hash);
+            JAR_VERSION_HASHES.put(jarFile, hash);
 
             return hash;
         }
@@ -575,18 +576,34 @@ public class JNE {
      */
     static private File getOrCreateTempDirectory(boolean deleteOnExit) throws ExtractException {
         // return the single instance if already created
-        if ((tempDirectory != null) && tempDirectory.exists()) {
-            return tempDirectory;
+        if ((TEMP_DIRECTORY != null) && TEMP_DIRECTORY.exists()) {
+            return TEMP_DIRECTORY;
         }
 
         // use jvm supplied temp directory in case multiple jvms compete
+//        try {
+//            Path tempDirectory = Files.createTempDirectory("jne.");
+//            File tempDirectoryAsFile = tempDirectory.toFile();
+//            if (deleteOnExit) {
+//                tempDirectoryAsFile.deleteOnExit();
+//            }
+//            return tempDirectoryAsFile;
+//        } catch (IOException e) {
+//            throw new ExtractException("Unable to create temporary dir", e);
+//        }
+        
+        // use totally unique name to avoid race conditions
         try {
-            Path tempDirectory = Files.createTempDirectory("jne.");
+            Path baseDir = Paths.get(System.getProperty("java.io.tmpdir"));
+            Path tempDirectory = baseDir.resolve("jne." + UUID.randomUUID().toString());
+            Files.createDirectories(tempDirectory);
             File tempDirectoryAsFile = tempDirectory.toFile();
             if (deleteOnExit) {
                 tempDirectoryAsFile.deleteOnExit();
             }
-            return tempDirectoryAsFile;
+            // save temp directory so its only exactracted once
+            TEMP_DIRECTORY = tempDirectoryAsFile;
+            return TEMP_DIRECTORY;
         } catch (IOException e) {
             throw new ExtractException("Unable to create temporary dir", e);
         }
