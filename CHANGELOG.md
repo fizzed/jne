@@ -1,6 +1,11 @@
 Java Native Extractor by Fizzed
 ===============================
 
+#### 3.0.1 - 2017-08-18
+
+ - Only create temp dir a single time per JVM instance
+ - Use UUID for temp dir
+
 #### 3.0.0 - 2017-07-17
  - Bump parent to v2.1.0
  - Add ANY enum for OS
