@@ -4,7 +4,7 @@
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
     <packaging>jar</packaging>
-    <version>3.0.2-SNAPSHOT</version>
+    <version>3.0.3-SNAPSHOT</version>
     <name>jne</name>
     <description>Utility library for extracting native resources embedded in jars such as executables, dynamic libraries, or other files on Windows, Linux, and Mac.</description>
   

@@ -20,6 +20,9 @@ package com.fizzed.jne;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,6 +39,9 @@ import java.util.jar.Manifest;
  * @author joelauer
  */
 public class JarUtil {
+
+    static private final Logger log = LoggerFactory.getLogger(JarUtil.class);
+
     
     static public File getJarFileForResource(URL resource) throws IOException {
         if (!resource.getProtocol().equalsIgnoreCase("jar")) {
@@ -44,13 +50,13 @@ public class JarUtil {
         
         // e.g. file:/home/joelauer/.m2/repository/com/mfizz/mfz-jne-cat/1.0.0-SNAPSHOT/mfz-jne-cat-1.0.0-SNAPSHOT.jar!/jne/linux/x64/cat
         String file = resource.getFile();
-        int exclaimPos = file.lastIndexOf("!");
+        int exclaimPos = file.indexOf("!");
         if (exclaimPos < 0) {
             throw new IOException("Missing ! char (invalid jar resource)");
         }
         
         String tempJarFile = file.substring(0, exclaimPos);
-        //System.out.println("tempJarFile: " + tempJarFile);
+        log.debug("tempJarFile: " + tempJarFile);
         
         try {
             File jarFile = new File(new URL(tempJarFile).toURI());
