@@ -8,6 +8,7 @@
 [![Windows x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/windows-x64.yaml?branch=master&label=Windows%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/windows-x64.yaml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.fizzed/jne?style=flat-square)](https://mvnrepository.com/artifact/com.fizzed/jne)
 
+
 [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
 
 ## Overview
