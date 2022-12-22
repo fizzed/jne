@@ -51,7 +51,7 @@ public enum OperatingSystem {
                 return SOLARIS;
             } else if (value.contains("freebsd")) {
                 return FREEBSD;
-            } else if (value.contains("OPENBSD")) {
+            } else if (value.contains("openbsd")) {
                 return OPENBSD;
             }
         }

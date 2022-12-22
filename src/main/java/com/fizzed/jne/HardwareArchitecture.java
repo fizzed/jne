@@ -29,6 +29,8 @@ public enum HardwareArchitecture {
     UNKNOWN,
     X32,
     X64,
+    ARM32,
+    ARM64,
     SPARC;
     
     public static HardwareArchitecture detect() {
@@ -42,6 +44,10 @@ public enum HardwareArchitecture {
                 return X64;
             } else if (value.contains("i386") || value.contains("x86")) {
                 return X32;
+            } else if (value.contains("aarch64")) {
+                return ARM64;
+            } else if (value.contains("aarch32")) {
+                return ARM32;
             } else if (value.contains("sparc")) {
                 return SPARC;
             }
