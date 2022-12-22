@@ -1,9 +1,9 @@
 workflows:
   build:
+    name: MacOS arm64
     instance_type: mac_mini_m1
     triggering:
       events:
-        - push
         - pull_request
     scripts:
       - name: Setup Java 11
