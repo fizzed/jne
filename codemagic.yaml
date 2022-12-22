@@ -1,6 +1,10 @@
 workflows:
   build:
     instance_type: mac_mini_m1
+    triggering:
+      events:
+        - push
+        - pull_request
     scripts:
       - name: Setup Java 11
         script: export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home
