@@ -1,5 +1,5 @@
 workflows:
-  my-workflow:
+  build:
     instance_type: mac_mini_m1
     scripts:
       - name: Setup Java 11
