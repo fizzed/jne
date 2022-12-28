@@ -12,8 +12,6 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - uses: uraimo/run-on-arch-action@v2
-        name: Arm64 QEMU
-        id: runcmd
         with:
           arch: aarch64
           distro: ubuntu18.04
@@ -22,8 +20,8 @@ jobs:
             --volume "~/.m2:/root/.m2" --volume "${PWD}:/mnt"
           install: |
             apt-get update
-            apt-get -y install openjdk-11-jdk-headless git curl
-            curl -O https://raw.githubusercontent.com/jjlauer/provisioning/master/linux/bootstrap-maven.sh
+            apt-get -y install openjdk-11-jdk-headless git curl wget gzip
+            wget https://raw.githubusercontent.com/jjlauer/provisioning/master/linux/bootstrap-maven.sh
             chmod +x ./bootstrap-maven.sh
             ./bootstrap-maven.sh
           run: |
