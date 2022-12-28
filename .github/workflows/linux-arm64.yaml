@@ -19,5 +19,6 @@ jobs:
             apt-get update
             apt-get -y install openjdk-11-jdk-headless maven
           run: |
-            cd /mnt
-            mvn test
+            whoami
+            #cd /mnt
+            #mvn test
