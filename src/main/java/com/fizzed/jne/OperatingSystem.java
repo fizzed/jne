@@ -25,15 +25,25 @@ package com.fizzed.jne;
  */
 public enum OperatingSystem {
     
-    ANY,
-    UNKNOWN,
-    WINDOWS,
-    OSX,            // macos
-    LINUX,
-    FREEBSD,
-    OPENBSD,
-    SOLARIS;
-    
+    ANY(null),
+    UNKNOWN(null),
+    WINDOWS(null),
+    MACOS(new String[]{"osx"}),
+    LINUX(null),
+    FREEBSD(null),
+    OPENBSD(null),
+    SOLARIS(null);
+
+    private final String[] aliases;
+
+    OperatingSystem(String[] aliases) {
+        this.aliases = aliases;
+    }
+
+    public String[] getAliases() {
+        return aliases;
+    }
+
     public static OperatingSystem detect() {
         return parseSystemProperty(System.getProperty("os.name"));
     }
@@ -44,7 +54,7 @@ public enum OperatingSystem {
             if (value.contains("windows")) {
                 return WINDOWS;
             } else if (value.contains("mac") || value.contains("darwin")) {
-                return OSX;
+                return MACOS;
             } else if (value.contains("linux")) {
                 return LINUX;
             } else if (value.contains("sun") || value.contains("solaris")) {

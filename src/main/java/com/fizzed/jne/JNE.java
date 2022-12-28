@@ -32,6 +32,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
@@ -387,24 +389,31 @@ public class JNE {
             targetFileName = fileName;
         }
 
-        log.debug("finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
+        log.debug("Finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
 
         //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
-        String resourcePath = options.createResourcePath(os, arch, fileName);
+        // Full matrix of os + arch resources we will search for
+        final List<String> resourcePaths = options.createResourcePaths(os, arch, fileName);
+        URL url = null;
+        for (String resourcePath : resourcePaths) {
+            log.debug("Finding resource [" + resourcePath + "]");
 
-        log.debug("finding resource [" + resourcePath + "]");
+            url = JNE.class.getResource(resourcePath);
+            if (url != null) {
+                break;      // we are done
+            }
+        }
 
-        URL url = JNE.class.getResource(resourcePath);
         if (url == null) {
-            log.debug("resource [" + resourcePath + "] not found");
+            log.debug("Unable to locate any resource of {}", resourcePaths);
             return null;
         }
 
         // support for "file" and "jar"
-        log.debug("resource found @ " + url);
+        log.debug("Resource found @ " + url);
 
         if (url.getProtocol().equals("jar")) {
-            log.debug("resource in jar; extracting file if necessary...");
+            log.debug("Resource in jar; extracting file if necessary...");
 
             // in the case of where the app specifies an extract directory and
             // does not request deleteOnExit we need a way to detect if the 
@@ -412,7 +421,7 @@ public class JNE {
             // a very basic "hash" for an extracted resource. We basically combine
             // the path of the jar and manifest version of when the exe was extracted
             String versionHash = getJarVersionHashForResource(url);
-            log.debug("version hash [" + versionHash + "]");
+            log.debug("Version hash [" + versionHash + "]");
 
             // where should we extract the executable?
             File d = options.getExtractDir();
@@ -428,7 +437,7 @@ public class JNE {
                 }
             }
 
-            log.debug("using dir [" + d + "]");
+            log.debug("Using dir [" + d + "]");
 
             // create both target exe and hash files
             File exeFile = new File(d, targetFileName);
@@ -436,7 +445,7 @@ public class JNE {
 
             // if file already exists verify its hash
             if (exeFile.exists()) {
-                log.debug("file already exists; verifying if hash matches");
+                log.debug("File already exists; verifying if hash matches");
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -445,12 +454,12 @@ public class JNE {
                     // hash file exists, verify it matches what we expect
                     String existingHash = readFileToString(exeHashFile);
                     if (existingHash == null || !existingHash.equals(versionHash)) {
-                        log.debug("hash mismatch; deleting files; will freshly extract file");
+                        log.debug("Hash mismatch; deleting files; will freshly extract file");
                         // hash mismatch -- will force an overwrite of both files
                         exeFile.delete();
                         exeHashFile.delete();
                     } else {
-                        log.debug("hash matches; will use existing file");
+                        log.debug("Hash matches; will use existing file");
                         // hash match (exeFile and exeHashFile are both perrrrfect)
                         //System.out.println("exe already extracted AND hash matched -- reusing same exe");
                         return exeFile;
@@ -461,46 +470,46 @@ public class JNE {
             // does exe already exist? (previously extracted)
             if (!exeFile.exists()) {
                 try {
-                    log.debug("extracting [" + url + "] to [" + exeFile + "]...");
+                    log.debug("Extracting [" + url + "] to [" + exeFile + "]...");
                     extractTo(url, exeFile);
 
                     // set file to "executable"
-                    log.debug("setting to executable");
+                    log.debug("Setting to executable");
                     exeFile.setExecutable(true);
 
                     // create corrosponding hash file
-                    log.debug("writing hash file");
+                    log.debug("Writing hash file");
                     writeStringToFile(exeHashFile, versionHash);
 
                     // schedule files for deletion?
                     if (options.isCleanupExtracted()) {
-                        log.debug("scheduling file and hash for delete on exit");
+                        log.debug("Scheduling file and hash for delete on exit");
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }
                 } catch (IOException e) {
-                    log.debug("failed to extract file");
+                    log.debug("Failed to extract file");
                     throw new ExtractException("Unable to cleanly extract executable from jar", e);
                 }
             }
 
-            log.debug("returning [" + exeFile + "]");
+            log.debug("Returning [" + exeFile + "]");
             return exeFile;
         } else if (url.getProtocol().equals("file")) {
-            log.debug("resource in file");
+            log.debug("Resource in file");
             try {
                 File exeFile = new File(url.toURI());
                 if (!exeFile.canExecute()) {
-                    log.debug("setting file to executable");
+                    log.debug("Setting file to executable");
                     if (!exeFile.setExecutable(true)) {
-                        log.debug("unable to cleanly set file to executable");
+                        log.debug("Unable to cleanly set file to executable");
                         throw new ExtractException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
                     }
                 }
-                log.debug("returning [" + exeFile + "]");
+                log.debug("Returning [" + exeFile + "]");
                 return exeFile;
             } catch (URISyntaxException e) {
-                log.debug("uri syntax error");
+                log.debug("URL syntax error");
                 throw new ExtractException("Unable to create executable file from uri", e);
             }
         } else {

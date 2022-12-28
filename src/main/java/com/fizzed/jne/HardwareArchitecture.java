@@ -25,16 +25,26 @@ package com.fizzed.jne;
  */
 public enum HardwareArchitecture {
     
-    ANY,
-    UNKNOWN,
-    X32,
-    X64,        // also known as amd64 or x86_64
-    ARM32SF,    // ARMEL, ARM 32-bit SF v6, v7, v5
-    ARM32HF,    // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
-    ARM64,      // aarch64
-    RISCV64,
-    SPARC;
-    
+    ANY(null),
+    UNKNOWN(null),
+    X32(new String[]{"i386"}),
+    X64(new String[]{"x86_64"}),       // also known as amd64 or x86_64
+    ARM32SF(null),                      // ARMEL, ARM 32-bit SF v6, v7, v5
+    ARM32HF(null),                      // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
+    ARM64(new String[]{"aarch64"}),           // aarch64
+    RISCV64(null),
+    SPARC(null);
+
+    private final String[] aliases;
+
+    HardwareArchitecture(String[] aliases) {
+        this.aliases = aliases;
+    }
+
+    public String[] getAliases() {
+        return aliases;
+    }
+
     public static HardwareArchitecture detect() {
         return parseSystemProperty(System.getProperty("os.arch"));
     }

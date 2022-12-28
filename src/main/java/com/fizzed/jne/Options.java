@@ -21,6 +21,9 @@ package com.fizzed.jne;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Options {
     
@@ -150,14 +153,14 @@ public class Options {
                     }
                 }
                 return soname;
-            case OSX:
+            case MACOS:
                 return "lib" + name + ".dylib";
             default:
                 return name;
         }
     }
 
-    public String createResourcePath(OperatingSystem os, HardwareArchitecture arch, String name) {
+    /*public String createResourcePath(OperatingSystem os, HardwareArchitecture arch, String name) {
         StringBuilder s = new StringBuilder();
         s.append(getResourcePrefix());
         s.append("/");
@@ -173,6 +176,52 @@ public class Options {
         }
         s.append(name);
         return s.toString();
+    }*/
+
+    public List<String> createResourcePaths(OperatingSystem os, HardwareArchitecture arch, String name) {
+        final List<String> osList = new ArrayList<>();
+        if (os != null && os != OperatingSystem.ANY) {
+            osList.add(os.name().toLowerCase());
+            if (os.getAliases() != null) {
+                Collections.addAll(osList, os.getAliases());
+            }
+        } else {
+            osList.add(null);
+        }
+
+        final List<String> archList = new ArrayList<>();
+        if (arch != null && arch != HardwareArchitecture.ANY) {
+            archList.add(arch.name().toLowerCase());
+            if (arch.getAliases() != null) {
+                Collections.addAll(archList, arch.getAliases());
+            }
+        } else {
+            archList.add(null);
+        }
+
+        final List<String> resourcePaths = new ArrayList<>();
+
+        for (String _os : osList) {
+            for (String _arch : archList) {
+                StringBuilder s = new StringBuilder();
+                s.append(getResourcePrefix());
+                s.append("/");
+                // only append os if its not null and not any...
+                if (_os != null) {
+                    s.append(_os);
+                    s.append("/");
+                    // only append arch if its not null and not any...
+                    if (_arch != null) {
+                        s.append(_arch);
+                        s.append("/");
+                    }
+                }
+                s.append(name);
+                resourcePaths.add(s.toString());
+            }
+        }
+
+        return resourcePaths;
     }
     
     static private File getSystemPropertyAsFile(String key, File defaultValue) {
