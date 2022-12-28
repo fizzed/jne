@@ -48,6 +48,8 @@ public enum HardwareArchitecture {
                 return X32;
             } else if (value.contains("aarch64")) {
                 return ARM64;
+            } else if (value.contains("riscv64")) {
+                return RISCV64;
             /*} else if (value.contains("aarch32")) {
                 return ARM32;*/
             } else if (value.contains("sparc")) {
