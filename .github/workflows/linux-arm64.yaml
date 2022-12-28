@@ -25,5 +25,6 @@ jobs:
             chmod +x ./bootstrap-maven.sh
             ./bootstrap-maven.sh
           run: |
+            export PATH=$PATH:/opt/maven/current/bin
             cd /mnt
             mvn test
