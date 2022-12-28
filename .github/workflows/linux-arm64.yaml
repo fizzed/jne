@@ -1,0 +1,23 @@
+name: Linux arm64
+on:
+  push
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: uraimo/run-on-arch-action@v2
+        name: Arm64 QEMU
+        id: runcmd
+        with:
+          arch: aarch64
+          distro: ubuntu18.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/mnt"
+          install: |
+            apt-get update
+            apt-get -y install openjdk-11-jdk-headless maven
+          run: |
+            cd /mnt
+            mvn test

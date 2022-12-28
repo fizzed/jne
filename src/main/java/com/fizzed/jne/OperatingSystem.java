@@ -28,7 +28,7 @@ public enum OperatingSystem {
     ANY,
     UNKNOWN,
     WINDOWS,
-    OSX,
+    OSX,            // macos
     LINUX,
     FREEBSD,
     OPENBSD,

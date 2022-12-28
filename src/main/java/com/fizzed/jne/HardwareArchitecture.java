@@ -28,9 +28,11 @@ public enum HardwareArchitecture {
     ANY,
     UNKNOWN,
     X32,
-    X64,
-    ARM32,
-    ARM64,
+    X64,        // also known as amd64 or x86_64
+    ARM32SF,    // ARMEL, ARM 32-bit SF v6, v7, v5
+    ARM32HF,    // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
+    ARM64,      // aarch64
+    RISCV64,
     SPARC;
     
     public static HardwareArchitecture detect() {
@@ -42,12 +44,12 @@ public enum HardwareArchitecture {
             value = value.toLowerCase();
             if (value.contains("amd64") || value.contains("x86_64")) {
                 return X64;
-            } else if (value.contains("i386") || value.contains("x86")) {
+            } else if (value.contains("i386") || value.contains("i686") || value.contains("x86")) {
                 return X32;
             } else if (value.contains("aarch64")) {
                 return ARM64;
-            } else if (value.contains("aarch32")) {
-                return ARM32;
+            /*} else if (value.contains("aarch32")) {
+                return ARM32;*/
             } else if (value.contains("sparc")) {
                 return SPARC;
             }

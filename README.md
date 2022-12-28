@@ -8,7 +8,6 @@
 [![Windows x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/windows-x64.yaml?branch=master&label=Windows%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/windows-x64.yaml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.fizzed/jne?style=flat-square)](https://mvnrepository.com/artifact/com.fizzed/jne)
 
-
 [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
 
 ## Overview
@@ -124,6 +123,28 @@ you would have the following example result:
 To extract a generic resource
 
     File resourceFile = JNE.findFile("generic-resource.txt", options);
+
+## Development
+
+You can use an Ubuntu x86_64 host to test a wide variety of hardware architectures and operating systems.
+Install QEMU and various emulators: https://www.stereolabs.com/docs/docker/building-arm-container-on-x86/
+
+    sudo apt-get install qemu binfmt-support qemu-user-static
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+This will now register docker to be able to detect and run various architectures automatically. You can now try it out:
+
+    docker run --rm -t arm64v8/ubuntu dpkg --print-architecture       #arm64
+    docker run --rm -t arm32v7/debian dpkg --print-architecture       #armhf
+    docker run --rm -t arm32v5/debian dpkg --print-architecture       #armel
+    docker run --rm -t riscv64/ubuntu dpkg --print-architecture       #riscv64
+    docker run --rm -t i386/ubuntu dpkg --print-architecture          #i386
+
+If you'd like to try various Java system properties to see what they'd look like:
+
+    docker run --rm -t riscv64/ubuntu
+    apt update
+    apt install openjdk-11-jdk-headless
 
 ## License
 
