@@ -12,7 +12,7 @@
 
 ## Overview
 
-Utility Java library for finding, extracting, and using os and architecture
+Java library (targeting 6+, plus 8, 11, and 17 etc) for finding, extracting, and using os and architecture
 dependent files (executables, libraries, and/or other files) that are packaged
 as resources within jar files. Allows them to be easily included as part of a
 Java application and intelligently extracted for use at runtime. This library makes
@@ -31,12 +31,12 @@ The library would search for the resource using the following path
 
     /jne/<os>/<arch>/<exe>
 
-If found the resource would be intelligently extracted (only if its changed) to
-a temporary directory so it can be executed.
+If found the resource would be intelligently extracted to a temporary directory so it
+can be executed.
 
     /tmp/1394227238992-0/cat
 
-Where "os" would be either "windows", "osx", or "linux" and "arch" would either
+Where "os" would be something such as "windows", "macos", or "linux" and "arch" could
 be "x32" or "x64". If we were running on Linux with a 64-bit operating system
 then the library would search for "/jne/linux/x64/cat". If found and contained
 within a jar file then this executable would be extracted to either a specific
@@ -64,6 +64,23 @@ please see features below.
    executable is not found/included.  Useful in the case where an x86 executable
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
+
+## Hardware Architecture
+
+Since this library targets finding or loading libraries for use within a JVM, the
+supported hardware architectures match what you'd typically find JDK distributors
+call their architectures.
+
+| Arch      | Description                                                                | Docker           |
+|-----------|----------------------------------------------------------------------------|------------------|
+| x32       | 32-bit i386, i486, i686, etc.                                              | i386/debian      |
+| x64       | 64-bit. Can also use x86_64, amd64 in resource path                        |                  |
+| armel     | 32-bit armv4, armv5, armv6 w/ soft float support. E.g. Raspberry Pi 1      | arm32v5/debian   |
+| armhf     | 32-bit armv7 w/ hard float support. E.g. Raspberry Pi 2                    | arm32v7/debian   |
+| arm64     | 64-bit. Can also use aarch64 in resource path. E.g. Mac M1, Raspberry 3, 4 | arm64v8/ubuntu   |
+| mips64le  | 64-bit mips                                                                | mips64le/debian  |
+| riscv64   | 64-bit risc-v                                                              | riscv64/ubuntu   |
+
 
 ## Usage
 
@@ -142,9 +159,11 @@ This will now register docker to be able to detect and run various architectures
 
 If you'd like to try various Java system properties to see what they'd look like:
 
-    docker run --rm -t riscv64/ubuntu
+    docker run --rm -it riscv64/ubuntu
     apt update
     apt install openjdk-11-jdk-headless
+    jshell
+    System.getProperties().forEach((k, v) -> { System.out.printf("%s: %s\n", k, v); })
 
 ## License
 

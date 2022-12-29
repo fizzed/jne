@@ -35,6 +35,7 @@ public class Options {
     
     private HardwareArchitecture hardwareArchitecture;
     private OperatingSystem operatingSystem;
+    private LinuxLibC linuxLibC;
     private String resourcePrefix;
     private File extractDir;
     private boolean x32ExecutableFallback;
@@ -44,6 +45,7 @@ public class Options {
         // defaults
         this.operatingSystem = PlatformInfo.detectOperatingSystem();
         this.hardwareArchitecture = PlatformInfo.detectHardwareArchitecture();
+        this.linuxLibC = PlatformInfo.detectLinuxLibC();
         this.resourcePrefix = System.getProperty(SYSPROP_RESOURCE_PREFIX, "/jne");
         this.extractDir = getSystemPropertyAsFile(SYSPROP_EXTRACT_DIR, null);
         this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, true);
@@ -65,6 +67,15 @@ public class Options {
 
     public Options setOperatingSystem(OperatingSystem operatingSystem) {
         this.operatingSystem = operatingSystem;
+        return this;
+    }
+
+    public LinuxLibC getLinuxLibC() {
+        return linuxLibC;
+    }
+
+    public Options setLinuxLibC(LinuxLibC linuxLibC) {
+        this.linuxLibC = linuxLibC;
         return this;
     }
 
@@ -178,12 +189,17 @@ public class Options {
         return s.toString();
     }*/
 
-    public List<String> createResourcePaths(OperatingSystem os, HardwareArchitecture arch, String name) {
+    public List<String> createResourcePaths(OperatingSystem os, HardwareArchitecture arch, LinuxLibC linuxLibC, String name) {
         final List<String> osList = new ArrayList<>();
         if (os != null && os != OperatingSystem.ANY) {
-            osList.add(os.name().toLowerCase());
+            // do we need to append the linux libc on?
+            final String osExtendedName = linuxLibC != null && linuxLibC != LinuxLibC.GLIBC ? "_"+linuxLibC.name().toLowerCase() : "";
+
+            osList.add(os.name().toLowerCase() + osExtendedName);
             if (os.getAliases() != null) {
-                Collections.addAll(osList, os.getAliases());
+                for (String alias : os.getAliases()) {
+                    osList.add(alias + osExtendedName);
+                }
             }
         } else {
             osList.add(null);

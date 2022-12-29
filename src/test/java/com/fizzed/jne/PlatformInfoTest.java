@@ -52,8 +52,8 @@ public class PlatformInfoTest {
 
     @Test
     public void detectHardwareArchitectureFromValues() {
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("amd64"), is(HardwareArchitecture.X64));
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah"), is(HardwareArchitecture.UNKNOWN));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("amd64", null), is(HardwareArchitecture.X64));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null), is(HardwareArchitecture.UNKNOWN));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class PlatformInfoTest {
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
         assumeTrue(operatingSystem == OperatingSystem.LINUX);
 
-        LinuxLibC libc = PlatformInfo.doDetectLinuxLibC();
+        LinuxLibC libc = PlatformInfo.detectLinuxLibC();
 
         assertThat(libc, is(not(nullValue())));
         assertThat(libc, is(not(LinuxLibC.UNKNOWN)));

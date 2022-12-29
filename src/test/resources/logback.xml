@@ -28,9 +28,9 @@
     </encoder>
   </appender>
 
-  <logger name="com.fizzed" level="DEBUG"/>
+  <logger name="com.fizzed" level="TRACE"/>
 
-  <root level="INFO">
+  <root level="TRACE">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>

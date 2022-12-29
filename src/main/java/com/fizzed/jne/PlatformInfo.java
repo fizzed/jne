@@ -61,12 +61,12 @@ public class PlatformInfo {
         final String osName = System.getProperty("os.name");
 
         final long now = System.currentTimeMillis();
-        log.debug("Trying to detect operating system via system property [{}]", osName);
+        log.trace("Trying to detect operating system via system property [{}]", osName);
 
         final OperatingSystem operatingSystem = detectOperatingSystemFromValues(osName);
 
         if (operatingSystem != OperatingSystem.UNKNOWN) {
-            log.warn("Detected operating system {} in {} ms", operatingSystem, (System.currentTimeMillis() - now));
+            log.debug("Detected operating system {} in {} ms", operatingSystem, (System.currentTimeMillis() - now));
         } else {
             log.warn("Unable to detect operating system in {} ms", (System.currentTimeMillis() - now));
         }
@@ -120,14 +120,15 @@ public class PlatformInfo {
 
     static HardwareArchitecture doDetectHardwareArchitecture() {
         final String osArch = System.getProperty("os.arch");
+        final LinuxMappedFilesResult linuxMappedFilesResult = detectLinuxMappedFiles();
 
         final long now = System.currentTimeMillis();
-        log.debug("Trying to detect hardware architecture via system property [{}]", osArch);
+        log.trace("Trying to detect hardware architecture via system property [{}]", osArch);
 
-        HardwareArchitecture hardwareArchitecture = detectHardwareArchitectureFromValues(osArch);
+        HardwareArchitecture hardwareArchitecture = detectHardwareArchitectureFromValues(osArch, linuxMappedFilesResult);
 
         if (hardwareArchitecture != HardwareArchitecture.UNKNOWN) {
-            log.warn("Detected operating system {} in {} ms", hardwareArchitecture, (System.currentTimeMillis() - now));
+            log.debug("Detected operating system {} in {} ms", hardwareArchitecture, (System.currentTimeMillis() - now));
         } else {
             log.warn("Unable to detect operating system in {} ms", (System.currentTimeMillis() - now));
         }
@@ -135,7 +136,7 @@ public class PlatformInfo {
         return hardwareArchitecture;
     }
 
-    public static HardwareArchitecture detectHardwareArchitectureFromValues(String osArch) {
+    static public HardwareArchitecture detectHardwareArchitectureFromValues(String osArch, LinuxMappedFilesResult linuxMappedFilesResult) {
         if (osArch != null) {
             osArch = osArch.toLowerCase();
             if (osArch.contains("amd64") || osArch.contains("x86_64")) {
@@ -144,12 +145,16 @@ public class PlatformInfo {
                 return HardwareArchitecture.X32;
             } else if (osArch.contains("aarch64")) {
                 return HardwareArchitecture.ARM64;
+            } else if (osArch.contains("arm") || osArch.contains("aarch32")) {
+                // unfortunately, this arch is used for ARMEL vs ARMHF, we can leverage the mapped files on linux to help differentiate
+                log.trace("System property arch [{}] is ambiguous, will try linux mapped files", osArch);
+                if (linuxMappedFilesResult != null && linuxMappedFilesResult.getArch() != null) {
+                    return linuxMappedFilesResult.getArch();
+                }
             } else if (osArch.contains("riscv64")) {
                 return HardwareArchitecture.RISCV64;
-            /*} else if (value.contains("aarch32")) {
-                return ARM32;*/
-            } else if (osArch.contains("sparc")) {
-                return HardwareArchitecture.SPARC;
+            } else if (osArch.contains("s390x")) {
+                return HardwareArchitecture.S390X;
             }
         }
         return HardwareArchitecture.UNKNOWN;
@@ -170,7 +175,7 @@ public class PlatformInfo {
                 // another thread may have won out detecting, so we check it again
                 linuxLibC = linuxLibCRef.get();
                 if (linuxLibC == null) {
-                    linuxLibC = doDetectLinuxLibC();
+                    linuxLibC = detectLinuxMappedFiles().getLibc();
                     linuxLibCRef.set(linuxLibC);
                 }
             }
@@ -179,11 +184,55 @@ public class PlatformInfo {
         return linuxLibC;
     }
 
-    static LinuxLibC doDetectLinuxLibC() {
+
+    static public class LinuxMappedFilesResult {
+        private LinuxLibC libc;
+        private HardwareArchitecture arch;
+
+        public LinuxLibC getLibc() {
+            return libc;
+        }
+
+        public void setLibc(LinuxLibC libc) {
+            this.libc = libc;
+        }
+
+        public HardwareArchitecture getArch() {
+            return arch;
+        }
+
+        public void setArch(HardwareArchitecture arch) {
+            this.arch = arch;
+        }
+    }
+
+    static private final AtomicReference<LinuxMappedFilesResult> mappedFilesResultRef = new AtomicReference<>();
+
+    static public LinuxMappedFilesResult detectLinuxMappedFiles() {
+        // double lock prevention of only detecting this one time
+        LinuxMappedFilesResult result = mappedFilesResultRef.get();
+
+        if (result == null) {
+            synchronized (PlatformInfo.class) {
+                // another thread may have won out detecting, so we check it again
+                result = mappedFilesResultRef.get();
+                if (result == null) {
+                    result = doDetectLinuxMappedFiles();
+                    mappedFilesResultRef.set(result);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static LinuxMappedFilesResult doDetectLinuxMappedFiles() {
         // helpful technique discovered from https://github.com/xerial/sqlite-jdbc/blob/master/src/main/java/org/sqlite/util/OSInfo.java
+        // can be used for both ARMEL vs ARMHF detection, as well as GLIBC vs. MUSL
         final long now = System.currentTimeMillis();
         final Path mapFilesDir = Paths.get("/proc/self/map_files");
-        log.debug("Trying to detect libc via [{}]", mapFilesDir);
+        log.trace("Trying to detect libc/arch via [{}]", mapFilesDir);
+        final LinuxMappedFilesResult result = new LinuxMappedFilesResult();
         boolean possiblyFoundGlibc = false;
         try {
             if (Files.exists(mapFilesDir)) {
@@ -191,12 +240,23 @@ public class PlatformInfo {
                 if (mapFiles != null) {
                     for (File mapFile : mapFiles) {
                         try {
-                            String realMapFilePath = mapFile.toPath().toRealPath().toString();
-                            if (realMapFilePath.toLowerCase().contains("musl")) {
+                            final String _realMapFilePath = mapFile.toPath().toRealPath().toString();
+                            log.trace("Analyzing file {}", _realMapFilePath);
+                            final String realMapFilePath = _realMapFilePath.toLowerCase();
+
+                            if (realMapFilePath.contains("musl")) {
                                 log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
-                                return LinuxLibC.MUSL;
-                            } else if (realMapFilePath.toLowerCase().contains("/libc.")) {
+                                result.setLibc(LinuxLibC.MUSL);
+                            } else if (realMapFilePath.contains("/libc")) {
                                 possiblyFoundGlibc = true;
+                            }
+
+                            if (realMapFilePath.contains("armhf") || realMapFilePath.contains("arm-linux-gnueabihf")) {
+                                log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
+                                result.setArch(HardwareArchitecture.ARMHF);
+                            } else if (realMapFilePath.contains("armel")) {
+                                log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
+                                result.setArch(HardwareArchitecture.ARMEL);
                             }
                         } catch (IOException e) {
                             // ignore this
@@ -210,11 +270,16 @@ public class PlatformInfo {
 
         if (possiblyFoundGlibc) {
             log.debug("Detected GLIBC libc in {} ms", (System.currentTimeMillis() - now));
-            return LinuxLibC.GLIBC;
+            //return LinuxLibC.GLIBC;
+            result.setLibc(LinuxLibC.GLIBC);
         }
 
-        log.warn("Unable to detect libc in {} ms", (System.currentTimeMillis() - now));
-        return LinuxLibC.UNKNOWN;
+        if (result.getLibc() == null) {
+            log.warn("Unable to detect libc in {} ms", (System.currentTimeMillis() - now));
+            result.setLibc(LinuxLibC.UNKNOWN);
+        }
+
+        return result;
     }
 
 }

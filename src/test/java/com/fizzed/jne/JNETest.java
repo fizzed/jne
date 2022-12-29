@@ -38,6 +38,7 @@ public class JNETest {
         // specific os & arch
         options.setOperatingSystem(OperatingSystem.LINUX);
         options.setHardwareArchitecture(HardwareArchitecture.X64);
+        options.setLinuxLibC(null);
         
         File file;
         
@@ -64,6 +65,7 @@ public class JNETest {
         // specific os & arch
         options.setOperatingSystem(OperatingSystem.LINUX);
         options.setHardwareArchitecture(HardwareArchitecture.X64);
+        options.setLinuxLibC(null);
         
         File file;
         

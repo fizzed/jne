@@ -262,7 +262,7 @@ public class JNE {
         try {
             f = findLibrary(name, options, majorVersion);
         } catch (Exception e) {
-            log.debug("exception while finding library: " + e.getMessage());
+            log.debug("Exception while finding library: " + e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
 
@@ -272,15 +272,15 @@ public class JNE {
             // and the user would be required to provide a valid LD_LIBRARY_PATH when
             // launching the java process -- we don't need to do use loadLibrary
             // and can just tell it to load a specific library file
-            log.debug("System.load(" + f.getAbsolutePath() + ")");
+            log.trace("System.load(" + f.getAbsolutePath() + ")");
             System.load(f.getAbsolutePath());
         } else {
-            log.debug("falling back to System.loadLibrary(" + name + ")");
+            log.trace("Falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
             System.loadLibrary(name);
         }
 
-        log.debug("library [" + name + "] loaded!");
+        log.debug("Library [" + name + "] loaded!");
     }
 
     /**
@@ -389,14 +389,13 @@ public class JNE {
             targetFileName = fileName;
         }
 
-        log.debug("Finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
+        log.trace("Finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
 
-        //String resourcePath = options.getResourcePrefix() + "/" + os.name().toLowerCase() + "/" + arch.name().toLowerCase() + "/" + name;
-        // Full matrix of os + arch resources we will search for
-        final List<String> resourcePaths = options.createResourcePaths(os, arch, fileName);
+        // Full matrix of os + arch resources we will search for, in prioritized order
+        final List<String> resourcePaths = options.createResourcePaths(os, arch, options.getLinuxLibC(), fileName);
         URL url = null;
         for (String resourcePath : resourcePaths) {
-            log.debug("Finding resource [" + resourcePath + "]");
+            log.trace("Finding resource [" + resourcePath + "]");
 
             url = JNE.class.getResource(resourcePath);
             if (url != null) {
@@ -410,10 +409,10 @@ public class JNE {
         }
 
         // support for "file" and "jar"
-        log.debug("Resource found @ " + url);
+        log.trace("Resource found @ " + url);
 
         if (url.getProtocol().equals("jar")) {
-            log.debug("Resource in jar; extracting file if necessary...");
+            log.trace("Resource in jar; extracting file if necessary...");
 
             // in the case of where the app specifies an extract directory and
             // does not request deleteOnExit we need a way to detect if the 
@@ -421,7 +420,7 @@ public class JNE {
             // a very basic "hash" for an extracted resource. We basically combine
             // the path of the jar and manifest version of when the exe was extracted
             String versionHash = getJarVersionHashForResource(url);
-            log.debug("Version hash [" + versionHash + "]");
+            log.trace("Version hash [" + versionHash + "]");
 
             // where should we extract the executable?
             File d = options.getExtractDir();
@@ -437,7 +436,7 @@ public class JNE {
                 }
             }
 
-            log.debug("Using dir [" + d + "]");
+            log.trace("Using dir [" + d + "]");
 
             // create both target exe and hash files
             File exeFile = new File(d, targetFileName);
@@ -445,7 +444,7 @@ public class JNE {
 
             // if file already exists verify its hash
             if (exeFile.exists()) {
-                log.debug("File already exists; verifying if hash matches");
+                log.trace("File already exists; verifying if hash matches");
                 // verify the version hash still matches
                 if (!exeHashFile.exists()) {
                     // hash file missing -- we will force a new extract to be safe
@@ -454,12 +453,12 @@ public class JNE {
                     // hash file exists, verify it matches what we expect
                     String existingHash = readFileToString(exeHashFile);
                     if (existingHash == null || !existingHash.equals(versionHash)) {
-                        log.debug("Hash mismatch; deleting files; will freshly extract file");
+                        log.trace("Hash mismatch; deleting files; will freshly extract file");
                         // hash mismatch -- will force an overwrite of both files
                         exeFile.delete();
                         exeHashFile.delete();
                     } else {
-                        log.debug("Hash matches; will use existing file");
+                        log.trace("Hash matches; will use existing file");
                         // hash match (exeFile and exeHashFile are both perrrrfect)
                         //System.out.println("exe already extracted AND hash matched -- reusing same exe");
                         return exeFile;
@@ -470,43 +469,43 @@ public class JNE {
             // does exe already exist? (previously extracted)
             if (!exeFile.exists()) {
                 try {
-                    log.debug("Extracting [" + url + "] to [" + exeFile + "]...");
+                    log.trace("Extracting [" + url + "] to [" + exeFile + "]...");
                     extractTo(url, exeFile);
 
                     // set file to "executable"
-                    log.debug("Setting to executable");
+                    log.trace("Setting to executable");
                     exeFile.setExecutable(true);
 
                     // create corrosponding hash file
-                    log.debug("Writing hash file");
+                    log.trace("Writing hash file");
                     writeStringToFile(exeHashFile, versionHash);
 
                     // schedule files for deletion?
                     if (options.isCleanupExtracted()) {
-                        log.debug("Scheduling file and hash for delete on exit");
+                        log.trace("Scheduling file and hash for delete on exit");
                         exeFile.deleteOnExit();
                         exeHashFile.deleteOnExit();
                     }
                 } catch (IOException e) {
-                    log.debug("Failed to extract file");
+                    log.debug("Failed to extract file: {}", e.getMessage());
                     throw new ExtractException("Unable to cleanly extract executable from jar", e);
                 }
             }
 
-            log.debug("Returning [" + exeFile + "]");
+            log.trace("Returning [" + exeFile + "]");
             return exeFile;
         } else if (url.getProtocol().equals("file")) {
-            log.debug("Resource in file");
+            log.trace("Resource in file");
             try {
                 File exeFile = new File(url.toURI());
                 if (!exeFile.canExecute()) {
-                    log.debug("Setting file to executable");
+                    log.trace("Setting file to executable");
                     if (!exeFile.setExecutable(true)) {
                         log.debug("Unable to cleanly set file to executable");
                         throw new ExtractException("Executable was found but it cannot be set to execute [" + exeFile.getAbsolutePath() + "]");
                     }
                 }
-                log.debug("Returning [" + exeFile + "]");
+                log.trace("Returning [" + exeFile + "]");
                 return exeFile;
             } catch (URISyntaxException e) {
                 log.debug("URL syntax error");
@@ -610,7 +609,7 @@ public class JNE {
             if (deleteOnExit) {
                 tempDirectoryAsFile.deleteOnExit();
             }
-            // save temp directory so its only exactracted once
+            // save temp directory so its only extracted once
             TEMP_DIRECTORY = tempDirectoryAsFile;
             return TEMP_DIRECTORY;
         } catch (IOException e) {
