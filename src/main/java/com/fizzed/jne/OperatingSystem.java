@@ -28,7 +28,7 @@ public enum OperatingSystem {
     ANY(null),
     UNKNOWN(null),
     WINDOWS(null),
-    MACOS(new String[]{"osx"}),
+    MACOS(new String[] { "osx" }),
     LINUX(null),
     FREEBSD(null),
     OPENBSD(null),
@@ -42,30 +42,6 @@ public enum OperatingSystem {
 
     public String[] getAliases() {
         return aliases;
-    }
-
-    public static OperatingSystem detect() {
-        return parseSystemProperty(System.getProperty("os.name"));
-    }
-    
-    public static OperatingSystem parseSystemProperty(String value) {
-        if (value != null) {
-            value = value.toLowerCase();
-            if (value.contains("windows")) {
-                return WINDOWS;
-            } else if (value.contains("mac") || value.contains("darwin")) {
-                return MACOS;
-            } else if (value.contains("linux")) {
-                return LINUX;
-            } else if (value.contains("sun") || value.contains("solaris")) {
-                return SOLARIS;
-            } else if (value.contains("freebsd")) {
-                return FREEBSD;
-            } else if (value.contains("openbsd")) {
-                return OPENBSD;
-            }
-        }
-	return UNKNOWN;
     }
 
 }

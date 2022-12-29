@@ -20,7 +20,6 @@ package com.fizzed.jne;
  * #L%
  */
 
-import com.fizzed.jne.demo.JneDemo;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

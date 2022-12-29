@@ -81,11 +81,11 @@ Published to maven central use the following
 
 To run a demo of a "cat" executable
 
-    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.demo.JneDemo"
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.JneDemo"
 
 With overridden extract dir via system property:
 
-    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.demo.JneDemo" -Djne.extract.dir="target/jne"
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.JneDemo" -Djne.extract.dir="target/jne"
 
 ## Including resources as a jar
 

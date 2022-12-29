@@ -42,8 +42,8 @@ public class Options {
 
     public Options() {
         // defaults
-        this.hardwareArchitecture = HardwareArchitecture.detect();
-        this.operatingSystem = OperatingSystem.detect();
+        this.operatingSystem = PlatformInfo.detectOperatingSystem();
+        this.hardwareArchitecture = PlatformInfo.detectHardwareArchitecture();
         this.resourcePrefix = System.getProperty(SYSPROP_RESOURCE_PREFIX, "/jne");
         this.extractDir = getSystemPropertyAsFile(SYSPROP_EXTRACT_DIR, null);
         this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, true);

@@ -27,11 +27,11 @@ public enum HardwareArchitecture {
     
     ANY(null),
     UNKNOWN(null),
-    X32(new String[]{"i386"}),
-    X64(new String[]{"x86_64"}),       // also known as amd64 or x86_64
+    X32(new String[] { "i386" }),
+    X64(new String[] { "x86_64" }),       // also known as amd64 or x86_64
     ARM32SF(null),                      // ARMEL, ARM 32-bit SF v6, v7, v5
     ARM32HF(null),                      // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
-    ARM64(new String[]{"aarch64"}),           // aarch64
+    ARM64(new String[] { "aarch64" }),           // aarch64
     RISCV64(null),
     SPARC(null);
 
@@ -43,30 +43,6 @@ public enum HardwareArchitecture {
 
     public String[] getAliases() {
         return aliases;
-    }
-
-    public static HardwareArchitecture detect() {
-        return parseSystemProperty(System.getProperty("os.arch"));
-    }
-    
-    public static HardwareArchitecture parseSystemProperty(String value) {
-        if (value != null) {
-            value = value.toLowerCase();
-            if (value.contains("amd64") || value.contains("x86_64")) {
-                return X64;
-            } else if (value.contains("i386") || value.contains("i686") || value.contains("x86")) {
-                return X32;
-            } else if (value.contains("aarch64")) {
-                return ARM64;
-            } else if (value.contains("riscv64")) {
-                return RISCV64;
-            /*} else if (value.contains("aarch32")) {
-                return ARM32;*/
-            } else if (value.contains("sparc")) {
-                return SPARC;
-            }
-        }
-        return UNKNOWN;
     }
 
 }
