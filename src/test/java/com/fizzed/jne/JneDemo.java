@@ -1,4 +1,4 @@
-package com.fizzed.jne.demo;
+package com.fizzed.jne;
 
 /*
  * #%L
@@ -20,7 +20,6 @@ package com.fizzed.jne.demo;
  * #L%
  */
 
-import com.fizzed.jne.JNE;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

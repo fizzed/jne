@@ -20,16 +20,22 @@ package com.fizzed.jne;
  * #L%
  */
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class OSTest {
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicReference;
 
-    @Test
-    public void parseSystemProperty() {
-        assertThat(OperatingSystem.parseSystemProperty("Windows"), is(OperatingSystem.WINDOWS));
-        assertThat(OperatingSystem.parseSystemProperty("blah"), is(OperatingSystem.UNKNOWN));
-    }
-    
+/**
+ * For Linux this is the LibC implementation in use such as GLIBC or MUSL.
+ */
+public enum LinuxLibC {
+
+    UNKNOWN,
+    GLIBC,
+    MUSL;
+
 }

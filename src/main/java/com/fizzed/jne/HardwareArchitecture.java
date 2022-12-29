@@ -25,34 +25,26 @@ package com.fizzed.jne;
  */
 public enum HardwareArchitecture {
     
-    ANY,
-    UNKNOWN,
-    X32,
-    X64,
-    ARM32,
-    ARM64,
-    SPARC;
-    
-    public static HardwareArchitecture detect() {
-        return parseSystemProperty(System.getProperty("os.arch"));
+    ANY(null),
+    UNKNOWN(null),
+    X32(new String[] { "i386" }),
+    X64(new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
+    ARMEL(null),                        // ARMEL, ARM 32-bit SF v6, v7, v5
+    ARMHF(null),                        // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
+    ARM64(new String[] { "aarch64" }),        // aarch64
+    RISCV64(null),
+    MIPS64LE(null),
+    S390X(null),
+    PPC64LE(null);
+
+    private final String[] aliases;
+
+    HardwareArchitecture(String[] aliases) {
+        this.aliases = aliases;
     }
-    
-    public static HardwareArchitecture parseSystemProperty(String value) {
-        if (value != null) {
-            value = value.toLowerCase();
-            if (value.contains("amd64") || value.contains("x86_64")) {
-                return X64;
-            } else if (value.contains("i386") || value.contains("x86")) {
-                return X32;
-            } else if (value.contains("aarch64")) {
-                return ARM64;
-            } else if (value.contains("aarch32")) {
-                return ARM32;
-            } else if (value.contains("sparc")) {
-                return SPARC;
-            }
-        }
-        return UNKNOWN;
+
+    public String[] getAliases() {
+        return aliases;
     }
 
 }

@@ -8,12 +8,11 @@
 [![Windows x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/windows-x64.yaml?branch=master&label=Windows%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/windows-x64.yaml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.fizzed/jne?style=flat-square)](https://mvnrepository.com/artifact/com.fizzed/jne)
 
-
 [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
 
 ## Overview
 
-Utility Java library for finding, extracting, and using os and architecture
+Java library (targeting 6+, plus 8, 11, and 17 etc) for finding, extracting, and using os and architecture
 dependent files (executables, libraries, and/or other files) that are packaged
 as resources within jar files. Allows them to be easily included as part of a
 Java application and intelligently extracted for use at runtime. This library makes
@@ -32,12 +31,12 @@ The library would search for the resource using the following path
 
     /jne/<os>/<arch>/<exe>
 
-If found the resource would be intelligently extracted (only if its changed) to
-a temporary directory so it can be executed.
+If found the resource would be intelligently extracted to a temporary directory so it
+can be executed.
 
     /tmp/1394227238992-0/cat
 
-Where "os" would be either "windows", "osx", or "linux" and "arch" would either
+Where "os" would be something such as "windows", "macos", or "linux" and "arch" could
 be "x32" or "x64". If we were running on Linux with a 64-bit operating system
 then the library would search for "/jne/linux/x64/cat". If found and contained
 within a jar file then this executable would be extracted to either a specific
@@ -66,6 +65,39 @@ please see features below.
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
 
+## Operating Systems
+
+All popular operating systems are supported, along with special care for MUSL-based operating systems
+such as Alpine Linux.
+
+| OS         | Description                        |
+|------------|------------------------------------|
+| linux      |                                    |
+| linux_musl | Such as alpine linux               |
+| macos      | Also supports osx in resource path |
+| windows    |                                    |
+| freebsd    |                                    |
+| openbsd    |                                    |
+| solaris    |                                    |
+
+## Hardware Architecture
+
+Since this library targets finding or loading libraries for use within a JVM, the
+supported hardware architectures match what you'd typically find JDK distributors
+call their architectures.
+
+| Arch     | Description                                                                | Docker          |
+|----------|----------------------------------------------------------------------------|-----------------|
+| x32      | 32-bit i386, i486, i686, etc.                                              | i386/debian     |
+| x64      | 64-bit. Can also use x86_64, amd64 in resource path                        |                 |
+| armel    | 32-bit armv4, armv5, armv6 w/ soft float support. E.g. Raspberry Pi 1      | arm32v5/debian  |
+| armhf    | 32-bit armv7 w/ hard float support. E.g. Raspberry Pi 2                    | arm32v7/debian  |
+| arm64    | 64-bit. Can also use aarch64 in resource path. E.g. Mac M1, Raspberry 3, 4 | arm64v8/ubuntu  |
+| mips64le | 64-bit mips                                                                | mips64le/debian |
+| riscv64  | 64-bit risc-v                                                              | riscv64/ubuntu  |
+| s390x    |                                                                            | s390x/debian    |
+| ppc64le  |                                                                            | ppc64le/debian  |
+
 ## Usage
 
 Published to maven central use the following
@@ -74,7 +106,7 @@ Published to maven central use the following
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
-    <version>3.0.0</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
@@ -82,11 +114,11 @@ Published to maven central use the following
 
 To run a demo of a "cat" executable
 
-    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.demo.JneDemo"
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.JneDemo"
 
 With overridden extract dir via system property:
 
-    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.demo.JneDemo" -Djne.extract.dir="target/jne"
+    mvn -e test-compile exec:java -Dexec.classpathScope="test" -Dexec.mainClass="com.fizzed.jne.JneDemo" -Djne.extract.dir="target/jne"
 
 ## Including resources as a jar
 
@@ -96,10 +128,11 @@ You can easily include these for use with JNE by putting them at
 
     src/main/resources/jne/windows/x32/cat.exe
     src/main/resources/jne/windows/x64/cat.exe
-    src/main/resources/jne/osx/x32/cat
-    src/main/resources/jne/osx/x64/cat
+    src/main/resources/jne/macos/x32/cat
+    src/main/resources/jne/macos/x64/cat
     src/main/resources/jne/linux/x32/cat
     src/main/resources/jne/linux/x64/cat
+    src/main/resources/jne/linux_musl/x64/cat
     src/main/resources/jne/generic-resource.txt
 
 To find and extract these resources for use in your app
@@ -124,6 +157,35 @@ you would have the following example result:
 To extract a generic resource
 
     File resourceFile = JNE.findFile("generic-resource.txt", options);
+
+## Development
+
+You can use an Ubuntu x86_64 host to test a wide variety of hardware architectures and operating systems.
+Install QEMU and various emulators: https://www.stereolabs.com/docs/docker/building-arm-container-on-x86/
+
+    sudo apt-get install qemu binfmt-support qemu-user-static
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+This will now register docker to be able to detect and run various architectures automatically. You can now try it out:
+
+    docker run --rm -t arm64v8/ubuntu dpkg --print-architecture       #arm64
+    docker run --rm -t arm32v7/debian dpkg --print-architecture       #armhf
+    docker run --rm -t arm32v5/debian dpkg --print-architecture       #armel
+    docker run --rm -t riscv64/ubuntu dpkg --print-architecture       #riscv64
+    docker run --rm -t i386/ubuntu dpkg --print-architecture          #i386
+
+If you'd like to try various Java system properties to see what they'd look like:
+
+    docker run --rm -it riscv64/ubuntu
+    apt update
+    apt install openjdk-11-jdk-headless
+    jshell
+    System.getProperties().forEach((k, v) -> { System.out.printf("%s: %s\n", k, v); })
+
+You can test this library on a wide variety of operating systems and architectures
+
+    ./build-dockers.sh
+    ./test-on-dockers.sh
 
 ## License
 

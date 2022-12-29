@@ -1,0 +1,17 @@
+ARG FROM_IMAGE=does-not-exist
+
+FROM ${FROM_IMAGE}
+
+ARG USERID=1000
+ARG USERNAME=test
+
+RUN apk add openjdk11 git curl wget gzip
+RUN wget https://raw.githubusercontent.com/jjlauer/provisioning/master/linux/bootstrap-maven.sh
+RUN chmod +x ./bootstrap-maven.sh
+RUN ./bootstrap-maven.sh
+RUN rm -f ./bootstrap-maven.sh
+
+RUN adduser -D -u ${USERID} ${USERNAME}
+
+USER ${USERNAME}
+ENV PATH="${PATH}::/opt/maven/current/bin"

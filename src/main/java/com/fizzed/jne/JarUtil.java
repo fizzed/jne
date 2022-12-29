@@ -44,7 +44,7 @@ public class JarUtil {
         
         // e.g. file:/home/joelauer/.m2/repository/com/mfizz/mfz-jne-cat/1.0.0-SNAPSHOT/mfz-jne-cat-1.0.0-SNAPSHOT.jar!/jne/linux/x64/cat
         String file = resource.getFile();
-        int exclaimPos = file.lastIndexOf("!");
+        int exclaimPos = file.indexOf("!");
         if (exclaimPos < 0) {
             throw new IOException("Missing ! char (invalid jar resource)");
         }
