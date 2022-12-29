@@ -65,22 +65,38 @@ please see features below.
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
 
+## Operating Systems
+
+All popular operating systems are supported, along with special care for MUSL-based operating systems
+such as Alpine Linux.
+
+| OS         | Description                        |
+|------------|------------------------------------|
+| linux      |                                    |
+| linux_musl | Such as alpine linux               |
+| macos      | Also supports osx in resource path |
+| windows    |                                    |
+| freebsd    |                                    |
+| openbsd    |                                    |
+| solaris    |                                    |
+
 ## Hardware Architecture
 
 Since this library targets finding or loading libraries for use within a JVM, the
 supported hardware architectures match what you'd typically find JDK distributors
 call their architectures.
 
-| Arch      | Description                                                                | Docker           |
-|-----------|----------------------------------------------------------------------------|------------------|
-| x32       | 32-bit i386, i486, i686, etc.                                              | i386/debian      |
-| x64       | 64-bit. Can also use x86_64, amd64 in resource path                        |                  |
-| armel     | 32-bit armv4, armv5, armv6 w/ soft float support. E.g. Raspberry Pi 1      | arm32v5/debian   |
-| armhf     | 32-bit armv7 w/ hard float support. E.g. Raspberry Pi 2                    | arm32v7/debian   |
-| arm64     | 64-bit. Can also use aarch64 in resource path. E.g. Mac M1, Raspberry 3, 4 | arm64v8/ubuntu   |
-| mips64le  | 64-bit mips                                                                | mips64le/debian  |
-| riscv64   | 64-bit risc-v                                                              | riscv64/ubuntu   |
-
+| Arch     | Description                                                                | Docker          |
+|----------|----------------------------------------------------------------------------|-----------------|
+| x32      | 32-bit i386, i486, i686, etc.                                              | i386/debian     |
+| x64      | 64-bit. Can also use x86_64, amd64 in resource path                        |                 |
+| armel    | 32-bit armv4, armv5, armv6 w/ soft float support. E.g. Raspberry Pi 1      | arm32v5/debian  |
+| armhf    | 32-bit armv7 w/ hard float support. E.g. Raspberry Pi 2                    | arm32v7/debian  |
+| arm64    | 64-bit. Can also use aarch64 in resource path. E.g. Mac M1, Raspberry 3, 4 | arm64v8/ubuntu  |
+| mips64le | 64-bit mips                                                                | mips64le/debian |
+| riscv64  | 64-bit risc-v                                                              | riscv64/ubuntu  |
+| s390x    |                                                                            | s390x/debian    |
+| ppc64le  |                                                                            | ppc64le/debian  |
 
 ## Usage
 
@@ -90,7 +106,7 @@ Published to maven central use the following
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
-    <version>3.0.0</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
@@ -112,10 +128,11 @@ You can easily include these for use with JNE by putting them at
 
     src/main/resources/jne/windows/x32/cat.exe
     src/main/resources/jne/windows/x64/cat.exe
-    src/main/resources/jne/osx/x32/cat
-    src/main/resources/jne/osx/x64/cat
+    src/main/resources/jne/macos/x32/cat
+    src/main/resources/jne/macos/x64/cat
     src/main/resources/jne/linux/x32/cat
     src/main/resources/jne/linux/x64/cat
+    src/main/resources/jne/linux_musl/x64/cat
     src/main/resources/jne/generic-resource.txt
 
 To find and extract these resources for use in your app
@@ -164,6 +181,11 @@ If you'd like to try various Java system properties to see what they'd look like
     apt install openjdk-11-jdk-headless
     jshell
     System.getProperties().forEach((k, v) -> { System.out.printf("%s: %s\n", k, v); })
+
+You can test this library on a wide variety of operating systems and architectures
+
+    ./build-dockers.sh
+    ./test-on-dockers.sh
 
 ## License
 

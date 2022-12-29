@@ -155,6 +155,10 @@ public class PlatformInfo {
                 return HardwareArchitecture.RISCV64;
             } else if (osArch.contains("s390x")) {
                 return HardwareArchitecture.S390X;
+            } else if (osArch.contains("ppc64le")) {
+                return HardwareArchitecture.PPC64LE;
+            } else if (osArch.contains("mips64el") || osArch.contains("mips64le")) {
+                return HardwareArchitecture.MIPS64LE;
             }
         }
         return HardwareArchitecture.UNKNOWN;

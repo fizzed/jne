@@ -193,7 +193,7 @@ public class Options {
         final List<String> osList = new ArrayList<>();
         if (os != null && os != OperatingSystem.ANY) {
             // do we need to append the linux libc on?
-            final String osExtendedName = linuxLibC != null && linuxLibC != LinuxLibC.GLIBC ? "_"+linuxLibC.name().toLowerCase() : "";
+            final String osExtendedName = linuxLibC == LinuxLibC.MUSL ? "_"+linuxLibC.name().toLowerCase() : "";
 
             osList.add(os.name().toLowerCase() + osExtendedName);
             if (os.getAliases() != null) {
