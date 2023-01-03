@@ -250,18 +250,27 @@ public class PlatformInfo {
                             final String realMapFilePath = _realMapFilePath.toLowerCase();
 
                             if (realMapFilePath.contains("musl")) {
-                                log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
-                                result.setLibc(LinuxLibC.MUSL);
+                                // only try detecting this once
+                                if (result.getLibc() == null) {
+                                    log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
+                                    result.setLibc(LinuxLibC.MUSL);
+                                }
                             } else if (realMapFilePath.contains("/libc")) {
                                 possiblyFoundGlibc = true;
                             }
 
                             if (realMapFilePath.contains("armhf") || realMapFilePath.contains("arm-linux-gnueabihf")) {
-                                log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
-                                result.setArch(HardwareArchitecture.ARMHF);
+                                // only try detecting this once
+                                if (result.getArch() != HardwareArchitecture.ARMHF) {
+                                    log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
+                                    result.setArch(HardwareArchitecture.ARMHF);
+                                }
                             } else if (realMapFilePath.contains("armel")) {
-                                log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
-                                result.setArch(HardwareArchitecture.ARMEL);
+                                // only try detecting this once
+                                if (result.getArch() != HardwareArchitecture.ARMEL) {
+                                    log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
+                                    result.setArch(HardwareArchitecture.ARMEL);
+                                }
                             }
                         } catch (IOException e) {
                             // ignore this
