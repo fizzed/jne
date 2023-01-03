@@ -1,7 +1,16 @@
 Java Native Extractor by Fizzed
 ===============================
 
-#### 3.1.0 - 2023-01-03
+#### 3.1.2 - 2023-01-03
+
+ - New MemoizedInitializer and MemoizedRunner utility classes for loading of libs with
+   double locking.
+
+#### 3.1.1 - 2023-01-02
+
+ - Remove duplicate logging of MUSL detection
+
+#### 3.1.0 - 2023-01-02
 
  - Major refactor and cleanup
  - Support for MUSL libc detection so "linux_musl" libs can be loaded
