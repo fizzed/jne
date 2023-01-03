@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
@@ -244,7 +245,7 @@ public class PlatformInfo {
                 if (mapFiles != null) {
                     for (File mapFile : mapFiles) {
                         try {
-                            final String _realMapFilePath = mapFile.toPath().toRealPath().toString();
+                            final String _realMapFilePath = realpath(mapFile.toPath());
                             log.trace("Analyzing file {}", _realMapFilePath);
                             final String realMapFilePath = _realMapFilePath.toLowerCase();
 
@@ -284,6 +285,20 @@ public class PlatformInfo {
         }
 
         return result;
+    }
+
+    static private String realpath(Path file) throws IOException {
+        try {
+            return file.toRealPath().toString();
+        } catch (IOException ioe1) {
+            // on alpine linux, this operation was "not permitted", but this worked instead
+            try {
+                return Files.readSymbolicLink(file).toString();
+            } catch (IOException ioe2) {
+                // ignore this particular error
+            }
+            throw ioe1;
+        }
     }
 
 }
