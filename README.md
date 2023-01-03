@@ -68,6 +68,7 @@ please see features below.
    executable is not found/included.  Useful in the case where an x86 executable
    is good for either architecture and you want to save space by not including both
    versions in your JAR.
+ - Utility classes for double-locking, safe loading of libraries.
 
 ## Operating Systems
 
@@ -112,6 +113,25 @@ Published to maven central use the following
     <artifactId>jne</artifactId>
     <version>VERSION</version>
 </dependency>
+```
+
+To safely load a library one time at application startup
+
+```java
+/**
+ * Custom safe run once loading of native libs.
+ */
+public class CustomLoader {
+
+  static private final MemoizedRunner loader = new MemoizedRunner();
+
+  static public void loadLibrary() {
+    loader.once(() -> {
+      JNE.loadLibrary("jtokyocabinet");
+    });
+  }
+
+}
 ```
 
 ## Demo
