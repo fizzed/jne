@@ -1,6 +1,16 @@
 Java Native Extractor by Fizzed
 ===============================
 
+#### 3.1.0 - 2023-01-03
+
+ - Major refactor and cleanup
+ - Support for MUSL libc detection so "linux_musl" libs can be loaded
+ - Support for additional architectures such as riscv64, armhf, etc.
+
+#### 3.0.2 - 2022-12-21
+
+ - Support for arm64
+
 #### 3.0.1 - 2017-08-18
 
  - Only create temp dir a single time per JVM instance
