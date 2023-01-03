@@ -38,24 +38,15 @@ public class PlatformInfo {
     // Operating System Detection
     //
 
-    static private final AtomicReference<OperatingSystem> operatingSystemRef = new AtomicReference<>();
+    static private final MemoizedInitializer<OperatingSystem> operatingSystemRef = new MemoizedInitializer<>();
 
     static public OperatingSystem detectOperatingSystem() {
-        // double lock prevention of only detecting this one time
-        OperatingSystem operatingSystem = operatingSystemRef.get();
-
-        if (operatingSystem == null) {
-            synchronized (PlatformInfo.class) {
-                // another thread may have won out detecting, so we check it again
-                operatingSystem = operatingSystemRef.get();
-                if (operatingSystem == null) {
-                    operatingSystem = doDetectOperatingSystem();
-                    operatingSystemRef.set(operatingSystem);
-                }
+        return operatingSystemRef.once(new MemoizedInitializer.Initializer<OperatingSystem>() {
+            @Override
+            public OperatingSystem init() {
+                return doDetectOperatingSystem();
             }
-        }
-
-        return operatingSystem;
+        });
     }
 
     static OperatingSystem doDetectOperatingSystem() {
@@ -99,24 +90,15 @@ public class PlatformInfo {
     // Hardware Architecture Detection
     //
 
-    static private final AtomicReference<HardwareArchitecture> hardwareArchitectureRef = new AtomicReference<>();
+    static private final MemoizedInitializer<HardwareArchitecture> hardwareArchitectureRef = new MemoizedInitializer<>();
 
     static public HardwareArchitecture detectHardwareArchitecture() {
-        // double lock prevention of only detecting this one time
-        HardwareArchitecture hardwareArchitecture = hardwareArchitectureRef.get();
-
-        if (hardwareArchitecture == null) {
-            synchronized (PlatformInfo.class) {
-                // another thread may have won out detecting, so we check it again
-                hardwareArchitecture = hardwareArchitectureRef.get();
-                if (hardwareArchitecture == null) {
-                    hardwareArchitecture = doDetectHardwareArchitecture();
-                    hardwareArchitectureRef.set(hardwareArchitecture);
-                }
+        return hardwareArchitectureRef.once(new MemoizedInitializer.Initializer<HardwareArchitecture>() {
+            @Override
+            public HardwareArchitecture init() {
+                return doDetectHardwareArchitecture();
             }
-        }
-
-        return hardwareArchitecture;
+        });
     }
 
     static HardwareArchitecture doDetectHardwareArchitecture() {
@@ -169,26 +151,16 @@ public class PlatformInfo {
     // LibC Detection
     //
 
-    static private final AtomicReference<LinuxLibC> linuxLibCRef = new AtomicReference<>();
+    static private final MemoizedInitializer<LinuxLibC> linuxLibCRef = new MemoizedInitializer<>();
 
     static public LinuxLibC detectLinuxLibC() {
-        // double lock prevention of only detecting this one time
-        LinuxLibC linuxLibC = linuxLibCRef.get();
-
-        if (linuxLibC == null) {
-            synchronized (PlatformInfo.class) {
-                // another thread may have won out detecting, so we check it again
-                linuxLibC = linuxLibCRef.get();
-                if (linuxLibC == null) {
-                    linuxLibC = detectLinuxMappedFiles().getLibc();
-                    linuxLibCRef.set(linuxLibC);
-                }
+        return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
+            @Override
+            public LinuxLibC init() {
+                return detectLinuxMappedFiles().getLibc();
             }
-        }
-
-        return linuxLibC;
+        });
     }
-
 
     static public class LinuxMappedFilesResult {
         private LinuxLibC libc;
@@ -211,24 +183,15 @@ public class PlatformInfo {
         }
     }
 
-    static private final AtomicReference<LinuxMappedFilesResult> mappedFilesResultRef = new AtomicReference<>();
+    static private final MemoizedInitializer<LinuxMappedFilesResult> mappedFilesResultRef = new MemoizedInitializer<>();
 
     static public LinuxMappedFilesResult detectLinuxMappedFiles() {
-        // double lock prevention of only detecting this one time
-        LinuxMappedFilesResult result = mappedFilesResultRef.get();
-
-        if (result == null) {
-            synchronized (PlatformInfo.class) {
-                // another thread may have won out detecting, so we check it again
-                result = mappedFilesResultRef.get();
-                if (result == null) {
-                    result = doDetectLinuxMappedFiles();
-                    mappedFilesResultRef.set(result);
-                }
+        return mappedFilesResultRef.once(new MemoizedInitializer.Initializer<LinuxMappedFilesResult>() {
+            @Override
+            public LinuxMappedFilesResult init() {
+                return doDetectLinuxMappedFiles();
             }
-        }
-
-        return result;
+        });
     }
 
     static LinuxMappedFilesResult doDetectLinuxMappedFiles() {
