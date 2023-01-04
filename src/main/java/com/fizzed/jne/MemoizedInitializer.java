@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class MemoizedInitializer<T> {
 
-    private final AtomicReference<T> ref = new AtomicReference(null);
+    private final AtomicReference<T> ref = new AtomicReference<>(null);
 
     public T once(Initializer<T> initializer) {
         // double lock prevention of only detecting this one time
         T value = ref.get();
         if (value == null) {
-            synchronized (this) {
+            synchronized (ref) {
                 // need to check it again in case two threads were waiting to build it
                 value = ref.get();
                 if (value == null) {

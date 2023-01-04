@@ -29,12 +29,13 @@ public class MemoizedRunner {
     public void once(Runnable runnable) {
         // double lock prevention of only detecting this one time
         if (!ran.get()) {
-            synchronized (this) {
+            synchronized (ran) {
                 // need to check it again in case two threads were waiting to build it
-                if (!ran.get()) {
+                // NOTE: we originally set ran to true AFTER runnable.run(), but during static initialization in Java
+                // multiple threads got into this synchronized block
+                if (ran.compareAndSet(false, true)) {
                     runnable.run();
                 }
-                ran.set(true);
             }
         }
     }

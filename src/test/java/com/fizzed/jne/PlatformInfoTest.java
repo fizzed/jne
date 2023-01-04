@@ -20,11 +20,13 @@ package com.fizzed.jne;
  * #L%
  */
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class PlatformInfoTest {
 
@@ -56,11 +58,10 @@ public class PlatformInfoTest {
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null), is(HardwareArchitecture.UNKNOWN));
     }
 
-    @Test
+    @Test @EnabledOnOs(OS.LINUX)
     public void doDetectLinuxLibC() {
         // we can only perform this test on linux
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
-        assumeTrue(operatingSystem == OperatingSystem.LINUX);
 
         LinuxLibC libc = PlatformInfo.detectLinuxLibC();
 
