@@ -184,27 +184,8 @@ To extract a generic resource
 
 ## Development
 
-You can use an Ubuntu x86_64 host to test a wide variety of hardware architectures and operating systems.
-Install QEMU and various emulators: https://www.stereolabs.com/docs/docker/building-arm-container-on-x86/
-
-    sudo apt-get install qemu binfmt-support qemu-user-static
-    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-This will now register docker to be able to detect and run various architectures automatically. You can now try it out:
-
-    docker run --rm -t arm64v8/ubuntu dpkg --print-architecture       #arm64
-    docker run --rm -t arm32v7/debian dpkg --print-architecture       #armhf
-    docker run --rm -t arm32v5/debian dpkg --print-architecture       #armel
-    docker run --rm -t riscv64/ubuntu dpkg --print-architecture       #riscv64
-    docker run --rm -t i386/ubuntu dpkg --print-architecture          #i386
-
-If you'd like to try various Java system properties to see what they'd look like:
-
-    docker run --rm -it riscv64/ubuntu
-    apt update
-    apt install openjdk-11-jdk-headless
-    jshell
-    System.getProperties().forEach((k, v) -> { System.out.printf("%s: %s\n", k, v); })
+You can use an Ubuntu x86_64 host to test a wide variety of hardware architectures and operating systems. For more
+information on how this works, please visit https://github.com/fizzed/blaze-buildx#multiple-architecture-containers
 
 You can test this library on a wide variety of operating systems and architectures
 
