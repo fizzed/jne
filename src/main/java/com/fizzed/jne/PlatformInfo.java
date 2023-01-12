@@ -274,7 +274,7 @@ public class PlatformInfo {
                                     log.debug("Detected ARMHF via /lib dir in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
-                            } else if (name.contains("armel")) {
+                            } else if (name.contains("armel") || name.contains("arm-linux-gnueabi")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
                                     log.debug("Detected ARMEL via /lib dir in {} ms", (System.currentTimeMillis() - now));
@@ -339,7 +339,7 @@ public class PlatformInfo {
                                     log.debug("Detected ARMHF via mapped files in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
-                            } else if (realMapFilePath.contains("armel")) {
+                            } else if (realMapFilePath.contains("armel") || realMapFilePath.contains("arm-linux-gnueabi")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
                                     log.debug("Detected ARMEL via mapped files in {} ms", (System.currentTimeMillis() - now));
