@@ -190,15 +190,22 @@ public class PlatformInfo {
         return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
             @Override
             public LinuxLibC init() {
-                final LinuxDetectedFilesResult libFilesResult = detectLinuxLibFiles();
+                // step 1: search /lib/ directory for MUSL and/or architecture
+                LinuxDetectedFilesResult detectedFilesResult = detectLinuxLibFiles();
 
-                // #1 try
-                if (libFilesResult.getLibc() != null && libFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
-                    return libFilesResult.getLibc();
+                if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                    return detectedFilesResult.getLibc();
                 }
 
-                // #2 try
-                return detectLinuxMappedFiles().getLibc();
+                // step 2: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
+                detectedFilesResult = detectLinuxMappedFiles();
+
+                if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                    return detectedFilesResult.getLibc();
+                }
+
+                // fallback: we will assume this is GLIBC
+                return LinuxLibC.GLIBC;
             }
         });
     }
