@@ -103,12 +103,16 @@ public class PlatformInfo {
 
     static HardwareArchitecture doDetectHardwareArchitecture() {
         final String osArch = System.getProperty("os.arch");
+        // armhf vs. armel is hard to detect in many cases
+        // https://github.com/bytedeco/javacpp/pull/123/commits/642b6d9823a290488e8c4dd8f579cf3e414ab3b3
+        final String abiType = System.getProperty("sun.arch.abi");
+        final String bootLibPath = System.getProperty("sun.boot.library.path", "").toLowerCase();
         final LinuxMappedFilesResult linuxMappedFilesResult = detectLinuxMappedFiles();
 
         final long now = System.currentTimeMillis();
-        log.trace("Trying to detect hardware architecture via system property [{}]", osArch);
 
-        HardwareArchitecture hardwareArchitecture = detectHardwareArchitectureFromValues(osArch, linuxMappedFilesResult);
+        final HardwareArchitecture hardwareArchitecture = detectHardwareArchitectureFromValues(
+                osArch, abiType, bootLibPath, linuxMappedFilesResult);
 
         if (hardwareArchitecture != HardwareArchitecture.UNKNOWN) {
             log.debug("Detected operating system {} in {} ms", hardwareArchitecture, (System.currentTimeMillis() - now));
@@ -119,21 +123,52 @@ public class PlatformInfo {
         return hardwareArchitecture;
     }
 
-    static public HardwareArchitecture detectHardwareArchitectureFromValues(String osArch, LinuxMappedFilesResult linuxMappedFilesResult) {
+    static public HardwareArchitecture detectHardwareArchitectureFromValues(
+            String osArch,
+            String abiType,
+            String bootLibPath,
+            LinuxMappedFilesResult linuxMappedFilesResult) {
+
+        log.trace("Trying to detect hardware architecture via sysprops arch={}, abi={}, bootpath={}", osArch, abiType, bootLibPath);
+
         if (osArch != null) {
-            osArch = osArch.toLowerCase();
+            osArch = osArch != null ? osArch.toLowerCase() : "none";
+            abiType = abiType != null ? abiType.toLowerCase() : "none";
+            bootLibPath = bootLibPath != null ? bootLibPath.toLowerCase() : "none";
+
             if (osArch.contains("amd64") || osArch.contains("x86_64")) {
                 return HardwareArchitecture.X64;
             } else if (osArch.contains("i386") || osArch.contains("i686") || osArch.contains("x86")) {
                 return HardwareArchitecture.X32;
             } else if (osArch.contains("aarch64")) {
                 return HardwareArchitecture.ARM64;
+            } else if (osArch.contains("armv7l")) {
+                return HardwareArchitecture.ARMHF;
             } else if (osArch.contains("arm") || osArch.contains("aarch32")) {
                 // unfortunately, this arch is used for ARMEL vs ARMHF, we can leverage the mapped files on linux to help differentiate
-                log.trace("System property arch [{}] is ambiguous, will try linux mapped files", osArch);
-                if (linuxMappedFilesResult != null && linuxMappedFilesResult.getArch() != null) {
+                log.trace("System property arch [{}] is ambiguous, will try a few workarounds", osArch);
+                // abitype? e.g. gnueabihf
+                if ("gnueabihf".equals(abiType)) {
+                    return HardwareArchitecture.ARMHF;
+                }
+                // boot lib path?
+                if (bootLibPath.contains("armhf") || bootLibPath.contains("aarch32hf")) {
+                    return HardwareArchitecture.ARMHF;
+                }
+
+                // now check for soft-float (which is likely less common)
+                if ("gnueabi".equals(abiType)) {
+                    return HardwareArchitecture.ARMEL;
+                }
+                if (bootLibPath.contains("armsf") || bootLibPath.contains("aarch32sf")) {
+                    return HardwareArchitecture.ARMEL;
+                }
+
+                // linux mapped files?
+                if (linuxMappedFilesResult != null && linuxMappedFilesResult.getArch() != null && linuxMappedFilesResult.getArch() != HardwareArchitecture.UNKNOWN) {
                     return linuxMappedFilesResult.getArch();
                 }
+                // the most common is likely hard float
             } else if (osArch.contains("riscv64")) {
                 return HardwareArchitecture.RISCV64;
             } else if (osArch.contains("s390x")) {

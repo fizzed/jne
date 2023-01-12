@@ -23,12 +23,14 @@ package com.fizzed.jne;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class PlatformInfoTest {
+    static private final Logger log = LoggerFactory.getLogger(PlatformInfoTest.class);
 
     @Test
     public void doDetectOperatingSystem() {
@@ -46,16 +48,25 @@ public class PlatformInfoTest {
 
     @Test
     public void doDetectHardwareArchitecture() {
+        log.debug("=============================== Real Arch Test ===============================================");
         HardwareArchitecture hardwareArchitecture = PlatformInfo.doDetectHardwareArchitecture();
 
         assertThat(hardwareArchitecture, is(not(nullValue())));
         assertThat(hardwareArchitecture, is(not(HardwareArchitecture.UNKNOWN)));
+
+        log.debug("==============================================================================================");
     }
 
     @Test
     public void detectHardwareArchitectureFromValues() {
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("amd64", null), is(HardwareArchitecture.X64));
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null), is(HardwareArchitecture.UNKNOWN));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("amd64", null, null, null), is(HardwareArchitecture.X64));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null, null, null), is(HardwareArchitecture.UNKNOWN));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, null, null), is(HardwareArchitecture.UNKNOWN));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", "gnueabihf", null, null), is(HardwareArchitecture.ARMHF));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", "gnueabi", null, null), is(HardwareArchitecture.ARMEL));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, "/usr/lib/jvm/zulu17.38.21-ca-jdk17.0.5-linux_aarch32hf/lib", null), is(HardwareArchitecture.ARMHF));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, "/usr/lib/jvm/zulu17.38.21-ca-jdk17.0.5-linux_aarch32sf/lib", null), is(HardwareArchitecture.ARMEL));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("armv7l", null, null, null), is(HardwareArchitecture.ARMHF));
     }
 
     @Test @EnabledOnOs(OS.LINUX)
