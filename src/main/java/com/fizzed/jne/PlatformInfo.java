@@ -26,10 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class PlatformInfo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfo.class);
@@ -107,7 +105,7 @@ public class PlatformInfo {
         // https://github.com/bytedeco/javacpp/pull/123/commits/642b6d9823a290488e8c4dd8f579cf3e414ab3b3
         final String abiType = System.getProperty("sun.arch.abi");
         final String bootLibPath = System.getProperty("sun.boot.library.path", "").toLowerCase();
-        final LinuxMappedFilesResult linuxMappedFilesResult = detectLinuxMappedFiles();
+        final LinuxDetectedFilesResult linuxMappedFilesResult = detectLinuxMappedFiles();
 
         final long now = System.currentTimeMillis();
 
@@ -127,7 +125,7 @@ public class PlatformInfo {
             String osArch,
             String abiType,
             String bootLibPath,
-            LinuxMappedFilesResult linuxMappedFilesResult) {
+            LinuxDetectedFilesResult linuxMappedFilesResult) {
 
         log.trace("Trying to detect hardware architecture via sysprops arch={}, abi={}, bootpath={}", osArch, abiType, bootLibPath);
 
@@ -192,12 +190,20 @@ public class PlatformInfo {
         return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
             @Override
             public LinuxLibC init() {
+                final LinuxDetectedFilesResult libFilesResult = detectLinuxLibFiles();
+
+                // #1 try
+                if (libFilesResult.getLibc() != null && libFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                    return libFilesResult.getLibc();
+                }
+
+                // #2 try
                 return detectLinuxMappedFiles().getLibc();
             }
         });
     }
 
-    static public class LinuxMappedFilesResult {
+    static public class LinuxDetectedFilesResult {
         private LinuxLibC libc;
         private HardwareArchitecture arch;
 
@@ -218,24 +224,86 @@ public class PlatformInfo {
         }
     }
 
-    static private final MemoizedInitializer<LinuxMappedFilesResult> mappedFilesResultRef = new MemoizedInitializer<>();
+    static private final MemoizedInitializer<LinuxDetectedFilesResult> libFilesResultRef = new MemoizedInitializer<>();
+    static private final MemoizedInitializer<LinuxDetectedFilesResult> mappedFilesResultRef = new MemoizedInitializer<>();
 
-    static public LinuxMappedFilesResult detectLinuxMappedFiles() {
-        return mappedFilesResultRef.once(new MemoizedInitializer.Initializer<LinuxMappedFilesResult>() {
+    static public LinuxDetectedFilesResult detectLinuxLibFiles() {
+        return libFilesResultRef.once(new MemoizedInitializer.Initializer<LinuxDetectedFilesResult>() {
             @Override
-            public LinuxMappedFilesResult init() {
+            public LinuxDetectedFilesResult init() {
+                return doDetectLinuxLibFiles();
+            }
+        });
+    }
+
+    static LinuxDetectedFilesResult doDetectLinuxLibFiles() {
+        // issue: https://github.com/facebook/rocksdb/issues/9956
+        // some version of the kernel are missing mapped files, and its potentially slow as well
+        final long now = System.currentTimeMillis();
+        final Path libDir = Paths.get("/lib/");
+        log.trace("Trying to detect libc/arch via [{}]", libDir);
+        final LinuxDetectedFilesResult result = new LinuxDetectedFilesResult();
+        try {
+            if (Files.exists(libDir)) {
+                final File[] mapFiles = libDir.toFile().listFiles();
+                if (mapFiles != null) {
+                    for (File mapFile : mapFiles) {
+                        try {
+                            log.trace("Analyzing file {}", mapFile);
+                            final String name = mapFile.getName().toLowerCase();
+
+                            if (name.contains("musl")) {
+                                // only try detecting this once
+                                if (result.getLibc() == null) {
+                                    log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
+                                    result.setLibc(LinuxLibC.MUSL);
+                                }
+                            }
+
+                            if (name.contains("armhf") || name.contains("arm-linux-gnueabihf")) {
+                                // only try detecting this once
+                                if (result.getArch() != HardwareArchitecture.ARMHF) {
+                                    log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
+                                    result.setArch(HardwareArchitecture.ARMHF);
+                                }
+                            } else if (name.contains("armel")) {
+                                // only try detecting this once
+                                if (result.getArch() != HardwareArchitecture.ARMEL) {
+                                    log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
+                                    result.setArch(HardwareArchitecture.ARMEL);
+                                }
+                            }
+                        } catch (Exception e) {
+                            // ignore this
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // ignore it
+        }
+
+        return result;
+    }
+
+    static public LinuxDetectedFilesResult detectLinuxMappedFiles() {
+        return mappedFilesResultRef.once(new MemoizedInitializer.Initializer<LinuxDetectedFilesResult>() {
+            @Override
+            public LinuxDetectedFilesResult init() {
                 return doDetectLinuxMappedFiles();
             }
         });
     }
 
-    static LinuxMappedFilesResult doDetectLinuxMappedFiles() {
+    static LinuxDetectedFilesResult doDetectLinuxMappedFiles() {
+        // NOTE: this was only added in linux v3.3+, it will not work below that
+        // https://github.com/dmlc/xgboost/issues/7915
         // helpful technique discovered from https://github.com/xerial/sqlite-jdbc/blob/master/src/main/java/org/sqlite/util/OSInfo.java
         // can be used for both ARMEL vs ARMHF detection, as well as GLIBC vs. MUSL
         final long now = System.currentTimeMillis();
         final Path mapFilesDir = Paths.get("/proc/self/map_files");
         log.trace("Trying to detect libc/arch via [{}]", mapFilesDir);
-        final LinuxMappedFilesResult result = new LinuxMappedFilesResult();
+        final LinuxDetectedFilesResult result = new LinuxDetectedFilesResult();
         boolean possiblyFoundGlibc = false;
         try {
             if (Files.exists(mapFilesDir)) {
