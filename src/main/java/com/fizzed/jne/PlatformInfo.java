@@ -205,6 +205,7 @@ public class PlatformInfo {
                 }
 
                 // fallback: we will assume this is GLIBC
+                log.debug("Will assume we are running on GLIBC");
                 return LinuxLibC.GLIBC;
             }
         });
@@ -262,7 +263,7 @@ public class PlatformInfo {
                             if (name.contains("musl")) {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
-                                    log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected MUSL libc via /lib dir in {} ms", (System.currentTimeMillis() - now));
                                     result.setLibc(LinuxLibC.MUSL);
                                 }
                             }
@@ -270,13 +271,13 @@ public class PlatformInfo {
                             if (name.contains("armhf") || name.contains("arm-linux-gnueabihf")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMHF) {
-                                    log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected ARMHF via /lib dir in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
                             } else if (name.contains("armel")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
-                                    log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected ARMEL via /lib dir in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMEL);
                                 }
                             }
@@ -325,7 +326,7 @@ public class PlatformInfo {
                             if (realMapFilePath.contains("musl")) {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
-                                    log.debug("Detected MUSL libc in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected MUSL libc via mapped files in {} ms", (System.currentTimeMillis() - now));
                                     result.setLibc(LinuxLibC.MUSL);
                                 }
                             } else if (realMapFilePath.contains("/libc")) {
@@ -335,13 +336,13 @@ public class PlatformInfo {
                             if (realMapFilePath.contains("armhf") || realMapFilePath.contains("arm-linux-gnueabihf")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMHF) {
-                                    log.debug("Detected ARMHF in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected ARMHF via mapped files in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
                             } else if (realMapFilePath.contains("armel")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
-                                    log.debug("Detected ARMEL in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected ARMEL via mapped files in {} ms", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMEL);
                                 }
                             }
@@ -356,13 +357,12 @@ public class PlatformInfo {
         }
 
         if (possiblyFoundGlibc) {
-            log.debug("Detected GLIBC libc in {} ms", (System.currentTimeMillis() - now));
-            //return LinuxLibC.GLIBC;
+            log.debug("Detected GLIBC libc via mapped files in {} ms", (System.currentTimeMillis() - now));
             result.setLibc(LinuxLibC.GLIBC);
         }
 
         if (result.getLibc() == null) {
-            log.warn("Unable to detect libc in {} ms", (System.currentTimeMillis() - now));
+            log.warn("Unable to detect libc via mapped files in {} ms", (System.currentTimeMillis() - now));
             result.setLibc(LinuxLibC.UNKNOWN);
         }
 
