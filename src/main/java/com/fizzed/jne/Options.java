@@ -20,6 +20,8 @@ package com.fizzed.jne;
  * #L%
  */
 
+import jdk.jfr.events.FileReadEvent;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -152,6 +154,9 @@ public class Options {
             case WINDOWS:
                 return name + ".dll";
             case LINUX:
+            case FREEBSD:
+            case OPENBSD:
+            case SOLARIS:
                 // build up the name of the file we want to load
                 String soname = "lib" + name + ".so";
                 if (majorVersion != null) {

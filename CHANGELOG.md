@@ -1,31 +1,34 @@
-Java Native Extractor by Fizzed
-===============================
+# Java Native Extractor by Fizzed
 
-#### 3.1.2 - 2023-01-03
+## 3.2.1 - 2023-01-13
+
+ - Improved ARMEL vs. ARMHF detection
+
+## 3.1.2 - 2023-01-03
 
  - New MemoizedInitializer and MemoizedRunner utility classes for loading of libs with
    double locking.
 
-#### 3.1.1 - 2023-01-02
+## 3.1.1 - 2023-01-02
 
  - Remove duplicate logging of MUSL detection
 
-#### 3.1.0 - 2023-01-02
+## 3.1.0 - 2023-01-02
 
  - Major refactor and cleanup
  - Support for MUSL libc detection so "linux_musl" libs can be loaded
  - Support for additional architectures such as riscv64, armhf, etc.
 
-#### 3.0.2 - 2022-12-21
+## 3.0.2 - 2022-12-21
 
  - Support for arm64
 
-#### 3.0.1 - 2017-08-18
+## 3.0.1 - 2017-08-18
 
  - Only create temp dir a single time per JVM instance
  - Use UUID for temp dir
 
-#### 3.0.0 - 2017-07-17
+## 3.0.0 - 2017-07-17
  - Bump parent to v2.1.0
  - Add ANY enum for OS
  - New `findFile` feature to extract generic resources
@@ -33,18 +36,18 @@ Java Native Extractor by Fizzed
  - Renamed Arch class to HardwareArchitecture
  - Renamed OS class to OperatingSystem
 
-#### 2.0.1 - 2016-08-23
+## 2.0.1 - 2016-08-23
  - Verify temp dir exists (mpanthony)
 
-#### 2.0.0 - 2015-12-18
+## 2.0.0 - 2015-12-18
  - Refactored package to com.fizzed
  - Added slf4j for logging
 
-#### 1.2.0 - 2015-12-11
+## 1.2.0 - 2015-12-11
  - Refactored project layout
 
-#### 1.1.0 - 2014-04-16
+## 1.1.0 - 2014-04-16
  - Added ability to rename extracted file (e.g. cat to mycat)
 
-#### 1.0.1 - 2014-03-18
+## 1.0.1 - 2014-03-18
  - Initial release
