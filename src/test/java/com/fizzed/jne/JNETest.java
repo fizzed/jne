@@ -70,7 +70,7 @@ public class JNETest {
         
         File file;
         
-        file = JNE.findExecutable("cat", options);
+        file = JNE.findExecutable("jcat", options);
         assertThat(file, is(not(nullValue())));
         
         // does not exist
@@ -80,7 +80,7 @@ public class JNETest {
         options.setOperatingSystem(OperatingSystem.WINDOWS);
         
         // .exe should be added
-        file = JNE.findExecutable("cat", options);
+        file = JNE.findExecutable("jcat", options);
         assertThat(file, is(not(nullValue())));
         assertThat(file.getName(), endsWith(".exe"));
     }
