@@ -1,10 +1,16 @@
-CC = gcc
-CPP = g++
+#
+# To run this in your own shell
+#   CC=gcc CXX=g++ make
+#
+
+#CC = gcc
+#CPP = g++
 JAVAC = javac
 JAVA = java
+SHAREDFILEEXT ?= so
 
 all:
-	$(CPP) -shared -fPIC -Wall -pedantic -O3 -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -o libhelloj.so -lc helloj_HelloLib.cpp
+	$(CXX) -shared -fPIC -Wall -pedantic -O3 $(CXXFLAGS) -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${JAVA_HOME}/include/freebsd -I${JAVA_HOME}/include/darwin -o libhelloj.$(SHAREDFILEEXT) -lc helloj_HelloLib.cpp
 
 jniheaders:
 	$(JAVAC) -h . helloj/HelloLib.java

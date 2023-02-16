@@ -1,0 +1,90 @@
+# Makefile for Tkrzw for Windows
+
+PKG_VERSION = 1.0.24
+LIB_VERSION = 1.67.0
+
+JAVA_INCLUDEDIR = $(JAVA_HOME)\include
+
+VCPATH = $(VCTOOLSDIR)
+SDKPATH = C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0
+VCINCPATH = $(VCPATH)\include
+VCLIBPATH = $(VCPATH)\lib\x64
+UMLIBPATH = $(SDKPATH)\um\x64
+UCRTLIBPATH = $(SDKPATH)\ucrt\x64
+
+PREFIX = C:\Program Files
+BASEDIR = $(PREFIX)\tkrzw
+INCLUDEDIR = $(BASEDIR)\include
+LIBDIR = $(BASEDIR)\lib
+BINDIR = $(BASEDIR)\bin
+LIBEXECDIR = $(BASEDIR)\bin
+
+JAVAFILES = AsyncDBM.java DBM.java File.java Future.java Iterator.java Utility.java Status.java StatusException.java Test.java
+JAVAHEADERFILES = tkrzw_AsyncDBM.h
+HEADERFILES = 
+IMPLHEADERFILES = 
+LIBRARYFILES = jtkrzw.dll
+LIBOBJFILES = tkrzw.obj
+COMMANDFILES = 
+CMDLIBRARIES = 
+EXTRALIBRARIES =
+
+JAVA = java
+JAVAC = javac
+JAVACFLAGS = -source 8 -encoding utf8 -d .
+
+CL = cl
+LIB = lib
+LINK = link
+CFLAGS = /std:c++17 /Zc:__cplusplus /nologo \
+  /I "$(VCINCPATH)" \
+  /I "$(JAVA_INCLUDEDIR)" \
+  /I "$(JAVA_INCLUDEDIR)\win32" \
+  /I "..\tkrzw"
+CXXFLAGS = /std:c++17 /Zc:__cplusplus
+CLFLAGS = /nologo \
+  /I "$(VCINCPATH)" \
+  /I "$(JAVA_INCLUDEDIR)" \
+  /I "$(JAVA_INCLUDEDIR)\win32" \
+  /I "..\tkrzw" \
+  /DNDEBUG /D_CRT_SECURE_NO_WARNINGS \
+  /D_TKRZW_PKG_VERSION="\"$(PKG_VERSION)\"" /D_TKRZW_LIB_VERSION="\"$(LIB_VERSION)\"" \
+  /D_TKRZW_PREFIX="R\"($(PREFIX))\"" /D_TKRZW_INCLUDEDIR="R\"($(INCLUDEDIR))\"" \
+  /D_TKRZW_LIBDIR="R\"($(LIBDIR))\"" /D_TKRZW_BINDIR="R\"($(BINDIR))\"" \
+  /D_TKRZW_LIBEXECDIR="R\"($(LIBEXECDIR))\"" \
+  /D_TKRZW_APPINC="R\"(/I \"$(INCLUDEDIR)\")\"" \
+  /D_TKRZW_APPLIBS="R\"(/libpath:\"$(LIBDIR)\" jtkrzw.lib)\"" \
+  /O2 /EHsc /W3 /wd4244 /wd4267 /wd4334 /MT
+LIBFLAGS = /nologo \
+  /libpath:"$(VCLIBPATH)" /libpath:"$(UMLIBPATH)" /libpath:"$(UCRTLIBPATH)"
+LINKFLAGS = /nologo \
+  /libpath:"$(VCLIBPATH)" /libpath:"$(UMLIBPATH)" /libpath:"$(UCRTLIBPATH)"
+
+
+.SUFFIXES :
+.SUFFIXES : .cc .c .obj .exe
+
+.c.obj :
+	$(CL) /c $(CFLAGS) $(CLFLAGS) $<
+
+.cc.obj :
+	$(CL) /c $(CXXFLAGS) $(CLFLAGS) $<
+
+all : $(JAVAHEADERFILES) $(LIBRARYFILES)
+	@echo #
+	@echo #================================================================
+	@echo # Done!
+	@echo #================================================================
+
+tkrzw_AsyncDBM.h :
+	$(JAVAC) -h . $(JAVACFLAGS) $(JAVAFILES)
+
+jtkrzw.dll : $(LIBOBJFILES)
+    $(LINK) $(LINKFLAGS) /DLL /OUT:$@ $(LIBOBJFILES) ..\tkrzw\tkrzw.lib
+
+check :
+	$(JAVA) -cp . tkrzw.Test utility
+
+clean :
+	-del *.obj *.lib *.dll *.exp *.exe /F /Q > NUL: 2>&1
+	-del casket* /F /Q > NUL: 2>&1

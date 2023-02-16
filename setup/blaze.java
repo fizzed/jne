@@ -18,60 +18,74 @@ import com.fizzed.buildx.*;
 public class blaze {
 
     private final List<Target> targets = asList(
-        // Linux arm64 (ubuntu 16.04, glibc 2.27+)
+        //
+        // Linux
+        //
+
         new Target("linux", "x64")
             .setTags("build")
             .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
 
-        /*// Linux arm64 (ubuntu 18.04, glibc 2.27+)
         new Target("linux", "arm64")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
 
-        // Linux armhf (ubuntu 18.04, glibc 2.27+)
         new Target("linux", "armhf")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
 
-        // Linux armel (ubuntu 18.04, glibc 2.27+)
         new Target("linux", "armel")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
 
-        // Linux MUSL x64 (alpine 3.11)
-        new Target("linux_musl", "x64")
-            .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
-
-        // Linux MUSL arm64 (alpine 3.11)
-        new Target("linux_musl", "arm64")
-            .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
-
-        // Linux riscv64 (ubuntu 20.04, glibc 2.31+)
+        // NOTE: ubuntu18 added support for riscv64
         new Target("linux", "riscv64")
             .setTags("build")
             .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),
 
-        // MacOS x64 (10.13+)
+        //
+        // Linux (w/ MUSL)
+        //
+
+        new Target("linux_musl", "x64")
+            .setTags("build")
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
+
+        new Target("linux_musl", "arm64")
+            .setTags("build")
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
+
+        //
+        // FreeBSD
+        //
+
+        new Target("freebsd", "x64")
+            .setTags("build", "test")
+            .setHost("bmh-build-x64-freebsd12-1"),
+
+        //
+        // MacOS
+        //
+
         new Target("macos", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-macos1013-1"),
 
-        // MacOS arm64 (12+)
         new Target("macos", "arm64")
             .setTags("build", "test")
             .setHost("bmh-build-arm64-macos12-1"),
 
-        // Windows x64 (win7+)
+        //
+        // Windows
+        //
+
         new Target("windows", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-win11-1"),
 
-        // Windows arm64 (win10+)
         new Target("windows", "arm64")
             .setTags("build")
-            .setHost("bmh-build-x64-win11-1"),*/
+            .setHost("bmh-build-x64-win11-1"),
 
         //
         // test-only containers
@@ -79,13 +93,17 @@ public class blaze {
 
         new Target("linux", "x64-test")
             .setTags("test")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11")
+            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11"),
 
-        /*new Target("linux", "arm64-test")
+        new Target("linux", "arm64-test")
             .setTags("test")
-            //.setHost("bmh-build-arm64-ubuntu22-1")
-            .setContainerImage("fizzed/buildx:arm64v8-ubuntu18-jdk11"),
+            .setHost("bmh-build-arm64-ubuntu22-1")
 
+        /*new Target("freebsd", "x64-test")
+            .setTags("test")
+            .setHost("bmh-build-x64-freebsd13-1")*/
+
+        /*
         new Target("linux", "armhf-test")
             .setTags("test")
             .setContainerImage("fizzed/buildx:arm32v7-ubuntu18-jdk11"),
@@ -128,7 +146,7 @@ public class blaze {
         new Buildx(targets)
             .execute((target, project) -> {
                 if (project.hasContainer()) {
-                    project.exec("setup/build-docker-container-action.sh", target.getContainerImage(), project.getContainerName(), target.getOs(), target.getArch()).run();
+                    project.exec("setup/build-container-action.sh", target.getContainerImage(), project.getContainerName(), target.getOs(), target.getArch()).run();
                 }
             });
     }

@@ -1,5 +1,10 @@
-CC = gcc
-CPP = g++
+#
+# To run this in your own shell
+#   CC=gcc make
+#
+
+#CC = gcc
+#CPP = g++
 
 all:
 	$(CC) -Wall -pedantic -O2 -o jcat jcat.c

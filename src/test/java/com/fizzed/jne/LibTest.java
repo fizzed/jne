@@ -20,6 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
+import helloj.HelloLib;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,33 +34,19 @@ import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class CatTest {
-    static private final Logger log = LoggerFactory.getLogger(CatTest.class);
+public class LibTest {
+    static private final Logger log = LoggerFactory.getLogger(LibTest.class);
 
     @Test
-    public void cat() throws Exception {
-        log.info("java version: " + System.getProperty("java.version"));
-        log.info("java home: " + System.getProperty("java.home"));
+    public void helloj() throws Exception {
+        // leverage JNE loader to load up the helloj lib
+        LibLoader.loadLibrary();
 
-        // use one-time use temporary directory
-        final File catExeFile = JNE.findExecutable("cat");
+        // now use it
+        HelloLib helloLib = new HelloLib();
+        final String s = helloLib.hi();
 
-        assertThat(catExeFile, is(not(nullValue())));
-
-        // use "cat" to print out an expected file
-        final Path expectedTxtFile = new File(JneDemo.class.getResource("/test.txt").toURI()).toPath();
-        final Path actualTxtFile = Paths.get("target", "actual.txt");
-
-        if (Files.exists(actualTxtFile)) {
-            Files.delete(actualTxtFile);
-        }
-
-        final int exitValue = new ProcessExecutor()
-            .command(catExeFile.getAbsolutePath().toString(), expectedTxtFile.toAbsolutePath().toString())
-            .execute()
-            .getExitValue();
-
-        assertThat(exitValue, is(0));
+        assertThat(s, is("Hello from JNI!"));
     }
     
 }

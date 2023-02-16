@@ -1,4 +1,5 @@
-#!/bin/sh -lex
+#!/bin/sh
+set -e
 
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/.." || exit 1
