@@ -43,4 +43,7 @@ nmake -f VCMakefile
 cd ..\libhelloj
 nmake -f VCMakefile
 
-@REM copy .\jtkrzw.dll ..\..\tkrzw-%BUILDOS%-%BUILDARCH%\src\main\resources\jne\%BUILDOS%\%BUILDARCH%\
+cd ..
+set OUTPUT_DIR="..\src\test\resources\jne\%BUILDOS%\%BUILDARCH%"
+copy jcat\jcat.exe "%OUTPUT_DIR%"
+copy libhelloj\helloj.dll "%OUTPUT_DIR%"
