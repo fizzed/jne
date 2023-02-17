@@ -13,6 +13,8 @@ if [ -f /opt/setup-cross-build-environment.sh ]; then
   . /opt/setup-cross-build-environment.sh $BUILDOS $BUILDARCH
 fi
 
+. setup/setup-environment.sh
+
 mkdir -p target
 rsync -avrt --delete ./native/ ./target/
 

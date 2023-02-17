@@ -63,6 +63,22 @@ public class blaze {
             .setTags("build", "test")
             .setHost("bmh-build-x64-freebsd12-1"),
 
+        new Target("freebsd", "arm64")
+            .setTags("build", "test")
+            .setHost("bmh-build-arm64-freebsd13-1"),
+
+        //
+        // OpenBSD
+        //
+
+        new Target("openbsd", "x64")
+            .setTags("build", "test")
+            .setHost("bmh-build-x64-openbsd67-1"),
+
+        new Target("openbsd", "arm64")
+            .setTags("build", "test")
+            .setHost("bmh-build-arm64-openbsd72-1"),
+
         //
         // MacOS
         //
@@ -97,11 +113,15 @@ public class blaze {
 
         new Target("linux", "arm64-test")
             .setTags("test")
-            .setHost("bmh-build-arm64-ubuntu22-1")
+            .setHost("bmh-build-arm64-ubuntu22-1"),
 
-        /*new Target("freebsd", "x64-test")
+        new Target("linux_musl", "x64-test")
             .setTags("test")
-            .setHost("bmh-build-x64-freebsd13-1")*/
+            .setContainerImage("fizzed/buildx:amd64-alpine3.11-jdk11"),
+
+        new Target("windows", "arm64-test", "win11")
+            .setTags("test")
+            .setHost("bmh-build-arm64-win11-1")
 
         /*
         new Target("linux", "armhf-test")
@@ -120,10 +140,6 @@ public class blaze {
             .setTags("test")
             .setContainerImage("fizzed/buildx:riscv64-ubuntu20-jdk19"),
 
-        new Target("linux_musl", "x64-test")
-            .setTags("test")
-            .setContainerImage("fizzed/buildx:amd64-alpine3.11-jdk11"),
-
         new Target("linux_musl", "arm64-test")
             .setTags("test")
             //.setHost("bmh-build-arm64-ubuntu22-1")
@@ -136,10 +152,7 @@ public class blaze {
         new Target("windows", "x64-test", "win7")
             .setTags("test")
             .setHost("bmh-build-x64-win7-1"),
-
-        new Target("windows", "arm64-test", "win11")
-            .setTags("test")
-            .setHost("bmh-build-arm64-win11-1")*/
+        */
     );
 
     public void build_containers() throws Exception {
