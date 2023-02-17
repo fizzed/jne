@@ -1,0 +1,14 @@
+#
+# "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+# nmake -f VCMakefile
+#
+
+CL = cl
+LINK = link
+
+all:
+	$(CL) /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /DWINVER=0x0601 /D_WIN32_WINNT=0x0601 /O2 /EHsc /W3 /wd4244 /wd4267 /wd4334 /MT /nologo /c /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" helloj_HelloLib.cpp
+	$(LINK) /nologo /DLL /OUT:helloj.dll /libpath:"$(LIB)" helloj_HelloLib.obj
+
+clean :
+	-del *.obj *.lib *.dll *.exp *.exe /F /Q > NUL: 2>&1

@@ -20,8 +20,6 @@ package com.fizzed.jne;
  * #L%
  */
 
-import jdk.jfr.events.FileReadEvent;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;

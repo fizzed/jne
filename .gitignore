@@ -1,3 +1,5 @@
 /target/
 .idea
 *.iml
+native/libhelloj/helloj/HelloLib.class
+.temp-m2

@@ -1,0 +1,11 @@
+ARG FROM_IMAGE
+
+FROM ${FROM_IMAGE}
+
+ARG USERID
+ARG USERNAME
+
+# alpine already comes with libz, libbz2
+
+RUN adduser -D -u ${USERID} ${USERNAME}
+USER ${USERNAME}
