@@ -1,5 +1,19 @@
 # Java Native Extractor by Fizzed
 
+## 3.3.0 - 2023-10-18
+
+ - Java 8+ compat moving forward
+ - CI testing on Java 21
+
+## 3.2.3 - 2023-10-18
+
+ - Final release supporting Java 7!
+ - Log message enhancements
+
+## 3.2.2 - 2023-01-12
+
+ - More enhancements to MUSL detection
+
 ## 3.2.1 - 2023-01-13
 
  - Improved ARMEL vs. ARMHF detection

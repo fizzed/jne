@@ -19,22 +19,28 @@
 
 Java library (targeting 6+, plus 8, 11, 17, 21 etc) for finding, extracting, and using os and architecture
 dependent files (executables, libraries, and/or other files) that are packaged
-as resources within jar files. Allows them to be easily included as part of a
-Java application and intelligently extracted for use at runtime. This library makes
+as resources within jar files. Extensive support and testing for operating system, libc (e.g. glibc vs. musl), and
+hardware architecture detection.
+
+Allows them to be easily included as part of a Java application and intelligently extracted for use at runtime. This library makes
 it easy to build your own custom "bin" directory based on the runtime operating
 system and architecture.  You can package .exe and .dll/.so resources within
 jars and then use something like maven for dependency management.
 
 Here is how it works. At runtime, Java let's you find resources in directories
-and/or jars (if they are included on the classpath). Let's say you wanted to call
-an external "cat" executable.  With a properly packaged resource on the classpath
+and/or jars (if they are included on the classpath).  Let's say you wanted to load
+at runtime a shared object (.dll, .so, .dylib) that was packaged inside a .jar
+
+   JNE.loadLibrary("mylib");
+
+The library would search for the resource using the following resource path
+
+    /jne/<os>/<arch>/<lib>
+
+Or let's say you wanted to call an external "cat" executable.  With a properly packaged resource on the classpath
 this executable can found with
 
     File catExeFile = JNE.findExecutable("cat");
-
-The library would search for the resource using the following path
-
-    /jne/<os>/<arch>/<exe>
 
 If found the resource would be intelligently extracted to a temporary directory so it
 can be executed.
