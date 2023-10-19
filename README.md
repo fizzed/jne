@@ -5,6 +5,7 @@
 [![Java 8](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java8.yaml?branch=master&label=Java%208&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java8.yaml)
 [![Java 11](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java11.yaml?branch=master&label=Java%2011&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java11.yaml)
 [![Java 17](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java17.yaml?branch=master&label=Java%2017&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java17.yaml)
+[![Java 21](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java21.yaml?branch=master&label=Java%2021&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java21.yaml)
 
 [![Linux x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java8.yaml?branch=master&label=Linux%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java8.yaml)
 [![Linux arm64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/linux-arm64.yaml?branch=master&label=Linux%20arm64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/linux-arm64.yaml)
@@ -16,7 +17,7 @@
 
 ## Overview
 
-Java library (targeting 6+, plus 8, 11, and 17 etc) for finding, extracting, and using os and architecture
+Java library (targeting 6+, plus 8, 11, 17, 21 etc) for finding, extracting, and using os and architecture
 dependent files (executables, libraries, and/or other files) that are packaged
 as resources within jar files. Allows them to be easily included as part of a
 Java application and intelligently extracted for use at runtime. This library makes
