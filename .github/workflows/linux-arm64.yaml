@@ -1,9 +1,11 @@
 name: Linux arm64
 on:
-  push
+  - push
+  - workflow_dispatch
 jobs:
-  bootstrap:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -13,18 +15,11 @@ jobs:
           cache: 'maven'
       - uses: uraimo/run-on-arch-action@v2
         with:
-          arch: aarch64
-          distro: ubuntu18.04
-          githubToken: ${{ github.token }}
+          arch: none
+          distro: none
+          base_image: fizzed/buildx:arm64v8-ubuntu18-jdk11
           dockerRunArgs: |
             --volume "~/.m2:/root/.m2" --volume "${PWD}:/mnt"
-          install: |
-            apt-get update
-            apt-get -y install openjdk-11-jdk-headless git curl wget gzip
-            wget https://raw.githubusercontent.com/jjlauer/provisioning/master/linux/bootstrap-maven.sh
-            chmod +x ./bootstrap-maven.sh
-            ./bootstrap-maven.sh
           run: |
-            export PATH=$PATH:/opt/maven/current/bin
             cd /mnt
             mvn test
