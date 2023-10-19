@@ -56,9 +56,9 @@ public class PlatformInfo {
         final OperatingSystem operatingSystem = detectOperatingSystemFromValues(osName);
 
         if (operatingSystem != OperatingSystem.UNKNOWN) {
-            log.debug("Detected operating system {} in {} ms", operatingSystem, (System.currentTimeMillis() - now));
+            log.debug("Detected operating system {} (in {} ms)", operatingSystem, (System.currentTimeMillis() - now));
         } else {
-            log.warn("Unable to detect operating system in {} ms", (System.currentTimeMillis() - now));
+            log.warn("Unable to detect operating system (in {} ms)", (System.currentTimeMillis() - now));
         }
 
         return operatingSystem;
@@ -113,9 +113,9 @@ public class PlatformInfo {
                 osArch, abiType, bootLibPath, linuxMappedFilesResult);
 
         if (hardwareArchitecture != HardwareArchitecture.UNKNOWN) {
-            log.debug("Detected operating system {} in {} ms", hardwareArchitecture, (System.currentTimeMillis() - now));
+            log.debug("Detected hardware architecture {} (in {} ms)", hardwareArchitecture, (System.currentTimeMillis() - now));
         } else {
-            log.warn("Unable to detect operating system in {} ms", (System.currentTimeMillis() - now));
+            log.warn("Unable to detect hardware architecture (in {} ms)", (System.currentTimeMillis() - now));
         }
 
         return hardwareArchitecture;
@@ -190,23 +190,23 @@ public class PlatformInfo {
         return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
             @Override
             public LinuxLibC init() {
-                // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
-                LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
+            // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
+            LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
 
-                if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
-                    return detectedFilesResult.getLibc();
-                }
+            if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                return detectedFilesResult.getLibc();
+            }
 
-                // step 2: search /lib/ directory for MUSL and/or architecture
-                detectedFilesResult = detectLinuxLibFiles();
+            // step 2: search /lib/ directory for MUSL and/or architecture
+            detectedFilesResult = detectLinuxLibFiles();
 
-                if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
-                    return detectedFilesResult.getLibc();
-                }
+            if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                return detectedFilesResult.getLibc();
+            }
 
-                // fallback: we will assume this is GLIBC
-                log.debug("Will assume we are running on GLIBC");
-                return LinuxLibC.GLIBC;
+            // fallback: we will assume this is GLIBC
+            log.debug("Will assume we are running on GLIBC");
+            return LinuxLibC.GLIBC;
             }
         });
     }
@@ -263,7 +263,7 @@ public class PlatformInfo {
                             if (name.contains("musl")) {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
-                                    log.debug("Detected MUSL libc via /lib dir in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected libc MUSL via /lib dir strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setLibc(LinuxLibC.MUSL);
                                 }
                             }
@@ -271,13 +271,13 @@ public class PlatformInfo {
                             if (name.contains("armhf") || name.contains("arm-linux-gnueabihf")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMHF) {
-                                    log.debug("Detected ARMHF via /lib dir in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected hardware architecture ARMHF via /lib dir strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
                             } else if (name.contains("armel") || name.contains("arm-linux-gnueabi")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
-                                    log.debug("Detected ARMEL via /lib dir in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected hardware architecture ARMEL via /lib dir strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMEL);
                                 }
                             }
@@ -326,7 +326,7 @@ public class PlatformInfo {
                             if (realMapFilePath.contains("musl")) {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
-                                    log.debug("Detected MUSL libc via mapped files in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected libc MUSL via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setLibc(LinuxLibC.MUSL);
                                 }
                             } else if (realMapFilePath.contains("/libc")) {
@@ -336,13 +336,13 @@ public class PlatformInfo {
                             if (realMapFilePath.contains("armhf") || realMapFilePath.contains("arm-linux-gnueabihf")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMHF) {
-                                    log.debug("Detected ARMHF via mapped files in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected hardware architecture ARMHF via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMHF);
                                 }
                             } else if (realMapFilePath.contains("armel") || realMapFilePath.contains("arm-linux-gnueabi")) {
                                 // only try detecting this once
                                 if (result.getArch() != HardwareArchitecture.ARMEL) {
-                                    log.debug("Detected ARMEL via mapped files in {} ms", (System.currentTimeMillis() - now));
+                                    log.debug("Detected hardware architecture ARMEL via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
                                     result.setArch(HardwareArchitecture.ARMEL);
                                 }
                             }
@@ -357,12 +357,12 @@ public class PlatformInfo {
         }
 
         if (possiblyFoundGlibc) {
-            log.debug("Detected GLIBC libc via mapped files in {} ms", (System.currentTimeMillis() - now));
+            log.debug("Detected libc GLIBC via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
             result.setLibc(LinuxLibC.GLIBC);
         }
 
         if (result.getLibc() == null) {
-            log.warn("Unable to detect libc via mapped files in {} ms", (System.currentTimeMillis() - now));
+            log.warn("Unable to detect libc via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
             result.setLibc(LinuxLibC.UNKNOWN);
         }
 

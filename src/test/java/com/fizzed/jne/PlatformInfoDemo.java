@@ -31,18 +31,16 @@ public class PlatformInfoDemo {
         PlatformInfo.detectOperatingSystem();
         OperatingSystem os = PlatformInfo.detectOperatingSystem();
 
-        log.info("OS: {}", os);
-
         // do this twice to verify its only done once
         PlatformInfo.detectHardwareArchitecture();
         HardwareArchitecture arch = PlatformInfo.detectHardwareArchitecture();
-
-        log.info("Arch: {}", arch);
 
         // do this twice to verify its only done once
         PlatformInfo.detectLinuxLibC();
         LinuxLibC libc = PlatformInfo.detectLinuxLibC();
 
+        log.info("OS: {}", os);
+        log.info("Arch: {}", arch);
         log.info("LibC: {}", libc);
     }
 
