@@ -262,7 +262,7 @@ public class JNE {
         try {
             f = findLibrary(name, options, majorVersion);
         } catch (Exception e) {
-            log.debug("Exception while finding library: " + e.getMessage());
+            log.debug("Exception while finding library: {}", e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
         }
 
@@ -272,15 +272,16 @@ public class JNE {
             // and the user would be required to provide a valid LD_LIBRARY_PATH when
             // launching the java process -- we don't need to do use loadLibrary
             // and can just tell it to load a specific library file
-            log.trace("System.load(" + f.getAbsolutePath() + ")");
-            System.load(f.getAbsolutePath());
+            String libraryPath = f.getAbsolutePath();
+            log.trace("System.load({})", libraryPath);
+            System.load(libraryPath);
+            log.debug("Loaded library [{}] @ {}", name, libraryPath);
         } else {
             log.trace("Falling back to System.loadLibrary(" + name + ")");
             // fallback to java method
             System.loadLibrary(name);
+            log.debug("Loaded library [{}]", name);
         }
-
-        log.debug("Library [" + name + "] loaded!");
     }
 
     /**

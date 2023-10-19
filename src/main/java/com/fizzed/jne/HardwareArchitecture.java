@@ -27,7 +27,7 @@ public enum HardwareArchitecture {
     
     ANY(null),
     UNKNOWN(null),
-    X32(new String[] { "i386" }),
+    X32(new String[] { "i386", "i586", "i686" }),
     X64(new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
     ARMEL(null),                        // ARMEL, ARM 32-bit SF v6, v7, v5
     ARMHF(null),                        // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards

@@ -50,7 +50,7 @@ public class OptionsTest {
                 is(asList("/jne/linux/x64/test", "/jne/linux/x86_64/test", "/jne/linux/amd64/test")));
 
         assertThat(options.createResourcePaths(OperatingSystem.LINUX, HardwareArchitecture.X32, null, "test"),
-                is(asList("/jne/linux/x32/test", "/jne/linux/i386/test")));
+                is(asList("/jne/linux/x32/test", "/jne/linux/i386/test", "/jne/linux/i586/test", "/jne/linux/i686/test")));
 
         assertThat(options.createResourcePaths(OperatingSystem.LINUX, HardwareArchitecture.RISCV64, null, "test"),
                 is(asList("/jne/linux/riscv64/test")));
