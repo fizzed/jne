@@ -24,9 +24,7 @@ package com.fizzed.jne;
  * Operating system that Java is running on.
  */
 public enum OperatingSystem {
-    
-    ANY(null),
-    UNKNOWN(null),
+
     WINDOWS(null),
     MACOS(new String[] { "osx" }),
     LINUX(null),

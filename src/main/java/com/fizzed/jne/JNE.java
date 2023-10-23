@@ -32,7 +32,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +42,6 @@ public class JNE {
 
     static private final Logger log = LoggerFactory.getLogger(JNE.class);
 
-    static public Options DEFAULT_OPTIONS = new Options();
     static private File TEMP_DIRECTORY;
     static private final ConcurrentHashMap<File, String> JAR_VERSION_HASHES = new ConcurrentHashMap<>();
 
@@ -127,23 +125,25 @@ public class JNE {
      */
     synchronized static public File findExecutable(String name, String targetName, Options options) throws IOException {
         if (options == null) {
-            options = DEFAULT_OPTIONS;
+            options = Options.DEFAULT;
         }
 
-        String fileName = options.createExecutableName(name, options.getOperatingSystem());
+        final NativeTarget nativeTarget = resolveNativeTarget(options);
+
+        String fileName = nativeTarget.resolveExecutableFileName(name);
 
         String targetFileName = null;
 
         if (targetName != null) {
-            targetFileName = options.createExecutableName(targetName, options.getOperatingSystem());
+            targetFileName = nativeTarget.resolveExecutableFileName(targetName);
         }
 
         // always search for specific arch first
-        File file = find(fileName, targetFileName, options, options.getOperatingSystem(), options.getHardwareArchitecture());
+        File file = find(fileName, targetFileName, options, nativeTarget.getOperatingSystem(), nativeTarget.getHardwareArchitecture(), nativeTarget.getAbi());
 
         // for x64 fallback to x86 if an exe was not found
         if (file == null && options.isX32ExecutableFallback() && options.getHardwareArchitecture() == HardwareArchitecture.X64) {
-            file = find(fileName, targetFileName, options, options.getOperatingSystem(), HardwareArchitecture.X32);
+            file = find(fileName, targetFileName, options, nativeTarget.getOperatingSystem(), HardwareArchitecture.X32, nativeTarget.getAbi());
         }
 
         return file;
@@ -178,24 +178,22 @@ public class JNE {
     }
 
     synchronized static public File findLibrary(String name) {
-        return findLibrary(name, null, null);
+        return findLibrary(name, null);
     }
 
-    synchronized static public File findLibrary(String name, Integer majorVersion) {
-        return findLibrary(name, null, majorVersion);
-    }
-
-    synchronized static public File findLibrary(String name, Options options, Integer majorVersion) {
+    synchronized static public File findLibrary(String name, Options options) {
         if (options == null) {
-            options = DEFAULT_OPTIONS;
+            options = Options.DEFAULT;
         }
 
-        // file name to try and find/extract (only support major for now since linux 99% of the time links to major)
-        String fileName = options.createLibraryName(name, options.getOperatingSystem(), majorVersion, null, null);
+        final NativeTarget nativeTarget = resolveNativeTarget(options);
+
+        // file name to try and find/extract
+        String fileName = nativeTarget.resolveLibraryFileName(name);
 
         try {
             // always search for specific arch first
-            return find(fileName, null, options, options.getOperatingSystem(), options.getHardwareArchitecture());
+            return find(fileName, null, options, nativeTarget.getOperatingSystem(), nativeTarget.getHardwareArchitecture(), nativeTarget.getAbi());
         } catch (IOException e) {
             throw new UnsatisfiedLinkError(e.getMessage());
         }
@@ -224,11 +222,7 @@ public class JNE {
      * finding or extracting the executable.
      */
     synchronized static public void loadLibrary(String name) {
-        loadLibrary(name, null, null);
-    }
-
-    synchronized static public void loadLibrary(String name, Integer majorVersion) {
-        loadLibrary(name, null, majorVersion);
+        loadLibrary(name, null);
     }
 
     /**
@@ -252,15 +246,14 @@ public class JNE {
      * @param name The library name to find and load
      * @param options The options to use when finding the library. If null then
      * the default options will be used.
-     * @param majorVersion
      * @throws UnsatisfiedLinkError Thrown if a runtime exception occurs while
      * finding or extracting the executable.
      */
-    synchronized static public void loadLibrary(String name, Options options, Integer majorVersion) {
+    synchronized static public void loadLibrary(String name, Options options) {
         // search for specific library
         File f = null;
         try {
-            f = findLibrary(name, options, majorVersion);
+            f = findLibrary(name, options);
         } catch (Exception e) {
             log.debug("Exception while finding library: {}", e.getMessage());
             throw new UnsatisfiedLinkError("Unable to cleanly find (or extract) library [" + name + "] as resource");
@@ -322,20 +315,22 @@ public class JNE {
      */
     synchronized static public File findFile(String name, Options options) throws IOException {
         if (options == null) {
-            options = DEFAULT_OPTIONS;
+            options = Options.DEFAULT;
         }
 
+        final NativeTarget nativeTarget = resolveNativeTarget(options);
+
         // 1. try with os & arch
-        File file = JNE.find(name, name, options, options.getOperatingSystem(), options.getHardwareArchitecture());
+        File file = JNE.find(name, name, options, nativeTarget.getOperatingSystem(), nativeTarget.getHardwareArchitecture(), nativeTarget.getAbi());
 
         // 2. try with os & any arch
         if (file == null) {
-            file = JNE.find(name, name, options, options.getOperatingSystem(), HardwareArchitecture.ANY);
+            file = JNE.find(name, name, options, nativeTarget.getOperatingSystem(), null, nativeTarget.getAbi());
         }
 
         // 3. try with os & any arch
         if (file == null) {
-            file = JNE.find(name, name, options, OperatingSystem.ANY, HardwareArchitecture.ANY);
+            file = JNE.find(name, name, options, null, null, null);
         }
 
         return file;
@@ -373,27 +368,29 @@ public class JNE {
      * @throws IOException
      * @throws ExtractException
      */
-    synchronized static public File find(String fileName, String targetFileName, Options options, OperatingSystem os, HardwareArchitecture arch) throws IOException {
+    synchronized static public File find(String fileName, String targetFileName, Options options, OperatingSystem os, HardwareArchitecture arch, ABI abi) throws IOException {
         if (options == null) {
-            options = DEFAULT_OPTIONS;
+            options = Options.DEFAULT;
         }
 
-        if (os == null || os == OperatingSystem.UNKNOWN) {
+        // a null os and arch now indicate an "any"
+        /*if (os == null || os == OperatingSystem.UNKNOWN) {
             throw new ExtractException("Unable to detect operating system (e.g. Windows)");
         }
 
         if (arch == null || arch == HardwareArchitecture.UNKNOWN) {
             throw new ExtractException("Unable to detect hardware architecture (e.g. x86)");
-        }
+        }*/
 
         if (targetFileName == null) {
             targetFileName = fileName;
         }
 
-        log.trace("Finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "]...");
+        log.trace("Finding fileName [" + fileName + "] targetFileName [" + targetFileName + "] os [" + os + "] arch [" + arch + "] abi [" + abi + "]...");
 
         // Full matrix of os + arch resources we will search for, in prioritized order
-        final List<String> resourcePaths = options.createResourcePaths(os, arch, options.getLinuxLibC(), fileName);
+        final NativeTarget nativeTarget = NativeTarget.of(os, arch, abi);
+        final List<String> resourcePaths = nativeTarget.resolveResourcePaths(options.getResourcePrefix(), fileName);
         URL url = null;
         for (String resourcePath : resourcePaths) {
             log.trace("Finding resource [" + resourcePath + "]");
@@ -601,7 +598,7 @@ public class JNE {
 //            throw new ExtractException("Unable to create temporary dir", e);
 //        }
         
-        // use totally unique name to avoid race conditions
+        // use unique name to avoid race conditions
         try {
             Path baseDir = Paths.get(System.getProperty("java.io.tmpdir"));
             Path tempDirectory = baseDir.resolve("jne." + UUID.randomUUID().toString());
@@ -616,23 +613,38 @@ public class JNE {
         } catch (IOException e) {
             throw new ExtractException("Unable to create temporary dir", e);
         }
-        
-//        File baseDir = new File(System.getProperty("java.io.tmpdir"));
-//        String baseName = System.currentTimeMillis() + "-";
-//
-//        for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++) {
-//            File d = new File(baseDir, baseName + counter);
-//            if (d.mkdirs()) {
-//                // schedule this directory to be deleted on exit
-//                if (deleteOnExit) {
-//                    d.deleteOnExit();
-//                }
-//                tempDirectory = d;
-//                return d;
-//            }
-//        }
-//
-//        throw new ExtractException("Failed to create temporary directory within " + TEMP_DIR_ATTEMPTS + " attempts (tried " + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
+    }
+
+    static private OperatingSystem resolveOperatingSystem(Options options) {
+        if (options != null && options.getOperatingSystem() != null) {
+            return options.getOperatingSystem();
+        }
+        return PlatformInfo.detectOperatingSystem();
+    }
+
+    static private HardwareArchitecture resolveHardwareArchitecture(Options options) {
+        if (options != null && options.getHardwareArchitecture() != null) {
+            return options.getHardwareArchitecture();
+        }
+        return PlatformInfo.detectHardwareArchitecture();
+    }
+
+    static private ABI resolveAbi(Options options) {
+        // to resolve abi, we need the os
+        final OperatingSystem os = resolveOperatingSystem(options);
+
+        if (options != null && options.getAbi() != null) {
+            return options.getAbi();
+        }
+
+        return PlatformInfo.detectAbi(os);
+    }
+
+    static private NativeTarget resolveNativeTarget(Options options) {
+        final OperatingSystem os = resolveOperatingSystem(options);
+        final HardwareArchitecture arch = resolveHardwareArchitecture(options);
+        final ABI abi = resolveAbi(options);
+        return NativeTarget.of(os, arch, abi);
     }
 
 }

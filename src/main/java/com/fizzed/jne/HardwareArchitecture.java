@@ -24,9 +24,7 @@ package com.fizzed.jne;
  * Architecture of hardware & operating system.
  */
 public enum HardwareArchitecture {
-    
-    ANY(null),
-    UNKNOWN(null),
+
     X32(new String[] { "i386", "i586", "i686" }),
     X64(new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
     ARMEL(null),                        // ARMEL, ARM 32-bit SF v6, v7, v5

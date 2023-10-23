@@ -37,13 +37,13 @@ public class PlatformInfoTest {
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
 
         assertThat(operatingSystem, is(not(nullValue())));
-        assertThat(operatingSystem, is(not(OperatingSystem.UNKNOWN)));
+//        assertThat(operatingSystem, is(not(OperatingSystem.UNKNOWN)));
     }
 
     @Test
     public void detectOperatingSystemFromValues() {
         assertThat(PlatformInfo.detectOperatingSystemFromValues("Windows"), is(OperatingSystem.WINDOWS));
-        assertThat(PlatformInfo.detectOperatingSystemFromValues("blah"), is(OperatingSystem.UNKNOWN));
+        assertThat(PlatformInfo.detectOperatingSystemFromValues("blah"), is(nullValue()));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class PlatformInfoTest {
         HardwareArchitecture hardwareArchitecture = PlatformInfo.doDetectHardwareArchitecture();
 
         assertThat(hardwareArchitecture, is(not(nullValue())));
-        assertThat(hardwareArchitecture, is(not(HardwareArchitecture.UNKNOWN)));
+//        assertThat(hardwareArchitecture, is(not(HardwareArchitecture.UNKNOWN)));
 
         log.debug("==============================================================================================");
     }
@@ -60,8 +60,8 @@ public class PlatformInfoTest {
     @Test
     public void detectHardwareArchitectureFromValues() {
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("amd64", null, null, null), is(HardwareArchitecture.X64));
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null, null, null), is(HardwareArchitecture.UNKNOWN));
-        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, null, null), is(HardwareArchitecture.UNKNOWN));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("blah", null, null, null), is(nullValue()));
+        assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, null, null), is(nullValue()));
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", "gnueabihf", null, null), is(HardwareArchitecture.ARMHF));
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", "gnueabi", null, null), is(HardwareArchitecture.ARMEL));
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("arm", null, "/usr/lib/jvm/zulu17.38.21-ca-jdk17.0.5-linux_aarch32hf/lib", null), is(HardwareArchitecture.ARMHF));

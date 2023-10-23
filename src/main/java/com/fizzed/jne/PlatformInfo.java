@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlatformInfo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfo.class);
@@ -55,7 +56,7 @@ public class PlatformInfo {
 
         final OperatingSystem operatingSystem = detectOperatingSystemFromValues(osName);
 
-        if (operatingSystem != OperatingSystem.UNKNOWN) {
+        if (operatingSystem != null) {
             log.debug("Detected operating system {} (in {} ms)", operatingSystem, (System.currentTimeMillis() - now));
         } else {
             log.warn("Unable to detect operating system (in {} ms)", (System.currentTimeMillis() - now));
@@ -81,7 +82,7 @@ public class PlatformInfo {
                 return OperatingSystem.OPENBSD;
             }
         }
-        return OperatingSystem.UNKNOWN;
+        return null;
     }
 
     //
@@ -112,7 +113,7 @@ public class PlatformInfo {
         final HardwareArchitecture hardwareArchitecture = detectHardwareArchitectureFromValues(
                 osArch, abiType, bootLibPath, linuxMappedFilesResult);
 
-        if (hardwareArchitecture != HardwareArchitecture.UNKNOWN) {
+        if (hardwareArchitecture != null) {
             log.debug("Detected hardware architecture {} (in {} ms)", hardwareArchitecture, (System.currentTimeMillis() - now));
         } else {
             log.warn("Unable to detect hardware architecture (in {} ms)", (System.currentTimeMillis() - now));
@@ -121,7 +122,7 @@ public class PlatformInfo {
         return hardwareArchitecture;
     }
 
-    static public HardwareArchitecture detectHardwareArchitectureFromValues(
+    static HardwareArchitecture detectHardwareArchitectureFromValues(
             String osArch,
             String abiType,
             String bootLibPath,
@@ -130,7 +131,7 @@ public class PlatformInfo {
         log.trace("Trying to detect hardware architecture via sysprops arch={}, abi={}, bootpath={}", osArch, abiType, bootLibPath);
 
         if (osArch != null) {
-            osArch = osArch != null ? osArch.toLowerCase() : "none";
+            osArch = osArch.toLowerCase();
             abiType = abiType != null ? abiType.toLowerCase() : "none";
             bootLibPath = bootLibPath != null ? bootLibPath.toLowerCase() : "none";
 
@@ -163,7 +164,7 @@ public class PlatformInfo {
                 }
 
                 // linux mapped files?
-                if (linuxMappedFilesResult != null && linuxMappedFilesResult.getArch() != null && linuxMappedFilesResult.getArch() != HardwareArchitecture.UNKNOWN) {
+                if (linuxMappedFilesResult != null && linuxMappedFilesResult.getArch() != null && linuxMappedFilesResult.getArch() != null) {
                     return linuxMappedFilesResult.getArch();
                 }
                 // the most common is likely hard float
@@ -177,7 +178,46 @@ public class PlatformInfo {
                 return HardwareArchitecture.MIPS64LE;
             }
         }
-        return HardwareArchitecture.UNKNOWN;
+        return null;
+    }
+
+    //
+    // Binary Environment Detection
+    //
+
+    static private final ConcurrentHashMap<OperatingSystem,ABI> abiRefs = new ConcurrentHashMap<>();
+
+    static public ABI detectAbi(OperatingSystem os) {
+        return abiRefs.computeIfAbsent(os, PlatformInfo::doDetectAbi);
+    }
+
+    static ABI doDetectAbi(OperatingSystem os) {
+        final long now = System.currentTimeMillis();
+
+        ABI abi = null;
+
+        if (os == OperatingSystem.LINUX) {
+            final LinuxLibC linuxLibC = detectLinuxLibC();
+            if (linuxLibC != null) {
+                switch (linuxLibC) {
+                    case MUSL:
+                        abi = ABI.MUSL;
+                        break;
+                    case GLIBC:
+                    case UNKNOWN:
+                        abi = ABI.GNU;
+                        break;
+                }
+            }
+        }
+
+        if (abi == null) {
+            abi = ABI.DEFAULT;
+        }
+
+        log.debug("Detected {} abi {} (in {} ms)", os, abi, (System.currentTimeMillis() - now));
+
+        return abi;
     }
 
     //
@@ -362,7 +402,7 @@ public class PlatformInfo {
         }
 
         if (result.getLibc() == null) {
-            log.warn("Unable to detect libc via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
+            log.debug("Unable to detect libc via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
             result.setLibc(LinuxLibC.UNKNOWN);
         }
 
