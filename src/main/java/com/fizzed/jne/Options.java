@@ -45,7 +45,12 @@ public class Options {
         // defaults
         this.operatingSystem = PlatformInfo.detectOperatingSystem();
         this.hardwareArchitecture = PlatformInfo.detectHardwareArchitecture();
-        this.linuxLibC = PlatformInfo.detectLinuxLibC();
+        // we only need to detect libc for linux
+        if (this.operatingSystem == OperatingSystem.LINUX) {
+            this.linuxLibC = PlatformInfo.detectLinuxLibC();
+        } else {
+            this.linuxLibC = null;
+        }
         this.resourcePrefix = System.getProperty(SYSPROP_RESOURCE_PREFIX, "/jne");
         this.extractDir = getSystemPropertyAsFile(SYSPROP_EXTRACT_DIR, null);
         this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, true);

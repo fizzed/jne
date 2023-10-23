@@ -71,13 +71,13 @@ public class blaze {
         // OpenBSD
         //
 
-        new Target("openbsd", "x64")
+        /*new Target("openbsd", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-openbsd67-1"),
 
         new Target("openbsd", "arm64")
             .setTags("build", "test")
-            .setHost("bmh-build-arm64-openbsd72-1"),
+            .setHost("bmh-build-arm64-openbsd72-1"),*/
 
         //
         // MacOS

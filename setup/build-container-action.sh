@@ -21,7 +21,7 @@ if [ ! -z "$(echo $BUILDARCH | grep "\-test")" ]; then
   fi
 fi
 
-docker build -f "$DOCKERFILE" --progress=plain \
+docker build -f "$DOCKERFILE" \
   --build-arg "FROM_IMAGE=${DOCKER_IMAGE}" \
   --build-arg USERID=${USERID} \
   --build-arg USERNAME=${USERNAME} \
