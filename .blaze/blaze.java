@@ -7,8 +7,6 @@ import java.nio.file.Path;
 
 import static com.fizzed.blaze.Contexts.withBaseDir;
 import static com.fizzed.blaze.Systems.exec;
-import static com.fizzed.blaze.SecureShells.sshConnect;
-import static com.fizzed.blaze.SecureShells.sshExec;
 import com.fizzed.buildx.*;
 
 public class blaze {
