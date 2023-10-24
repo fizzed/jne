@@ -42,4 +42,20 @@ public enum OperatingSystem {
         return aliases;
     }
 
+    static public OperatingSystem resolve(String value) {
+        for (OperatingSystem os : OperatingSystem.values()) {
+            if (os.name().equalsIgnoreCase(value)) {
+                return os;
+            }
+            if (os.getAliases() != null) {
+                for (String alias : os.getAliases()) {
+                    if (alias.equalsIgnoreCase(value)) {
+                        return os;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }

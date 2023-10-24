@@ -128,7 +128,7 @@ public class NativeTarget {
         }
     }
 
-    public String resolveRustTarget() {
+    public String toRustTarget() {
         this.checkHardwareArchitecture();
         this.checkOperatingSystem();
 
@@ -189,10 +189,35 @@ public class NativeTarget {
         return arch + "-" + vendorOsEnv;
     }
 
-    static public String resolveJneOperatingSystemABI(OperatingSystem os, ABI abi, String osAlias) {
-        // special case for linux, with an ABI
+    public String toJneOsAbi() {
+        this.checkOperatingSystem();
+        return toJneOsAbi(this.operatingSystem, this.abi, null);
+    }
+
+    public String toJneArch() {
+        this.checkHardwareArchitecture();
+        return this.hardwareArchitecture.name().toLowerCase();
+    }
+
+    public String toJneTarget() {
+        return this.toJneOsAbi() + "-" + this.toJneArch();
+    }
+
+    static private String toJneOsAbi(OperatingSystem os, ABI abi, String osAlias) {
+        validateAbi(os, abi);
+
         if (os == OperatingSystem.LINUX) {
+            // special case for linux, with an ABI
             if (abi == ABI.MUSL) {
+                if (osAlias != null) {
+                    return osAlias.toLowerCase() + "_" + abi.name().toLowerCase();
+                } else {
+                    return os.name().toLowerCase() + "_" + abi.name().toLowerCase();
+                }
+            }
+        } else if (os == OperatingSystem.WINDOWS) {
+            // special case for windows, with an ABI
+            if (abi == ABI.GNU) {
                 if (osAlias != null) {
                     return osAlias.toLowerCase() + "_" + abi.name().toLowerCase();
                 } else {
@@ -208,7 +233,39 @@ public class NativeTarget {
         }
     }
 
-    static public String resolveJneHardwareArchitecture(HardwareArchitecture hardwareArchitecture, String hardwareArchitectureAlias) {
+    static private void validateAbi(OperatingSystem os, ABI abi) {
+        boolean invalidAbi = false;
+        if (abi != null && abi != ABI.DEFAULT) {
+            if (os == OperatingSystem.LINUX) {
+                // linux can use musl or gnu
+                switch (abi) {
+                    case GNU:
+                    case MUSL:
+                        break;
+                    default:
+                        invalidAbi = true;
+                        break;
+                }
+            } else if (os == OperatingSystem.WINDOWS) {
+                // windows can use msvc or gnu
+                switch (abi) {
+                    case GNU:
+                    case MSVC:
+                        break;
+                    default:
+                        invalidAbi = true;
+                        break;
+                }
+            } else {
+                invalidAbi = true;
+            }
+        }
+        if (invalidAbi) {
+            throw new IllegalArgumentException("ABI " + abi + " is not valid for operating system " + os);
+        }
+    }
+
+    static public String toJneArch(HardwareArchitecture hardwareArchitecture, String hardwareArchitectureAlias) {
         if (hardwareArchitectureAlias != null) {
             return hardwareArchitectureAlias.toLowerCase();
         } else {
@@ -220,10 +277,10 @@ public class NativeTarget {
         final List<String> jneOsAbis = new ArrayList<>();
 
         if (this.operatingSystem != null) {
-            jneOsAbis.add(resolveJneOperatingSystemABI(this.operatingSystem, this.abi, null));
+            jneOsAbis.add(toJneOsAbi(this.operatingSystem, this.abi, null));
             if (this.operatingSystem.getAliases() != null) {
                 for (String alias : this.operatingSystem.getAliases()) {
-                    jneOsAbis.add(resolveJneOperatingSystemABI(this.operatingSystem, this.abi, alias));
+                    jneOsAbis.add(toJneOsAbi(this.operatingSystem, this.abi, alias));
                 }
             }
         } else {
@@ -233,10 +290,10 @@ public class NativeTarget {
         final List<String> jneArchs = new ArrayList<>();
 
         if (this.hardwareArchitecture != null) {
-            jneArchs.add(resolveJneHardwareArchitecture(this.hardwareArchitecture, null));
+            jneArchs.add(toJneArch(this.hardwareArchitecture, null));
             if (this.hardwareArchitecture.getAliases() != null) {
                 for (String alias : this.hardwareArchitecture.getAliases()) {
-                    jneArchs.add(resolveJneHardwareArchitecture(this.hardwareArchitecture, alias));
+                    jneArchs.add(toJneArch(this.hardwareArchitecture, alias));
                 }
             }
         } else {
@@ -269,8 +326,64 @@ public class NativeTarget {
         return resourcePaths;
     }
 
-    static public NativeTarget of(OperatingSystem operatingSystem, HardwareArchitecture hardwareArchitecture, ABI abi) {
-        return new NativeTarget(operatingSystem, hardwareArchitecture, abi);
+    static public NativeTarget of(OperatingSystem os, HardwareArchitecture arch, ABI abi) {
+        return new NativeTarget(os, arch, abi);
+    }
+
+    static public NativeTarget detect() {
+        final OperatingSystem os = PlatformInfo.detectOperatingSystem();
+        final HardwareArchitecture arch = PlatformInfo.detectHardwareArchitecture();
+        final ABI abi = PlatformInfo.detectAbi(os);
+        return new NativeTarget(os, arch, abi);
+    }
+
+    static public NativeTarget fromJneTarget(String jneTarget) {
+        if (jneTarget == null || jneTarget.trim().isEmpty()) {
+            throw new IllegalArgumentException("JNE target was null or empty");
+        }
+
+        final int hyphenPos = jneTarget.indexOf("-");
+        if (hyphenPos < 2 || hyphenPos >= jneTarget.length()-2) {
+            throw new IllegalArgumentException("JNE target [" + jneTarget + "] was not of format <os+abi>/arch such as linux-x64 or windows-x64");
+        }
+
+        final String osAbiStr = jneTarget.substring(0, hyphenPos);
+        final String archStr = jneTarget.substring(hyphenPos+1);
+        final String osStr;
+        final String abiStr;
+
+        // of osAbi contains an underscore, this means it has an abi
+        final int underscorePos = osAbiStr.indexOf("_");
+        if (underscorePos > 1) {
+            // we have an abi
+            osStr = osAbiStr.substring(0, underscorePos);
+            abiStr = osAbiStr.substring(underscorePos+1);
+        } else {
+            // we do not have an abi
+            osStr = osAbiStr;
+            abiStr = null;
+        }
+
+        // resolve all of 'em now
+        final OperatingSystem os = OperatingSystem.resolve(osStr);
+        final HardwareArchitecture arch = HardwareArchitecture.resolve(archStr);
+        final ABI abi = ABI.resolve(abiStr);
+
+        // validate we resolved all of them
+        if (os == null) {
+            throw new IllegalArgumentException("JNE target [" + jneTarget + "] with an unsupported operating system [" + osStr + "]");
+        }
+        if (arch == null) {
+            throw new IllegalArgumentException("JNE target [" + jneTarget + "] with an unsupported hardware architecture [" + archStr + "]");
+        }
+        if (abiStr != null && abi == null) {
+            throw new IllegalArgumentException("JNE target [" + jneTarget + "] with an unsupported abi [" + abiStr + "]");
+        }
+
+        // validate abi is valid
+        validateAbi(os, abi);
+
+        return new NativeTarget(os, arch, abi);
     }
 
 }

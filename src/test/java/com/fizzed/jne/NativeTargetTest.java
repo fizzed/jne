@@ -158,12 +158,12 @@ class NativeTargetTest {
     }
 
     @Test
-    public void resolveRustTarget() {
+    public void toRustTarget() {
         NativeTarget nt;
 
         nt = NativeTarget.of(null, null, null);
         try {
-            nt.resolveRustTarget();
+            nt.toRustTarget();
             fail();
         } catch (IllegalArgumentException e) {
             // expected
@@ -171,72 +171,204 @@ class NativeTargetTest {
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, null, null);
         try {
-            nt.resolveRustTarget();
+            nt.toRustTarget();
             fail();
         } catch (IllegalArgumentException e) {
             // expected
         }
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-pc-windows-msvc"));
+        assertThat(nt.toRustTarget(), is("x86_64-pc-windows-msvc"));
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.MSVC);
-        assertThat(nt.resolveRustTarget(), is("x86_64-pc-windows-msvc"));
+        assertThat(nt.toRustTarget(), is("x86_64-pc-windows-msvc"));
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.GNU);
-        assertThat(nt.resolveRustTarget(), is("x86_64-pc-windows-gnu"));
+        assertThat(nt.toRustTarget(), is("x86_64-pc-windows-gnu"));
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X32, null);
-        assertThat(nt.resolveRustTarget(), is("i686-pc-windows-msvc"));
+        assertThat(nt.toRustTarget(), is("i686-pc-windows-msvc"));
 
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.ARM64, null);
-        assertThat(nt.resolveRustTarget(), is("aarch64-pc-windows-msvc"));
+        assertThat(nt.toRustTarget(), is("aarch64-pc-windows-msvc"));
 
         // NOTE: this doesn't actually exist, should we still generate a rust target value?
         nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.RISCV64, null);
-        assertThat(nt.resolveRustTarget(), is("riscv64gc-pc-windows-msvc"));
+        assertThat(nt.toRustTarget(), is("riscv64gc-pc-windows-msvc"));
 
 
         nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-apple-darwin"));
+        assertThat(nt.toRustTarget(), is("x86_64-apple-darwin"));
 
         nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.ARM64, null);
-        assertThat(nt.resolveRustTarget(), is("aarch64-apple-darwin"));
+        assertThat(nt.toRustTarget(), is("aarch64-apple-darwin"));
 
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-unknown-linux-gnu"));
+        assertThat(nt.toRustTarget(), is("x86_64-unknown-linux-gnu"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.GNU);
-        assertThat(nt.resolveRustTarget(), is("x86_64-unknown-linux-gnu"));
+        assertThat(nt.toRustTarget(), is("x86_64-unknown-linux-gnu"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.MUSL);
-        assertThat(nt.resolveRustTarget(), is("x86_64-unknown-linux-musl"));
+        assertThat(nt.toRustTarget(), is("x86_64-unknown-linux-musl"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X32, null);
-        assertThat(nt.resolveRustTarget(), is("i686-unknown-linux-gnu"));
+        assertThat(nt.toRustTarget(), is("i686-unknown-linux-gnu"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X32, ABI.MUSL);
-        assertThat(nt.resolveRustTarget(), is("i686-unknown-linux-musl"));
+        assertThat(nt.toRustTarget(), is("i686-unknown-linux-musl"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, null);
-        assertThat(nt.resolveRustTarget(), is("aarch64-unknown-linux-gnu"));
+        assertThat(nt.toRustTarget(), is("aarch64-unknown-linux-gnu"));
 
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, ABI.MUSL);
-        assertThat(nt.resolveRustTarget(), is("aarch64-unknown-linux-musl"));
+        assertThat(nt.toRustTarget(), is("aarch64-unknown-linux-musl"));
 
 
 
         nt = NativeTarget.of(OperatingSystem.FREEBSD, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-unknown-freebsd"));
+        assertThat(nt.toRustTarget(), is("x86_64-unknown-freebsd"));
 
 
         nt = NativeTarget.of(OperatingSystem.OPENBSD, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-unknown-openbsd"));
+        assertThat(nt.toRustTarget(), is("x86_64-unknown-openbsd"));
 
 
         nt = NativeTarget.of(OperatingSystem.SOLARIS, HardwareArchitecture.X64, null);
-        assertThat(nt.resolveRustTarget(), is("x86_64-sun-solaris"));
+        assertThat(nt.toRustTarget(), is("x86_64-sun-solaris"));
+    }
+
+    @Test
+    public void toJneTarget() {
+        NativeTarget nt;
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, null);
+        assertThat(nt.toJneOsAbi(), is("windows"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("windows-x64"));
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.GNU);
+        assertThat(nt.toJneOsAbi(), is("windows_gnu"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("windows_gnu-x64"));
+
+        // invalid combo
+        try {
+            nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.MUSL);
+            nt.toJneOsAbi();
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.ARM64, null);
+        assertThat(nt.toJneOsAbi(), is("windows"));
+        assertThat(nt.toJneArch(), is("arm64"));
+        assertThat(nt.toJneTarget(), is("windows-arm64"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, null);
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("linux-x64"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.GNU);
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("linux-x64"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.MUSL);
+        assertThat(nt.toJneOsAbi(), is("linux_musl"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("linux_musl-x64"));
+    }
+
+    @Test
+    public void fromJneTarget() {
+        NativeTarget nt;
+
+        try {
+            NativeTarget.fromJneTarget(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            NativeTarget.fromJneTarget("blah");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            NativeTarget.fromJneTarget("-blayo");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            // nothing found
+            NativeTarget.fromJneTarget("abb-blayo");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            // arch not found
+            NativeTarget.fromJneTarget("windows-blayo");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            // abi not found
+            NativeTarget.fromJneTarget("windows_blah-x64");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            // validate everything, but musl isn't supported on windows
+            NativeTarget.fromJneTarget("windows_musl-x64");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        nt = NativeTarget.fromJneTarget("windows-x64");
+        assertThat(nt.toJneOsAbi(), is("windows"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("windows-x64"));
+
+        nt = NativeTarget.fromJneTarget("windows_msvc-x64");
+        assertThat(nt.toJneOsAbi(), is("windows"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("windows-x64"));
+
+        nt = NativeTarget.fromJneTarget("windows_gnu-x64");
+        assertThat(nt.toJneOsAbi(), is("windows_gnu"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("windows_gnu-x64"));
+
+        nt = NativeTarget.fromJneTarget("windows-arm64");
+        assertThat(nt.toJneOsAbi(), is("windows"));
+        assertThat(nt.toJneArch(), is("arm64"));
+        assertThat(nt.toJneTarget(), is("windows-arm64"));
+
+        nt = NativeTarget.fromJneTarget("linux-arm64");
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("arm64"));
+        assertThat(nt.toJneTarget(), is("linux-arm64"));
+
+        nt = NativeTarget.fromJneTarget("linux_musl-x64");
+        assertThat(nt.toJneOsAbi(), is("linux_musl"));
+        assertThat(nt.toJneArch(), is("x64"));
+        assertThat(nt.toJneTarget(), is("linux_musl-x64"));
     }
 
     @Test

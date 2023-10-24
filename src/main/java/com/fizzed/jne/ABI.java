@@ -30,4 +30,13 @@ public enum ABI {
     MUSL,
     MSVC;
 
+    static public ABI resolve(String value) {
+        for (ABI abi : ABI.values()) {
+            if (abi.name().equalsIgnoreCase(value)) {
+                return abi;
+            }
+        }
+        return null;
+    }
+
 }
