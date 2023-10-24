@@ -9,3 +9,8 @@ ARG USERNAME
 
 RUN adduser -D -u ${USERID} ${USERNAME}
 USER ${USERNAME}
+
+# use cached .m2
+RUN ln -s /project/.temp-m2 ~/.m2
+# use cached .ivy2
+RUN ln -s /project/.temp-ivy2 ~/.ivy2
