@@ -21,11 +21,10 @@ package com.fizzed.jne;
  */
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Options {
+
+    static public final Options DEFAULT = new Options();
     
     static public final String SYSPROP_DEBUG = "jne.debug";
     static public final String SYSPROP_RESOURCE_PREFIX = "jne.resource.prefix";
@@ -35,25 +34,20 @@ public class Options {
     
     private HardwareArchitecture hardwareArchitecture;
     private OperatingSystem operatingSystem;
-    private LinuxLibC linuxLibC;
+    private ABI abi;
     private String resourcePrefix;
     private File extractDir;
     private boolean x32ExecutableFallback;
     private boolean cleanupExtracted;
 
     public Options() {
-        // defaults
-        this.operatingSystem = PlatformInfo.detectOperatingSystem();
-        this.hardwareArchitecture = PlatformInfo.detectHardwareArchitecture();
-        // we only need to detect libc for linux
-        if (this.operatingSystem == OperatingSystem.LINUX) {
-            this.linuxLibC = PlatformInfo.detectLinuxLibC();
-        } else {
-            this.linuxLibC = null;
-        }
+        // only if you need to override the auto detected values!
+        this.operatingSystem = null;
+        this.hardwareArchitecture = null;
+        this.abi = null;
         this.resourcePrefix = System.getProperty(SYSPROP_RESOURCE_PREFIX, "/jne");
         this.extractDir = getSystemPropertyAsFile(SYSPROP_EXTRACT_DIR, null);
-        this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, true);
+        this.x32ExecutableFallback = getSystemPropertyAsBoolean(SYSPROP_X32_EXE_FALLBACK, false);
         this.cleanupExtracted = getSystemPropertyAsBoolean(SYSPROP_CLEANUP_EXTRACTED, true);
     }
 
@@ -75,12 +69,12 @@ public class Options {
         return this;
     }
 
-    public LinuxLibC getLinuxLibC() {
-        return linuxLibC;
+    public ABI getAbi() {
+        return abi;
     }
 
-    public Options setLinuxLibC(LinuxLibC linuxLibC) {
-        this.linuxLibC = linuxLibC;
+    public Options setAbi(ABI abi) {
+        this.abi = abi;
         return this;
     }
 
@@ -143,111 +137,6 @@ public class Options {
         return this;
     }
 
-    public String createExecutableName(String name, OperatingSystem os) {
-        // adjust executable name for windows
-        if (os == OperatingSystem.WINDOWS) {
-            return name + ".exe";
-        } else {
-            return name;
-        }
-    }
-
-    public String createLibraryName(String name, OperatingSystem os, Integer majorVersion, Integer minorVersion, Integer revisionVersion) {
-        switch (os) {
-            case WINDOWS:
-                return name + ".dll";
-            case LINUX:
-            case FREEBSD:
-            case OPENBSD:
-            case SOLARIS:
-                // build up the name of the file we want to load
-                String soname = "lib" + name + ".so";
-                if (majorVersion != null) {
-                    soname += "." + majorVersion;
-                    if (minorVersion != null) {
-                        soname += "." + minorVersion;
-                        if (revisionVersion != null) {
-                            soname += "." + revisionVersion;
-                        }
-                    }
-                }
-                return soname;
-            case MACOS:
-                return "lib" + name + ".dylib";
-            default:
-                return name;
-        }
-    }
-
-    /*public String createResourcePath(OperatingSystem os, HardwareArchitecture arch, String name) {
-        StringBuilder s = new StringBuilder();
-        s.append(getResourcePrefix());
-        s.append("/");
-        // only append os if its not null and not any...
-        if (os != null && os != OperatingSystem.ANY) {
-            s.append(os.name().toLowerCase());
-            s.append("/");
-            // only append arch if its not null and not any...
-            if (arch != null && arch != HardwareArchitecture.ANY) {
-                s.append(arch.name().toLowerCase());
-                s.append("/");
-            }
-        }
-        s.append(name);
-        return s.toString();
-    }*/
-
-    public List<String> createResourcePaths(OperatingSystem os, HardwareArchitecture arch, LinuxLibC linuxLibC, String name) {
-        final List<String> osList = new ArrayList<>();
-        if (os != null && os != OperatingSystem.ANY) {
-            // do we need to append the linux libc on?
-            final String osExtendedName = linuxLibC == LinuxLibC.MUSL ? "_"+linuxLibC.name().toLowerCase() : "";
-
-            osList.add(os.name().toLowerCase() + osExtendedName);
-            if (os.getAliases() != null) {
-                for (String alias : os.getAliases()) {
-                    osList.add(alias + osExtendedName);
-                }
-            }
-        } else {
-            osList.add(null);
-        }
-
-        final List<String> archList = new ArrayList<>();
-        if (arch != null && arch != HardwareArchitecture.ANY) {
-            archList.add(arch.name().toLowerCase());
-            if (arch.getAliases() != null) {
-                Collections.addAll(archList, arch.getAliases());
-            }
-        } else {
-            archList.add(null);
-        }
-
-        final List<String> resourcePaths = new ArrayList<>();
-
-        for (String _os : osList) {
-            for (String _arch : archList) {
-                StringBuilder s = new StringBuilder();
-                s.append(getResourcePrefix());
-                s.append("/");
-                // only append os if its not null and not any...
-                if (_os != null) {
-                    s.append(_os);
-                    s.append("/");
-                    // only append arch if its not null and not any...
-                    if (_arch != null) {
-                        s.append(_arch);
-                        s.append("/");
-                    }
-                }
-                s.append(name);
-                resourcePaths.add(s.toString());
-            }
-        }
-
-        return resourcePaths;
-    }
-    
     static private File getSystemPropertyAsFile(String key, File defaultValue) {
         String v = System.getProperty(key);
         if (v != null && !v.equals("")) {

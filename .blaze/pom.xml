@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"   
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0   
+http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+  
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>blaze</groupId>
+  <artifactId>jne-blaze</artifactId>
+  <name>jne-blaze</name>
+  <version>0.0.1</version>
+
+  <properties>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+  </properties>
+
+  <build>
+     <sourceDirectory>${project.basedir}</sourceDirectory>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fizzed</groupId>
+      <artifactId>blaze-lite</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fizzed</groupId>
+      <artifactId>blaze-ssh</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fizzed</groupId>
+      <artifactId>buildx</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fizzed</groupId>
+      <artifactId>jne</artifactId>
+      <version>3.3.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  
+</project>

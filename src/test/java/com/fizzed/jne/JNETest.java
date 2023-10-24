@@ -39,7 +39,7 @@ public class JNETest {
         // specific os & arch
         options.setOperatingSystem(OperatingSystem.LINUX);
         options.setHardwareArchitecture(HardwareArchitecture.X64);
-        options.setLinuxLibC(null);
+        options.setAbi(ABI.GNU);
         
         File file;
         
@@ -64,9 +64,9 @@ public class JNETest {
         Options options = new Options();
         
         // specific os & arch
-        options.setOperatingSystem(OperatingSystem.LINUX);
+        options.setOperatingSystem(OperatingSystem.MACOS);
         options.setHardwareArchitecture(HardwareArchitecture.X64);
-        options.setLinuxLibC(null);
+        options.setAbi(null);
         
         File file;
         
@@ -82,7 +82,34 @@ public class JNETest {
         // .exe should be added
         file = JNE.findExecutable("jcat", options);
         assertThat(file, is(not(nullValue())));
-        assertThat(file.getName(), endsWith(".exe"));
+        assertThat(file.getName(), is("jcat.exe"));
+    }
+
+    @Test
+    public void findLibrary() throws IOException, ExtractException {
+        Options options = new Options();
+
+        // specific os & arch
+        options.setOperatingSystem(OperatingSystem.MACOS);
+        options.setHardwareArchitecture(HardwareArchitecture.X64);
+        options.setAbi(null);
+
+        File file;
+
+        file = JNE.findLibrary("helloj", options);
+        assertThat(file, is(not(nullValue())));
+        assertThat(file.getName(), is("libhelloj.dylib"));
+
+        // does not exist
+        file = JNE.findLibrary("does-not-exist", options);
+        assertThat(file, is(nullValue()));
+
+        options.setOperatingSystem(OperatingSystem.WINDOWS);
+
+        // .exe should be added
+        file = JNE.findLibrary("helloj", options);
+        assertThat(file, is(not(nullValue())));
+        assertThat(file.getName(), is("helloj.dll"));
     }
     
 }

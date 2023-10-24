@@ -20,14 +20,23 @@ package com.fizzed.jne;
  * #L%
  */
 
-import org.junit.jupiter.api.Test;
+/**
+ * For Linux this is the LibC implementation in use such as GLIBC or MUSL.
+ */
+public enum ABI {
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+    DEFAULT,
+    GNU,
+    MUSL,
+    MSVC;
 
-public class OptionsTest {
+    static public ABI resolve(String value) {
+        for (ABI abi : ABI.values()) {
+            if (abi.name().equalsIgnoreCase(value)) {
+                return abi;
+            }
+        }
+        return null;
+    }
 
-
-    
 }

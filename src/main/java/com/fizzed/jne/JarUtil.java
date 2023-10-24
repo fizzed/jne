@@ -90,23 +90,4 @@ public class JarUtil {
         return versionNumber;
     }
     
-    /**
-    static public String getFileVersionNumber(File file) {
-        String versionNumber = null;
-        String fileNameNoExt = file.getName().substring(0, file.getName().lastIndexOf("."));
-        if (fileName.contains(".")) {
-            // version will be from last "-" to end
-            int delimiter = fileName.lastIndexOf("-");
-            
-            String majorVersion = fileName.substring(0, fileName.indexOf("."));
-            String minorVersion = fileName.substring(fileName.indexOf("."));
-            
-            if (majorVersion.indexOf("_")>delimiter) delimiter = majorVersion.indexOf("_");
-            majorVersion = majorVersion.substring(delimiter+1, fileName.indexOf("."));
-            versionNumber = majorVersion + minorVersion;
-        }
-        System.out.println("Version: " + versionNumber); //"Version: 1.3.162"
-    }
-    */
-    
 }
