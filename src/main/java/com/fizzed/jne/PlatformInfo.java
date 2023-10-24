@@ -285,6 +285,13 @@ public class PlatformInfo {
     }
 
     static LinuxDetectedFilesResult doDetectLinuxLibFiles() {
+        // only do this on linux
+        final OperatingSystem os = detectOperatingSystem();
+        if (os != OperatingSystem.LINUX) {
+            // skip doing this on anything other than linux
+            return null;
+        }
+
         // issue: https://github.com/facebook/rocksdb/issues/9956
         // some version of the kernel are missing mapped files, and its potentially slow as well
         final long now = System.currentTimeMillis();
@@ -344,6 +351,13 @@ public class PlatformInfo {
     }
 
     static LinuxDetectedFilesResult doDetectLinuxMappedFiles() {
+        // only do this on linux
+        final OperatingSystem os = detectOperatingSystem();
+        if (os != OperatingSystem.LINUX) {
+            // skip doing this on anything other than linux
+            return null;
+        }
+
         // NOTE: this was only added in linux v3.3+, it will not work below that
         // https://github.com/dmlc/xgboost/issues/7915
         // helpful technique discovered from https://github.com/xerial/sqlite-jdbc/blob/master/src/main/java/org/sqlite/util/OSInfo.java
