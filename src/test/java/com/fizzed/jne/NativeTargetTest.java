@@ -225,6 +225,12 @@ class NativeTargetTest {
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, ABI.MUSL);
         assertThat(nt.toRustTarget(), is("aarch64-unknown-linux-musl"));
 
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMHF, null);
+        assertThat(nt.toRustTarget(), is("armv7-unknown-linux-gnueabihf"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMEL, null);
+        assertThat(nt.toRustTarget(), is("arm-unknown-linux-gnueabi"));
+
 
 
         nt = NativeTarget.of(OperatingSystem.FREEBSD, HardwareArchitecture.X64, null);
@@ -281,6 +287,16 @@ class NativeTargetTest {
         assertThat(nt.toJneOsAbi(), is("linux_musl"));
         assertThat(nt.toJneArch(), is("x64"));
         assertThat(nt.toJneTarget(), is("linux_musl-x64"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMHF, ABI.GNU);
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("armhf"));
+        assertThat(nt.toJneTarget(), is("linux-armhf"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMEL, ABI.GNU);
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("armel"));
+        assertThat(nt.toJneTarget(), is("linux-armel"));
     }
 
     @Test
@@ -364,6 +380,16 @@ class NativeTargetTest {
         assertThat(nt.toJneOsAbi(), is("linux"));
         assertThat(nt.toJneArch(), is("arm64"));
         assertThat(nt.toJneTarget(), is("linux-arm64"));
+
+        nt = NativeTarget.fromJneTarget("linux-armhf");
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("armhf"));
+        assertThat(nt.toJneTarget(), is("linux-armhf"));
+
+        nt = NativeTarget.fromJneTarget("linux-armel");
+        assertThat(nt.toJneOsAbi(), is("linux"));
+        assertThat(nt.toJneArch(), is("armel"));
+        assertThat(nt.toJneTarget(), is("linux-armel"));
 
         nt = NativeTarget.fromJneTarget("linux_musl-x64");
         assertThat(nt.toJneOsAbi(), is("linux_musl"));

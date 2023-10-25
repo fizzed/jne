@@ -149,6 +149,12 @@ public class NativeTarget {
             case RISCV64:
                 arch = "riscv64gc";
                 break;
+            case ARMHF:
+                arch = "armv7";
+                break;
+            case ARMEL:
+                arch = "arm";
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported rust target for hardware architecture " + this.hardwareArchitecture + " (if it should be valid please add to " + this.getClass().getCanonicalName() + ")");
         }
@@ -165,6 +171,10 @@ public class NativeTarget {
             case LINUX:
                 if (abi == ABI.MUSL) {
                     vendorOsEnv = "unknown-linux-musl";
+                } else if (this.hardwareArchitecture == HardwareArchitecture.ARMHF) {
+                    vendorOsEnv = "unknown-linux-gnueabihf";
+                } else if (this.hardwareArchitecture == HardwareArchitecture.ARMEL) {
+                    vendorOsEnv = "unknown-linux-gnueabi";
                 } else {
                     // default is glibc/gnu
                     vendorOsEnv = "unknown-linux-gnu";
