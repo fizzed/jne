@@ -2,6 +2,5 @@
 .idea
 *.iml
 native/libhelloj/helloj/HelloLib.class
-.temp-m2
-.temp-ivy2
 .buildx
+.buildx-temp

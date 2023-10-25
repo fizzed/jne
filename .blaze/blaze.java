@@ -24,7 +24,7 @@ public class blaze {
             .run();
     }
 
-    private final List<Target> targets = asList(
+    private final List<Target> crossTargets = asList(
         //
         // Linux
         //
@@ -37,18 +37,18 @@ public class blaze {
             .setTags("build")
             .setContainerImage("fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-arm64"),
 
-        /*new Target("linux", "armhf")
+        new Target("linux", "armhf")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
+            .setContainerImage("fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armhf"),
 
         new Target("linux", "armel")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu16-jdk11-cross-build"),
+            .setContainerImage("fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armel"),
 
         // NOTE: ubuntu18 added support for riscv64
         new Target("linux", "riscv64")
             .setTags("build")
-            .setContainerImage("fizzed/buildx:amd64-ubuntu18-jdk11-cross-build"),*/
+            .setContainerImage("fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux-riscv64"),
 
         //
         // Linux (w/ MUSL)
@@ -66,49 +66,49 @@ public class blaze {
         // FreeBSD
         //
 
-        /*new Target("freebsd", "x64")
+        new Target("freebsd", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-freebsd12-1"),
 
         new Target("freebsd", "arm64")
             .setTags("build", "test")
-            .setHost("bmh-build-arm64-freebsd13-1"),*/
+            .setHost("bmh-build-arm64-freebsd13-1"),
 
         //
         // OpenBSD
         //
 
-        /*new Target("openbsd", "x64")
+        new Target("openbsd", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-openbsd67-1"),
 
         new Target("openbsd", "arm64")
             .setTags("build", "test")
-            .setHost("bmh-build-arm64-openbsd72-1"),*/
+            .setHost("bmh-build-arm64-openbsd72-1"),
 
         //
         // MacOS
         //
 
-        /*new Target("macos", "x64")
+        new Target("macos", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-macos1013-1"),
 
         new Target("macos", "arm64")
             .setTags("build", "test")
-            .setHost("bmh-build-arm64-macos12-1"),*/
+            .setHost("bmh-build-arm64-macos12-1"),
 
         //
         // Windows
         //
 
-        /*new Target("windows", "x64")
+        new Target("windows", "x64")
             .setTags("build", "test")
             .setHost("bmh-build-x64-win11-1"),
 
         new Target("windows", "arm64")
             .setTags("build")
-            .setHost("bmh-build-x64-win11-1"),*/
+            .setHost("bmh-build-x64-win11-1"),
 
         //
         // test-only containers
@@ -150,6 +150,10 @@ public class blaze {
             .setTags("test")
             .setHost("bmh-build-x64-win10-1"),
 
+        new Target("windows", "arm64", "win11")
+            .setTags("test")
+            .setHost("bmh-build-arm64-win11-1"),
+
 
         new Target("linux_musl", "x64", "alpine3.11, jdk11")
             .setTags("test")
@@ -162,12 +166,7 @@ public class blaze {
             .setContainerImage("fizzed/buildx:arm64v8-alpine3.11-jdk11")
 
         /*
-
-
-
-        new Target("windows", "arm64-test", "win11")
-            .setTags("test")
-            .setHost("bmh-build-arm64-win11-1")*/
+        */
 
         /*
         new Target("linux", "armhf-test")
@@ -186,8 +185,6 @@ public class blaze {
             .setTags("test")
             .setContainerImage("fizzed/buildx:riscv64-ubuntu20-jdk19"),
 
-
-
         new Target("windows", "x64-test", "win10")
             .setTags("test")
             .setHost("bmh-build-x64-win10-1"),
@@ -200,31 +197,20 @@ public class blaze {
 
     @Task(order = 50)
     public void cross_build_containers() throws Exception {
-        final String user = System.getenv("USER");
-        final String userId = exec("id", "-u", user).runCaptureOutput().toString();
-        new Buildx(targets)
-            .onlyWithContainers()
+        new Buildx(crossTargets)
+            .containersOnly()
             .execute((target, project) -> {
-                String dockerFile = "setup/Dockerfile.linux";
-                if (target.getContainerImage().contains("alpine")) {
-                    dockerFile = "setup/Dockerfile.linux_musl";
-                }
-
-                project.exec("docker", "build",
-                    "-f", dockerFile,
-                    "--build-arg", "FROM_IMAGE="+target.getContainerImage(),
-                    "--build-arg", "USERID="+userId,
-                    "--build-arg", "USERNAME="+user,
-                    "-t", project.getContainerName(),
-                    "setup")
-                    .run();
+                // no customization needed
+                project.buildContainer(new ContainerBuilder()
+                    //.setCache(false)
+                );
             });
     }
 
     @Task(order = 51)
     public void cross_build_natives() throws Exception {
-        new Buildx(targets)
-            .setTags("build")
+        new Buildx(crossTargets)
+            .tags("build")
             .execute((target, project) -> {
                 String buildScript = "setup/build-native-lib-linux-action.sh";
                 if (target.getOs().equals("macos")) {
@@ -243,8 +229,8 @@ public class blaze {
 
     @Task(order = 53)
     public void cross_tests() throws Exception {
-        new Buildx(targets)
-            .setTags("test")
+        new Buildx(crossTargets)
+            .tags("test")
             .execute((target, project) -> {
                 project.action("java", "-jar", "blaze.jar", "test")
                     .run();
