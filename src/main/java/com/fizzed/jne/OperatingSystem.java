@@ -25,17 +25,23 @@ package com.fizzed.jne;
  */
 public enum OperatingSystem {
 
-    WINDOWS(null),
-    MACOS(new String[] { "osx" }),
-    LINUX(null),
-    FREEBSD(null),
-    OPENBSD(null),
-    SOLARIS(null);
+    WINDOWS("Windows", null),
+    MACOS("MacOS", new String[] { "osx" }),
+    LINUX("Linux", null),
+    FREEBSD("FreeBSD", null),
+    OPENBSD("OpenBSD", null),
+    SOLARIS("Solaris", null);
 
+    private final String descriptor;
     private final String[] aliases;
 
-    OperatingSystem(String[] aliases) {
+    OperatingSystem(String descriptor, String[] aliases) {
+        this.descriptor = descriptor;
         this.aliases = aliases;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
     }
 
     public String[] getAliases() {

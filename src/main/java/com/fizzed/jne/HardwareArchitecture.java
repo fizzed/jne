@@ -25,26 +25,32 @@ package com.fizzed.jne;
  */
 public enum HardwareArchitecture {
 
-    X32(new String[] { "i386", "i586", "i686" }),
-    X64(new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
-    ARMEL(null, new String[] { "arm32v5", "arm32v6" }),                        // ARMEL, ARM 32-bit SF v6, v7, v5
-    ARMHF(null, new String[] { "arm32v7" }),                        // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
-    ARM64(new String[] { "aarch64" }, new String[] { "arm64v8" }),          // used by docker
-    RISCV64(null, new String[] { "riscv64gc" }),                    // used by llvm
-    MIPS64LE(null),
-    S390X(null),
-    PPC64LE(null);
+    X32("x32", new String[] { "i386", "i586", "i686" }),
+    X64("x64", new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
+    ARMEL("armel", null, new String[] { "arm32v5", "arm32v6" }),                        // ARMEL, ARM 32-bit SF v6, v7, v5
+    ARMHF("armhf", null, new String[] { "arm32v7" }),                        // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
+    ARM64("arm64", new String[] { "aarch64" }, new String[] { "arm64v8" }),          // used by docker
+    RISCV64("riscv64", null, new String[] { "riscv64gc" }),                    // used by llvm
+    MIPS64LE("mips64le", null),
+    S390X("s390x", null),
+    PPC64LE("ppc64le", null);
 
+    private final String descriptor;
     private final String[] aliases;
     private final String[] extraAliases;
 
-    HardwareArchitecture(String[] aliases) {
-        this(aliases, null);
+    HardwareArchitecture(String descriptor, String[] aliases) {
+        this(descriptor, aliases, null);
     }
 
-    HardwareArchitecture(String[] aliases, String[] extraAliases) {
+    HardwareArchitecture(String descriptor, String[] aliases, String[] extraAliases) {
+        this.descriptor = descriptor;
         this.aliases = aliases;
         this.extraAliases = extraAliases;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
     }
 
     public String[] getAliases() {
