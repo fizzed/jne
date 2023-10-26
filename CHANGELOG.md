@@ -1,5 +1,22 @@
 # Java Native Extractor by Fizzed
 
+## 4.0.3 - 2023-10-26
+
+- OperatingSystem and HardwareArchitecture enums now have human readable descriptors.
+
+## 4.0.2 - 2023-10-25
+
+- Fix support for armel and armhf detection in NativeTarget for toRustTarget()
+
+## 4.0.1 - 2023-10-24
+
+- Improve speed of ABI detection on non-linux operating systems.
+
+## 4.0.0 - 2023-10-24
+
+ - New NativeTarget utility class, which is now used under-the-hood by the JNE class.  NativeTarget can be used for 
+more purposes than just loading libraries, such as helping normalizing os/archs for building rust projects, etc.
+
 ## 3.3.0 - 2023-10-18
 
  - Java 8+ compat moving forward
