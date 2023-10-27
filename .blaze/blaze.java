@@ -1,6 +1,10 @@
+import com.fizzed.blaze.Context;
+import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
+import com.fizzed.blaze.system.Copy;
 import com.fizzed.jne.NativeTarget;
 
+import java.nio.file.Files;
 import java.util.List;
 import static java.util.Arrays.asList;
 import java.nio.file.Path;
@@ -13,6 +17,49 @@ public class blaze {
 
     private final Path projectDir = withBaseDir("../").toAbsolutePath();
     private final NativeTarget localNativeTarget = NativeTarget.detect();
+
+    @Task(order = 1)
+    public void build_natives() throws Exception {
+        final String targetStr = Contexts.config().value("target").orNull();
+        final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
+        final Path nativeDir = projectDir.resolve("native");
+        final Path targetDir = projectDir.resolve("target");
+        final Path targetJcatDir = targetDir.resolve("jcat");
+        final Path targetLibHelloJDir = targetDir.resolve("libhelloj");
+        final Path javaOutputDir = withBaseDir("../src/test/resources/jne/" + nativeTarget.toJneOsAbi() + "/" + nativeTarget.toJneArch());
+        final String libname = nativeTarget.resolveLibraryFileName("helloj");
+
+        Files.createDirectories(targetDir);
+
+        exec("rsync", "-avrt", "--delete", nativeDir+"/", targetDir+"/").run();
+
+        exec("make").workingDir(targetJcatDir).run();
+
+        exec("make").workingDir(targetLibHelloJDir)
+            .env("CXXFLAGS", "-z noexecstack")
+            .run();
+
+        new Copy(Contexts.currentContext())
+            .source(targetJcatDir.resolve("jcat"))
+            .destination(javaOutputDir)
+            .force()
+            .run();
+
+        new Copy(Contexts.currentContext())
+            .source(targetLibHelloJDir.resolve(libname))
+            .destination(javaOutputDir)
+            .force()
+            .run();
+
+        //Files.createDirectories(javaOutputDir);
+        //Files.copy(targetJcatDir.resolve("jcat"), javaOutputDir.resolve("jcat"));
+
+        /*cd ..
+        OUTPUT_DIR="../src/test/resources/jne/${BUILDOS}/${BUILDARCH}"
+        mkdir -p "$OUTPUT_DIR"
+        cp jcat/jcat "$OUTPUT_DIR"
+        cp libhelloj/libhelloj.so "$OUTPUT_DIR"*/
+    }
 
     @Task(order = 2)
     public void test() throws Exception {
