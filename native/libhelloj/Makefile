@@ -25,4 +25,5 @@ test:
 
 clean:
 	rm -f libhelloj.so
+	rm -f libhelloj.dylib
 	rm -f helloj/*.class
