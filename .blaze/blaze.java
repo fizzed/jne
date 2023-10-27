@@ -36,7 +36,7 @@ public class blaze {
         exec("make").workingDir(targetJcatDir).run();
 
         exec("make").workingDir(targetLibHelloJDir)
-            .env("CXXFLAGS", "-z noexecstack")
+            //.env("CXXFLAGS", "-z noexecstack")
             .run();
 
         new Copy(Contexts.currentContext())
