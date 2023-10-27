@@ -42,8 +42,3 @@ nmake -f VCMakefile
 
 cd ..\libhelloj
 nmake -f VCMakefile
-
-cd ..
-set OUTPUT_DIR="..\src\test\resources\jne\%BUILDOS%\%BUILDARCH%"
-copy jcat\jcat.exe "%OUTPUT_DIR%"
-copy libhelloj\helloj.dll "%OUTPUT_DIR%"

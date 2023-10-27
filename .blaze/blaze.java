@@ -28,39 +28,33 @@ public class blaze {
         final String targetStr = Contexts.config().value("target").orNull();
         final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
 
-        if (nativeTarget.getOperatingSystem() == OperatingSystem.WINDOWS) {
-            this.build_natives_on_windows(nativeTarget);
-        } else {
-            this.build_natives_on_unix(nativeTarget);
-        }
-    }
-
-    private void build_natives_on_unix(NativeTarget nativeTarget) throws Exception {
-        final Path targetJcatDir = targetDir.resolve("jcat");
-        final Path targetLibHelloJDir = targetDir.resolve("libhelloj");
-        final Path javaOutputDir = withBaseDir("../src/test/resources/jne/" + nativeTarget.toJneOsAbi() + "/" + nativeTarget.toJneArch());
-        final String libname = nativeTarget.resolveLibraryFileName("helloj");
-
         log.info("Copying native code to (cleaned) {} directory...", targetDir);
         rm(targetDir).recursive().force().run();
         mkdir(targetDir).parents().run();
         cp(globber(nativeDir, "*")).target(targetDir).recursive().debug().run();
 
-        log.info("Building jcat executable...");
-        exec("make").workingDir(targetJcatDir).env("DUDE", "yo").verbose().run();
+        final Path targetJcatDir = targetDir.resolve("jcat");
+        final Path targetLibHelloJDir = targetDir.resolve("libhelloj");
+        final Path javaOutputDir = withBaseDir("../src/test/resources/jne/" + nativeTarget.toJneOsAbi() + "/" + nativeTarget.toJneArch());
+        final String exename = nativeTarget.resolveExecutableFileName("jcat");
+        final String libname = nativeTarget.resolveLibraryFileName("helloj");
 
-        log.info("Building helloj library...");
-        exec("make").workingDir(targetLibHelloJDir).debug().run();
+        if (nativeTarget.getOperatingSystem() == OperatingSystem.WINDOWS) {
+            // unfortunately its easiest to delegate this to helper script
+            exec("setup/build-native-lib-windows-action.bat", nativeTarget.toJneOsAbi(), nativeTarget.toJneArch())
+                .workingDir(this.projectDir)
+                .verbose()
+                .run();
+        } else {
+            log.info("Building jcat executable...");
+            exec("make").workingDir(targetJcatDir).debug().run();
 
-        cp(targetJcatDir.resolve("jcat")).target(javaOutputDir).force().verbose().run();
+            log.info("Building helloj library...");
+            exec("make").workingDir(targetLibHelloJDir).debug().run();
+        }
+
+        cp(targetJcatDir.resolve(exename)).target(javaOutputDir).force().verbose().run();
         cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
-    }
-
-    private void build_natives_on_windows(NativeTarget nativeTarget) throws Exception {
-        exec("setup/build-native-lib-windows-action.bat", nativeTarget.toJneOsAbi(), nativeTarget.toJneArch())
-            .workingDir(this.projectDir)
-            .verbose()
-            .run();
     }
 
     @Task(order = 2)
