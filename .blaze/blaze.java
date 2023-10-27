@@ -1,74 +1,79 @@
-import com.fizzed.blaze.Context;
 import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
-import com.fizzed.blaze.system.Copy;
+import com.fizzed.buildx.Buildx;
+import com.fizzed.buildx.ContainerBuilder;
+import com.fizzed.buildx.Target;
 import com.fizzed.jne.NativeTarget;
+import com.fizzed.jne.OperatingSystem;
+import org.slf4j.Logger;
 
-import java.nio.file.Files;
-import java.util.List;
-import static java.util.Arrays.asList;
 import java.nio.file.Path;
+import java.util.List;
 
 import static com.fizzed.blaze.Contexts.withBaseDir;
-import static com.fizzed.blaze.Systems.exec;
-import com.fizzed.buildx.*;
+import static com.fizzed.blaze.Systems.*;
+import static com.fizzed.blaze.util.Globber.globber;
+import static java.util.Arrays.asList;
 
 public class blaze {
 
+    private final Logger log = Contexts.logger();
     private final Path projectDir = withBaseDir("../").toAbsolutePath();
     private final NativeTarget localNativeTarget = NativeTarget.detect();
+    private final Path nativeDir = projectDir.resolve("native");
+    private final Path targetDir = projectDir.resolve("target");
 
     @Task(order = 1)
     public void build_natives() throws Exception {
         final String targetStr = Contexts.config().value("target").orNull();
         final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
-        final Path nativeDir = projectDir.resolve("native");
-        final Path targetDir = projectDir.resolve("target");
+
+        if (nativeTarget.getOperatingSystem() == OperatingSystem.WINDOWS) {
+            this.build_natives_on_windows(nativeTarget);
+        } else {
+            this.build_natives_on_unix(nativeTarget);
+        }
+    }
+
+    private void build_natives_on_unix(NativeTarget nativeTarget) throws Exception {
         final Path targetJcatDir = targetDir.resolve("jcat");
         final Path targetLibHelloJDir = targetDir.resolve("libhelloj");
         final Path javaOutputDir = withBaseDir("../src/test/resources/jne/" + nativeTarget.toJneOsAbi() + "/" + nativeTarget.toJneArch());
         final String libname = nativeTarget.resolveLibraryFileName("helloj");
 
-        Files.createDirectories(targetDir);
+        log.info("Copying native code to (cleaned) {} directory...", targetDir);
+        rm(targetDir).recursive().force().run();
+        mkdir(targetDir).parents().run();
+        cp(globber(nativeDir, "*")).target(targetDir).recursive().debug().run();
 
-        exec("rsync", "-avrt", "--delete", nativeDir+"/", targetDir+"/").run();
+        log.info("Building jcat executable...");
+        exec("make").workingDir(targetJcatDir).env("DUDE", "yo").verbose().run();
 
-        exec("make").workingDir(targetJcatDir).run();
+        log.info("Building helloj library...");
+        exec("make").workingDir(targetLibHelloJDir).debug().run();
 
-        exec("make").workingDir(targetLibHelloJDir)
-            //.env("CXXFLAGS", "-z noexecstack")
+        cp(targetJcatDir.resolve("jcat")).target(javaOutputDir).force().verbose().run();
+        cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
+    }
+
+    private void build_natives_on_windows(NativeTarget nativeTarget) throws Exception {
+        exec("setup/build-native-lib-windows-action.bat", nativeTarget.toJneOsAbi(), nativeTarget.toJneArch())
+            .workingDir(this.projectDir)
+            .verbose()
             .run();
-
-        new Copy(Contexts.currentContext())
-            .source(targetJcatDir.resolve("jcat"))
-            .destination(javaOutputDir)
-            .force()
-            .run();
-
-        new Copy(Contexts.currentContext())
-            .source(targetLibHelloJDir.resolve(libname))
-            .destination(javaOutputDir)
-            .force()
-            .run();
-
-        //Files.createDirectories(javaOutputDir);
-        //Files.copy(targetJcatDir.resolve("jcat"), javaOutputDir.resolve("jcat"));
-
-        /*cd ..
-        OUTPUT_DIR="../src/test/resources/jne/${BUILDOS}/${BUILDARCH}"
-        mkdir -p "$OUTPUT_DIR"
-        cp jcat/jcat "$OUTPUT_DIR"
-        cp libhelloj/libhelloj.so "$OUTPUT_DIR"*/
     }
 
     @Task(order = 2)
     public void test() throws Exception {
-        /*exec("env")
-            .workingDir(projectDir)
-            .run();*/
         exec("mvn", "test")
-            .workingDir(projectDir)
+            .workingDir(this.projectDir)
+            .verbose()
             .run();
+    }
+
+    @Task(order = 3)
+    public void clean() throws Exception {
+        rm(this.targetDir).recursive().force().verbose().run();
     }
 
     private final List<Target> crossTargets = asList(
