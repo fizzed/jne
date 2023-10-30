@@ -1,16 +1,20 @@
 # Java Native Extractor by Fizzed
 
+## 4.0.4 - 2023-10-30
+
+ - New NativeTarget.toAutoConfTarget() feature for configuring gcc/g++ hosts and targets
+
 ## 4.0.3 - 2023-10-26
 
-- OperatingSystem and HardwareArchitecture enums now have human readable descriptors.
+ - OperatingSystem and HardwareArchitecture enums now have human readable descriptors.
 
 ## 4.0.2 - 2023-10-25
 
-- Fix support for armel and armhf detection in NativeTarget for toRustTarget()
+ - Fix support for armel and armhf detection in NativeTarget for toRustTarget()
 
 ## 4.0.1 - 2023-10-24
 
-- Improve speed of ABI detection on non-linux operating systems.
+ - Improve speed of ABI detection on non-linux operating systems.
 
 ## 4.0.0 - 2023-10-24
 
