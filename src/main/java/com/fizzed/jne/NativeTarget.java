@@ -199,6 +199,75 @@ public class NativeTarget {
         return arch + "-" + vendorOsEnv;
     }
 
+    public String toAutoConfTarget() {
+        this.checkHardwareArchitecture();
+        this.checkOperatingSystem();
+
+        String arch = null;
+        String vendorOsEnv = null;
+
+        switch (this.hardwareArchitecture) {
+            case X64:
+                arch = "x86_64";
+                break;
+            case X32:
+                arch = "i686";
+                break;
+            case ARM64:
+                arch = "aarch64";
+                break;
+            case RISCV64:
+                arch = "riscv64";
+                break;
+            case ARMHF:
+            case ARMEL:
+                arch = "arm";
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported autoconf target for hardware architecture " + this.hardwareArchitecture + " (if it should be valid please add to " + this.getClass().getCanonicalName() + ")");
+        }
+
+        switch (this.operatingSystem) {
+            case WINDOWS:
+                if (abi == ABI.GNU) {
+                    vendorOsEnv = "w64-mingw32";
+                } else {
+                    // default is msvc
+//                    vendorOsEnv = "pc-windows-msvc";
+                    throw new IllegalArgumentException("Unsupported autoconf target for windows ABI of msvc (did you mean the gnu ABI?)");
+                }
+                break;
+            case LINUX:
+                if (abi == ABI.MUSL) {
+                    vendorOsEnv = "linux-musl";
+                } else if (this.hardwareArchitecture == HardwareArchitecture.ARMHF) {
+                    vendorOsEnv = "linux-gnueabihf";
+                } else if (this.hardwareArchitecture == HardwareArchitecture.ARMEL) {
+                    vendorOsEnv = "linux-gnueabi";
+                } else {
+                    // default is glibc/gnu
+                    vendorOsEnv = "linux-gnu";
+                }
+                break;
+            case MACOS:
+                vendorOsEnv = "apple-darwin";
+                break;
+            /*case FREEBSD:
+                vendorOsEnv = "unknown-freebsd";
+                break;
+            case OPENBSD:
+                vendorOsEnv = "unknown-openbsd";
+                break;
+            case SOLARIS:
+                vendorOsEnv = "sun-solaris";
+                break;*/
+            default:
+                throw new IllegalArgumentException("Unsupported autoconf target for operating system " + this.operatingSystem + " (if it should be valid please add to " + this.getClass().getCanonicalName() + ")");
+        }
+
+        return arch + "-" + vendorOsEnv;
+    }
+
     public String toJneOsAbi() {
         this.checkOperatingSystem();
         return toJneOsAbi(this.operatingSystem, this.abi, null);
