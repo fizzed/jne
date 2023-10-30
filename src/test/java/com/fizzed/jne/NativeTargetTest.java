@@ -246,6 +246,91 @@ class NativeTargetTest {
     }
 
     @Test
+    public void toAutoConfTarget() {
+        NativeTarget nt;
+
+        nt = NativeTarget.of(null, null, null);
+        try {
+            nt.toAutoConfTarget();
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, null, null);
+        try {
+            nt.toAutoConfTarget();
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        /*nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-pc-windows-msvc"));
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.MSVC);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-pc-windows-msvc"));*/
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X64, ABI.GNU);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-w64-mingw32"));
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.X32, ABI.GNU);
+        assertThat(nt.toAutoConfTarget(), is("i686-w64-mingw32"));
+
+        nt = NativeTarget.of(OperatingSystem.WINDOWS, HardwareArchitecture.ARM64, ABI.GNU);
+        assertThat(nt.toAutoConfTarget(), is("aarch64-w64-mingw32"));
+
+
+        nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-apple-darwin"));
+
+        nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.ARM64, null);
+        assertThat(nt.toAutoConfTarget(), is("aarch64-apple-darwin"));
+
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.RISCV64, null);
+        assertThat(nt.toAutoConfTarget(), is("riscv64-linux-gnu"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-linux-gnu"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.GNU);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-linux-gnu"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X64, ABI.MUSL);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-linux-musl"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X32, null);
+        assertThat(nt.toAutoConfTarget(), is("i686-linux-gnu"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.X32, ABI.MUSL);
+        assertThat(nt.toAutoConfTarget(), is("i686-linux-musl"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, null);
+        assertThat(nt.toAutoConfTarget(), is("aarch64-linux-gnu"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, ABI.MUSL);
+        assertThat(nt.toAutoConfTarget(), is("aarch64-linux-musl"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMHF, null);
+        assertThat(nt.toAutoConfTarget(), is("arm-linux-gnueabihf"));
+
+        nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARMEL, null);
+        assertThat(nt.toAutoConfTarget(), is("arm-linux-gnueabi"));
+
+        /*nt = NativeTarget.of(OperatingSystem.FREEBSD, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-unknown-freebsd"));
+
+
+        nt = NativeTarget.of(OperatingSystem.OPENBSD, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-unknown-openbsd"));
+
+
+        nt = NativeTarget.of(OperatingSystem.SOLARIS, HardwareArchitecture.X64, null);
+        assertThat(nt.toAutoConfTarget(), is("x86_64-sun-solaris"));*/
+    }
+
+    @Test
     public void toJneTarget() {
         NativeTarget nt;
 

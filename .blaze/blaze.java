@@ -1,27 +1,80 @@
+import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
+import com.fizzed.buildx.Buildx;
+import com.fizzed.buildx.ContainerBuilder;
+import com.fizzed.buildx.Target;
 import com.fizzed.jne.NativeTarget;
+import com.fizzed.jne.OperatingSystem;
+import org.slf4j.Logger;
 
-import java.util.List;
-import static java.util.Arrays.asList;
 import java.nio.file.Path;
+import java.util.List;
 
 import static com.fizzed.blaze.Contexts.withBaseDir;
-import static com.fizzed.blaze.Systems.exec;
-import com.fizzed.buildx.*;
+import static com.fizzed.blaze.Systems.*;
+import static com.fizzed.blaze.util.Globber.globber;
+import static java.util.Arrays.asList;
 
 public class blaze {
 
+    private final Logger log = Contexts.logger();
     private final Path projectDir = withBaseDir("../").toAbsolutePath();
     private final NativeTarget localNativeTarget = NativeTarget.detect();
+    private final Path nativeDir = projectDir.resolve("native");
+    private final Path targetDir = projectDir.resolve("target");
+
+    @Task(order = 1)
+    public void build_natives() throws Exception {
+        final String targetStr = Contexts.config().value("target").orNull();
+        final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
+
+        log.info("Building natives for target {}", nativeTarget.toJneTarget());
+        log.info("Copying native code to (cleaned) {} directory...", targetDir);
+        rm(targetDir).recursive().force().run();
+        mkdir(targetDir).parents().run();
+        cp(globber(nativeDir, "*")).target(targetDir).recursive().debug().run();
+
+        final Path targetJcatDir = targetDir.resolve("jcat");
+        final Path targetLibHelloJDir = targetDir.resolve("libhelloj");
+        final Path javaOutputDir = withBaseDir("../src/test/resources/jne/" + nativeTarget.toJneOsAbi() + "/" + nativeTarget.toJneArch());
+        final String exename = nativeTarget.resolveExecutableFileName("jcat");
+        final String libname = nativeTarget.resolveLibraryFileName("helloj");
+
+        if (nativeTarget.getOperatingSystem() == OperatingSystem.WINDOWS) {
+            // unfortunately its easiest to delegate this to helper script
+            exec("setup/build-native-lib-windows-action.bat", nativeTarget.toJneOsAbi(), nativeTarget.toJneArch())
+                .workingDir(this.projectDir)
+                .verbose()
+                .run();
+        } else {
+            String cmd = "make";
+            // freebsd and openbsd, we need to use gmake
+            if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD) {
+                cmd = "gmake";
+            }
+
+            log.info("Building jcat executable...");
+            exec(cmd).workingDir(targetJcatDir).debug().run();
+
+            log.info("Building helloj library...");
+            exec(cmd).workingDir(targetLibHelloJDir).debug().run();
+        }
+
+        cp(targetJcatDir.resolve(exename)).target(javaOutputDir).force().verbose().run();
+        cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
+    }
 
     @Task(order = 2)
     public void test() throws Exception {
-        /*exec("env")
-            .workingDir(projectDir)
-            .run();*/
         exec("mvn", "test")
-            .workingDir(projectDir)
+            .workingDir(this.projectDir)
+            .verbose()
             .run();
+    }
+
+    @Task(order = 3)
+    public void clean() throws Exception {
+        rm(this.targetDir).recursive().force().verbose().run();
     }
 
     private final List<Target> crossTargets = asList(
@@ -212,14 +265,16 @@ public class blaze {
         new Buildx(crossTargets)
             .tags("build")
             .execute((target, project) -> {
-                String buildScript = "setup/build-native-lib-linux-action.sh";
+                /*String buildScript = "setup/build-native-lib-linux-action.sh";
                 if (target.getOs().equals("macos")) {
                     buildScript = "setup/build-native-lib-macos-action.sh";
                 } else if (target.getOs().equals("windows")) {
                     buildScript = "setup/build-native-lib-windows-action.bat";
                 }
 
-                project.action(buildScript, target.getOs(), target.getArch()).run();
+                project.action(buildScript, target.getOs(), target.getArch()).run();*/
+
+                project.action("java", "-jar", "blaze.jar", "build_natives", "--target", target.getOsArch()).run();
 
                 // we know that the only modified file will be in the artifact dir
                 final String artifactRelPath = "src/test/resources/jne/" + target.getOs() + "/" + target.getArch() + "/";
