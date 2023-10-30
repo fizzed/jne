@@ -28,6 +28,7 @@ public class blaze {
         final String targetStr = Contexts.config().value("target").orNull();
         final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
 
+        log.info("Building natives for target {}", nativeTarget.toJneTarget());
         log.info("Copying native code to (cleaned) {} directory...", targetDir);
         rm(targetDir).recursive().force().run();
         mkdir(targetDir).parents().run();
@@ -46,11 +47,17 @@ public class blaze {
                 .verbose()
                 .run();
         } else {
+            String cmd = "make";
+            // freebsd and openbsd, we need to use gmake
+            if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD) {
+                cmd = "gmake";
+            }
+
             log.info("Building jcat executable...");
-            exec("make").workingDir(targetJcatDir).debug().run();
+            exec(cmd).workingDir(targetJcatDir).debug().run();
 
             log.info("Building helloj library...");
-            exec("make").workingDir(targetLibHelloJDir).debug().run();
+            exec(cmd).workingDir(targetLibHelloJDir).debug().run();
         }
 
         cp(targetJcatDir.resolve(exename)).target(javaOutputDir).force().verbose().run();
@@ -258,14 +265,16 @@ public class blaze {
         new Buildx(crossTargets)
             .tags("build")
             .execute((target, project) -> {
-                String buildScript = "setup/build-native-lib-linux-action.sh";
+                /*String buildScript = "setup/build-native-lib-linux-action.sh";
                 if (target.getOs().equals("macos")) {
                     buildScript = "setup/build-native-lib-macos-action.sh";
                 } else if (target.getOs().equals("windows")) {
                     buildScript = "setup/build-native-lib-windows-action.bat";
                 }
 
-                project.action(buildScript, target.getOs(), target.getArch()).run();
+                project.action(buildScript, target.getOs(), target.getArch()).run();*/
+
+                project.action("java", "-jar", "blaze.jar", "build_natives", "--target", target.getOsArch()).run();
 
                 // we know that the only modified file will be in the artifact dir
                 final String artifactRelPath = "src/test/resources/jne/" + target.getOs() + "/" + target.getArch() + "/";
