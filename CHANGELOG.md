@@ -1,5 +1,10 @@
 # Java Native Extractor by Fizzed
 
+## 4.1.0 - 2023-11-03
+ 
+ - New JavaVersion, JavaHome, JavaHomeFinder, and JavaDistribution utility classes for finding, detecting, and
+using local Java VMs.
+
 ## 4.0.4 - 2023-10-30
 
  - New NativeTarget.toAutoConfTarget() feature for configuring gcc/g++ hosts and targets
