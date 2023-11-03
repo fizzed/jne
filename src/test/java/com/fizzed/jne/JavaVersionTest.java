@@ -22,9 +22,12 @@ package com.fizzed.jne;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -166,6 +169,40 @@ class JavaVersionTest {
         assertThat(v.getBuild(), is(0));
         assertThat(v.toString(), is("6.0.119"));
         assertThat(v.toJavaVersion(), is("1.6.0_119"));
+    }
+
+    @Test
+    public void compareTo() {
+        JavaVersion v1;
+        JavaVersion v2;
+
+        v1 = JavaVersion.parse("22");
+        v2 = JavaVersion.parse("21");
+        assertThat(v1, greaterThan(v2));
+
+        v1 = JavaVersion.parse("21.0.1");
+        v2 = JavaVersion.parse("21");
+        assertThat(v1, greaterThan(v2));
+
+        v2 = JavaVersion.parse("21.0.1");
+        v1 = JavaVersion.parse("17");
+        assertThat(v1, lessThan(v2));
+
+        v1 = JavaVersion.parse("17.0.0.0");
+        v2 = JavaVersion.parse("17");
+        assertThat(v1.equals(v2), is(true));
+
+        TreeSet<JavaVersion> versionMap = new TreeSet<>();
+        versionMap.add(JavaVersion.parse("11.0.9"));
+        versionMap.add(JavaVersion.parse("11.0.7"));
+        versionMap.add(JavaVersion.parse("1.8.0_349"));
+        versionMap.add(JavaVersion.parse("11.0.345"));
+
+        Iterator<JavaVersion> it = versionMap.iterator();
+        assertThat(it.next(), is(JavaVersion.parse("1.8.0_349")));
+        assertThat(it.next(), is(JavaVersion.parse("11.0.7")));
+        assertThat(it.next(), is(JavaVersion.parse("11.0.9")));
+        assertThat(it.next(), is(JavaVersion.parse("11.0.345")));
     }
 
 }

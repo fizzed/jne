@@ -20,6 +20,8 @@ package com.fizzed.jne;
  * #L%
  */
 
+import java.util.Comparator;
+
 /**
  * https://openjdk.org/jeps/223
  * https://hg.openjdk.org/jdk9/jdk9/jdk/file/tip/src/java.base/share/native/include/jvm.h
@@ -34,7 +36,9 @@ package com.fizzed.jne;
  * ${java.runtime.name} (build ${java.runtime.version})
  * ${java.vm.name} (build ${java.vm.version}, ${java.vm.info})
  */
-public class JavaVersion {
+public class JavaVersion implements Comparable<JavaVersion> {
+
+    static public final Comparator<JavaVersion> DESCENDING_ORDER = Comparator.reverseOrder()
 
     final private String source;
     final private int major;
@@ -89,6 +93,44 @@ public class JavaVersion {
     @Override
     public String toString() {
         return this.toSemanticVersion();
+    }
+
+    @Override
+    public int compareTo(JavaVersion other) {
+        if (other == null) {
+            return -1;
+        }
+        int c = Integer.compare(this.major, other.major);
+        if (c == 0) {
+            c = Integer.compare(this.minor, other.minor);
+            if (c == 0) {
+                c = Integer.compare(this.security, other.security);
+                if (c == 0) {
+                    c = Integer.compare(this.build, other.build);
+                }
+            }
+        }
+        return c;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JavaVersion)) return false;
+        JavaVersion that = (JavaVersion) o;
+        if (major != that.major) return false;
+        if (minor != that.minor) return false;
+        if (security != that.security) return false;
+        return build == that.build;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = major;
+        result = 31 * result + minor;
+        result = 31 * result + security;
+        result = 31 * result + build;
+        return result;
     }
 
     static public JavaVersion current() {

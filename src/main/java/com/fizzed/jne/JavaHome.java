@@ -120,7 +120,7 @@ public class JavaHome {
 
     // for testing
     static JavaHome current(Path javaHomeDir) throws IOException {
-        return JavaHomes.fromDirectory(javaHomeDir, false, JavaHomes.CURRENT_JVM_RELEASE_PROPERTIES_PROVIDER);
+        return JavaHomes.detect(javaHomeDir, false, JavaHomes.CURRENT_JVM_RELEASE_PROPERTIES_PROVIDER);
     }
 
 }

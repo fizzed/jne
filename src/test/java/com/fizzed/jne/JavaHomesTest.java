@@ -46,11 +46,11 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryNotExists() throws Exception {
+    public void detectNotExists() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-does-not-exist");
 
         try {
-            JavaHomes.fromDirectory(javaHomeDir);
+            JavaHomes.detect(javaHomeDir);
             fail();
         } catch (FileNotFoundException e) {
             assertThat(e.getMessage(), containsString("does not exist"));
@@ -58,11 +58,11 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryInvalidJdk() throws Exception {
+    public void detectInvalidJdk() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-invalid");
 
         try {
-            JavaHomes.fromDirectory(javaHomeDir);
+            JavaHomes.detect(javaHomeDir);
             fail();
         } catch (FileNotFoundException e) {
             // expected
@@ -70,11 +70,11 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkMissingLibDir() throws Exception {
+    public void detectJdkMissingLibDir() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-missing-lib");
 
         try {
-            JavaHomes.fromDirectory(javaHomeDir);
+            JavaHomes.detect(javaHomeDir);
             fail();
         } catch (FileNotFoundException e) {
             // expected
@@ -82,11 +82,11 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkMissingReleaseFile() throws Exception {
+    public void detectJdkMissingReleaseFile() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-missing-release");
 
         try {
-            JavaHomes.fromDirectory(javaHomeDir);
+            JavaHomes.detect(javaHomeDir);
             fail();
         } catch (IOException e) {
             // expected since java isn't a real executable
@@ -94,10 +94,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkZulu8() throws Exception {
+    public void detectJdkZulu8() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-8");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getNativeImageExe(), is(nullValue()));
@@ -111,10 +111,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkZulu11() throws Exception {
+    public void detectJdkZulu11() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
@@ -127,10 +127,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkZulu11Arm64Musl() throws Exception {
+    public void detectJdkZulu11Arm64Musl() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-arm64-musl");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
@@ -144,10 +144,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkZulu11Armel() throws Exception {
+    public void detectJdkZulu11Armel() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-armel");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
@@ -161,10 +161,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkZulu11Armhf() throws Exception {
+    public void detectJdkZulu11Armhf() throws Exception {
         final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-armhf");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
@@ -178,11 +178,11 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdk8Legacy() throws Exception {
+    public void detectJdk8Legacy() throws Exception {
         // resolve the jre directory of the jdk such as how java 8 does it
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-8-legacy/jre");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
@@ -196,10 +196,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkLiberica21() throws Exception {
+    public void detectJdkLiberica21() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-liberica-21");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("BellSoft"));
@@ -214,10 +214,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJreLiberica21() throws Exception {
+    public void detectJreLiberica21() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jre-liberica-21");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("BellSoft"));
@@ -232,10 +232,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkCorretto17() throws Exception {
+    public void detectJdkCorretto17() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-corretto-17");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Amazon.com Inc."));
@@ -250,10 +250,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkMicrosoft17() throws Exception {
+    public void detectJdkMicrosoft17() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-microsoft-17");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Microsoft"));
@@ -269,10 +269,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkTemurin18() throws Exception {
+    public void detectJdkTemurin18() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-temurin-18");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Eclipse Adoptium"));
@@ -287,10 +287,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkSemeru17() throws Exception {
+    public void detectJdkSemeru17() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-semeru-17");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("IBM Corporation"));
@@ -305,10 +305,10 @@ class JavaHomesTest {
     }
 
     @Test
-    public void fromDirectoryJdkDragonwell11() throws Exception {
+    public void detectJdkDragonwell11() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-dragonwell-11");
 
-        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+        final JavaHome javaHome = JavaHomes.detect(javaHomeJreDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
         assertThat(javaHome.getVendor(), is("Alibaba"));

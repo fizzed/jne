@@ -113,15 +113,15 @@ public class JavaHomes {
         }
     };
 
-    static public JavaHome fromDirectory(Path javaHomeDir) throws IOException {
-        return fromDirectory(javaHomeDir, false);
+    static public JavaHome detect(Path javaHomeDir) throws IOException {
+        return detect(javaHomeDir, false);
     }
 
-    static public JavaHome fromDirectory(Path javaHomeDir, boolean requireReleaseFile) throws IOException {
-        return fromDirectory(javaHomeDir, requireReleaseFile, EXECUTE_JAVA_VERSION_RELEASE_PROPERTIES_PROVIDER);
+    static public JavaHome detect(Path javaHomeDir, boolean requireReleaseFile) throws IOException {
+        return detect(javaHomeDir, requireReleaseFile, EXECUTE_JAVA_VERSION_RELEASE_PROPERTIES_PROVIDER);
     }
 
-    static public JavaHome fromDirectory(Path javaHomeDir, boolean requireReleaseFile, ReleasePropertiesProvider releasePropertiesFallbackProvider) throws IOException {
+    static public JavaHome detect(Path javaHomeDir, boolean requireReleaseFile, ReleasePropertiesProvider releasePropertiesFallbackProvider) throws IOException {
         if (!Files.isDirectory(javaHomeDir)) {
             throw new FileNotFoundException("Java home directory " + javaHomeDir + " does not exist");
         }
@@ -425,7 +425,7 @@ public class JavaHomes {
             log.trace("detectJavaHome: {}", maybeJavaHome);
             JavaHome javaHome = null;
             try {
-                javaHome = JavaHomes.fromDirectory(maybeJavaHome);
+                javaHome = JavaHomes.detect(maybeJavaHome);
                 javaHomes.add(javaHome);
             } catch (Exception e) {
                 // not a jvm
