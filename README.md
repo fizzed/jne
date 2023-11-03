@@ -150,6 +150,16 @@ public class CustomLoader {
 }
 ```
 
+To find a JDK 21 on your local system with a specific distribution:
+
+```java
+final JavaHome jdk21 = new JavaHomeFinder()
+    .jdk()
+    .version(21)
+    .preferredDistributions(JavaDistribution.ZULU)
+    .find();
+```
+
 ## Demo
 
 To run a demo of a "cat" executable

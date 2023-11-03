@@ -113,6 +113,31 @@ public class JavaHome {
         return releaseProperties;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        if (this.distribution != null) {
+            sb.append(this.distribution.getDescriptor());
+        }
+        if (sb.length() > 0) {
+            sb.append(" ");
+        }
+        sb.append(this.getImageType());
+        sb.append(" ").append(this.version);
+        sb.append(" (");
+        if (this.operatingSystem != null) {
+            sb.append(this.operatingSystem.getDescriptor());
+            if (this.hardwareArchitecture != null) {
+                sb.append(", ");
+                sb.append(this.hardwareArchitecture.getDescriptor());
+            }
+            sb.append(", ");
+        }
+        sb.append(this.directory);
+        sb.append(")");
+        return sb.toString();
+    }
+
     static public JavaHome current() throws IOException {
         Path javaHomeDir = Paths.get(System.getProperty("java.home"));
         return current(javaHomeDir);

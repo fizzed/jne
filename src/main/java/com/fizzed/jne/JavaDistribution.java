@@ -25,17 +25,17 @@ package com.fizzed.jne;
  */
 public enum JavaDistribution {
 
-    ZULU("Azul Systems", "https://www.azul.com/downloads", new String[] { "zulu", "azul" }),
-    LIBERICA("BellSoft", "https://bell-sw.com/libericajdk", new String[] { "liberica", "bellsoft" }),
-    TEMURIN("Eclipse", "https://adoptium.net", new String[] { "temurin", "eclipse", "adoptium" }),
-    CORRETTO("Amazon", "https://docs.aws.amazon.com/corretto", new String[] { "corretto", "amazon" }),
-    MICROSOFT("Microsoft", "https://learn.microsoft.com/en-us/java/openjdk", new String[] { "microsoft" }),
-    SEMERU("IBM", "https://developer.ibm.com/languages/java/semeru-runtimes", new String[] { "ibm", "semeru" }),
-    ORACLE("Oracle", "https://www.oracle.com/java/technologies/downloads", new String[] { "oracle" }),
-    DRAGONWELL("Alibaba", "https://dragonwell-jdk.io", new String[] { "alibaba", "dragonwell" }),
-    NITRO("Fizzed", "https://github.com/fizzed/nitro", new String[] { "fizzed", "nitro" }),
-    JETBRAINS("JetBrains", "https://github.com/JetBrains/JetBrainsRuntime", new String[] { "jetbrains" }),
-    SAPMACHINE("SAP", "https://sap.github.io/SapMachine", new String[] { "sap", "sapmachine" }),
+    ZULU("Zulu", "Azul Systems", "https://www.azul.com/downloads", new String[] { "zulu", "azul" }),
+    LIBERICA("Liberica", "BellSoft", "https://bell-sw.com/libericajdk", new String[] { "liberica", "bellsoft" }),
+    TEMURIN("Temurin", "Eclipse", "https://adoptium.net", new String[] { "temurin", "eclipse", "adoptium" }),
+    CORRETTO("Corretto", "Amazon", "https://docs.aws.amazon.com/corretto", new String[] { "corretto", "amazon" }),
+    MICROSOFT("Microsoft", "Microsoft", "https://learn.microsoft.com/en-us/java/openjdk", new String[] { "microsoft" }),
+    SEMERU("Semeru", "IBM", "https://developer.ibm.com/languages/java/semeru-runtimes", new String[] { "ibm", "semeru" }),
+    ORACLE("Oracle", "Oracle", "https://www.oracle.com/java/technologies/downloads", new String[] { "oracle" }),
+    DRAGONWELL("DragonWell", "Alibaba", "https://dragonwell-jdk.io", new String[] { "alibaba", "dragonwell" }),
+    NITRO("Nitro", "Fizzed", "https://github.com/fizzed/nitro", new String[] { "fizzed", "nitro" }),
+    JBR("JBR", "JetBrains", "https://github.com/JetBrains/JetBrainsRuntime", new String[] { "jetbrains" }),
+    SAPMACHINE("SapMachine", "SAP", "https://sap.github.io/SapMachine", new String[] { "sap", "sapmachine" }),
 
     // Tencent KONA
     // Trava
@@ -43,20 +43,26 @@ public enum JavaDistribution {
     //
     // these are provided by many package managers / os distros
     //
-    REDHAT("RedHat", null, new String[] { "redhat" }),
-    DEBIAN("Debian", null, new String[] { "debian" }),
-    UBUNTU("Ubuntu", null, new String[] { "ubuntu" }),
-    HOMEBREW("HomeBrew", null, new String[] { "homebrew" }),
+    REDHAT("OpenJDK", "RedHat", null, new String[] { "redhat" }),
+    DEBIAN("OpenJDK", "Debian", null, new String[] { "debian" }),
+    UBUNTU("OpenJDK", "Ubuntu", null, new String[] { "ubuntu" }),
+    HOMEBREW("OpenJDK", "HomeBrew", null, new String[] { "homebrew" }),
     ;
 
+    private final String descriptor;
     private final String vendor;
     private final String distroUrl;
     private final String[] keywords;
 
-    JavaDistribution(String vendor, String distroUrl, String[] keywords) {
+    JavaDistribution(String descriptor, String vendor, String distroUrl, String[] keywords) {
+        this.descriptor = descriptor;
         this.vendor = vendor;
         this.distroUrl = distroUrl;
         this.keywords = keywords;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
     }
 
     public String getVendor() {
@@ -65,6 +71,10 @@ public enum JavaDistribution {
 
     public String getDistroUrl() {
         return distroUrl;
+    }
+
+    public String[] getKeywords() {
+        return keywords;
     }
 
     static public JavaDistribution resolve(String value) {

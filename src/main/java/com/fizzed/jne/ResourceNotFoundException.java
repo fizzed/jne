@@ -27,4 +27,9 @@ public class ResourceNotFoundException extends IOException {
     public ResourceNotFoundException(String msg) {
         super(msg);
     }
+
+    public ResourceNotFoundException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
+
 }
