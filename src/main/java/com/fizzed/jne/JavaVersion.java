@@ -38,8 +38,6 @@ import java.util.Comparator;
  */
 public class JavaVersion implements Comparable<JavaVersion> {
 
-    static public final Comparator<JavaVersion> DESCENDING_ORDER = Comparator.reverseOrder()
-
     final private String source;
     final private int major;
     final private int minor;
