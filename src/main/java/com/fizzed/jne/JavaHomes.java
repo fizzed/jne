@@ -426,7 +426,7 @@ public class JavaHomes {
                 javaHomes.add(javaHome);
             } catch (Exception e) {
                 // not a jvm
-                log.trace("  was NOT a java home", e);
+                log.trace("  was NOT a java home: {}", e.getMessage());
             }
         }
 
