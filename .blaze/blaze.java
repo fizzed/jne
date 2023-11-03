@@ -23,6 +23,13 @@ public class blaze {
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
 
+    @Task(order = 0)
+    public void demo_detect_javas() throws Exception {
+        // mvn process-test-classes exec:exec -Dexec.classpathScope=test -Dexec.executable=java -Dexec.args="-cp %classpath com.fizzed.jne.JavaHomesDemo"
+        exec("mvn", "process-test-classes", "exec:exec",
+            "-Dexec.classpathScope=test", "-Dexec.executable=java", "-Dexec.args=-cp %classpath com.fizzed.jne.JavaHomesDemo").run();
+    }
+
     @Task(order = 1)
     public void build_natives() throws Exception {
         final String targetStr = Contexts.config().value("target").orNull();

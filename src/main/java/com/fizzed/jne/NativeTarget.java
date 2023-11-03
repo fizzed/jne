@@ -69,20 +69,25 @@ public class NativeTarget {
 
     public String getExecutableFileExtension() {
         this.checkOperatingSystem();
+        return getExecutableFileExtension(this.operatingSystem);
+    }
 
-        switch (this.operatingSystem) {
-            case WINDOWS:
-                return ".exe";
-            default:
-                return null;
+    static public String getExecutableFileExtension(OperatingSystem os) {
+        if (os == OperatingSystem.WINDOWS) {
+            return ".exe";
         }
+        return null;
     }
 
     public String resolveExecutableFileName(String name) {
-        Objects.requireNonNull(name, "name was null");
         this.checkOperatingSystem();
+        return resolveExecutableFileName(this.operatingSystem, name);
+    }
 
-        final String ext = this.getExecutableFileExtension();
+    static public String resolveExecutableFileName(OperatingSystem os, String name) {
+        Objects.requireNonNull(name, "name was null");
+
+        final String ext = getExecutableFileExtension(os);
 
         if (ext != null) {
             return name + ext;
@@ -93,8 +98,11 @@ public class NativeTarget {
 
     public String getLibraryFileExtension() {
         this.checkOperatingSystem();
+        return getLibraryFileExtension(this.operatingSystem);
+    }
 
-        switch (this.operatingSystem) {
+    static public String getLibraryFileExtension(OperatingSystem os) {
+        switch (os) {
             case WINDOWS:
                 return ".dll";
             case LINUX:
@@ -110,10 +118,14 @@ public class NativeTarget {
     }
 
     public String resolveLibraryFileName(String name) {
-        Objects.requireNonNull(name, "name was null");
         this.checkOperatingSystem();
+        return resolveLibraryFileName(this.operatingSystem, name);
+    }
 
-        switch (this.operatingSystem) {
+    static public String resolveLibraryFileName(OperatingSystem os, String name) {
+        Objects.requireNonNull(name, "name was null");
+
+        switch (os) {
             case WINDOWS:
                 return name + ".dll";
             case LINUX:
