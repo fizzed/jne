@@ -1,5 +1,9 @@
 # Java Native Extractor by Fizzed
 
+## 4.1.1 - 2023-11-03
+
+ - Add new sorted() feature for JavaHomeFinder
+
 ## 4.1.0 - 2023-11-03
  
  - New JavaVersion, JavaHome, JavaHomeFinder, and JavaDistribution utility classes for finding, detecting, and
