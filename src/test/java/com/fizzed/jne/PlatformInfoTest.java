@@ -43,7 +43,11 @@ public class PlatformInfoTest {
     @Test
     public void detectOperatingSystemFromValues() {
         assertThat(PlatformInfo.detectOperatingSystemFromValues("Windows"), is(OperatingSystem.WINDOWS));
+        assertThat(PlatformInfo.detectOperatingSystemFromValues("Windows Server 2022"), is(OperatingSystem.WINDOWS));
+        assertThat(PlatformInfo.detectOperatingSystemFromValues("Mac OS X"), is(OperatingSystem.MACOS));
+        assertThat(PlatformInfo.detectOperatingSystemFromValues("SunOS"), is(OperatingSystem.SOLARIS));
         assertThat(PlatformInfo.detectOperatingSystemFromValues("blah"), is(nullValue()));
+        assertThat(PlatformInfo.detectOperatingSystemFromValues(null), is(nullValue()));
     }
 
     @Test

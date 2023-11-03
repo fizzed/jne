@@ -30,7 +30,7 @@ public enum OperatingSystem {
     LINUX("Linux", null),
     FREEBSD("FreeBSD", null),
     OPENBSD("OpenBSD", null),
-    SOLARIS("Solaris", new String[] { "sun" });
+    SOLARIS("Solaris", new String[] { "sun" }, new String[] { "sunos" });
 
     private final String descriptor;
     private final String[] aliases;
@@ -59,6 +59,18 @@ public enum OperatingSystem {
     }
 
     static public OperatingSystem resolve(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        value = value.toLowerCase();
+
+        if (value.contains("windows")) {
+            return OperatingSystem.WINDOWS;
+        } else if (value.contains("mac") || value.contains("darwin")) {
+            return OperatingSystem.MACOS;
+        }
+
         for (OperatingSystem os : OperatingSystem.values()) {
             if (os.name().equalsIgnoreCase(value)) {
                 return os;
@@ -78,6 +90,7 @@ public enum OperatingSystem {
                 }
             }
         }
+
         return null;
     }
 

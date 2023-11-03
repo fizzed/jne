@@ -67,23 +67,6 @@ public class PlatformInfo {
 
     static OperatingSystem detectOperatingSystemFromValues(String osName) {
         return OperatingSystem.resolve(osName);
-        /*if (osName != null) {
-            osName = osName.toLowerCase();
-            if (osName.contains("windows")) {
-                return OperatingSystem.WINDOWS;
-            } else if (osName.contains("mac") || osName.contains("darwin")) {
-                return OperatingSystem.MACOS;
-            } else if (osName.contains("linux")) {
-                return OperatingSystem.LINUX;
-            } else if (osName.contains("sun") || osName.contains("solaris")) {
-                return OperatingSystem.SOLARIS;
-            } else if (osName.contains("freebsd")) {
-                return OperatingSystem.FREEBSD;
-            } else if (osName.contains("openbsd")) {
-                return OperatingSystem.OPENBSD;
-            }
-        }
-        return null;*/
     }
 
     //
