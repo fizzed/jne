@@ -35,6 +35,7 @@ public class JavaHomeFinder {
     };
 
     private JavaImageType imageType;
+    private HardwareArchitecture hardwareArchitecture;
     private Integer minVersion;
     private Integer maxVersion;
     private JavaDistribution distribution;
@@ -61,6 +62,15 @@ public class JavaHomeFinder {
 
     public JavaHomeFinder imageType(JavaImageType imageType) {
         this.imageType = imageType;
+        return this;
+    }
+
+    public HardwareArchitecture getHardwareArchitecture() {
+        return hardwareArchitecture;
+    }
+
+    public JavaHomeFinder hardwareArchitecture(HardwareArchitecture hardwareArchitecture) {
+        this.hardwareArchitecture = hardwareArchitecture;
         return this;
     }
 
@@ -116,6 +126,7 @@ public class JavaHomeFinder {
         return "imageType=" + imageType +
             ", minVersion=" + minVersion +
             ", maxVersion=" + maxVersion +
+            ", hwArch=" + hardwareArchitecture +
             ", distribution=" + distribution +
             ", preferredDistributions=" + Arrays.toString(preferredDistributions) +
             '}';
@@ -156,13 +167,13 @@ public class JavaHomeFinder {
             .filter(v -> this.minVersion == null || v.getVersion().getMajor() >= this.minVersion)
             .filter(v -> this.maxVersion == null || v.getVersion().getMajor() <= this.maxVersion)
             .filter(v -> this.imageType == null || v.getImageType() == this.imageType)
+            .filter(v -> this.hardwareArchitecture == null || v.getHardwareArchitecture() == this.hardwareArchitecture)
             .filter(v -> this.distribution == null || v.getDistribution() == this.distribution)
+            // sort what's left by the most recent version (descending)
+            .sorted((a, b) -> b.getVersion().compareTo(a.getVersion()))
             .collect(Collectors.toList());
 
-        // now, we'll sort what's left by the most recent version (descending)
-        filteredJavaHomes.sort((a, b) -> b.getVersion().compareTo(a.getVersion()));
-
-        // by preferred now?
+        // by preferred distribution?
         if (this.preferredDistributions != null) {
             for (JavaDistribution d : this.preferredDistributions) {
                 for (JavaHome javaHome : filteredJavaHomes) {
