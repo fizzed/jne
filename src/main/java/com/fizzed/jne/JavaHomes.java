@@ -355,7 +355,7 @@ public class JavaHomes {
     static public List<JavaHome> detect() throws Exception {
         final NativeTarget nativeTarget = NativeTarget.detect();
 
-        log.info("Detected operating system {}", nativeTarget.getOperatingSystem());
+        log.trace("Detected operating system {}", nativeTarget.getOperatingSystem());
 
         final Set<Path> maybeJavaHomes = new LinkedHashSet<>();
 
@@ -419,14 +419,14 @@ public class JavaHomes {
 
         // detect if the possible java home IS a java home
         for (final Path maybeJavaHome : maybeJavaHomes) {
-            log.info("detectJavaHome: {}", maybeJavaHome);
+            log.trace("detectJavaHome: {}", maybeJavaHome);
             JavaHome javaHome = null;
             try {
                 javaHome = JavaHomes.fromDirectory(maybeJavaHome);
                 javaHomes.add(javaHome);
             } catch (Exception e) {
                 // not a jvm
-                log.info("  was NOT a java home", e);
+                log.trace("  was NOT a java home", e);
             }
         }
 
@@ -437,21 +437,21 @@ public class JavaHomes {
         String javaHomeSysProp = System.getProperty("java.home");
         if (javaHomeSysProp != null) {
             Path p = Paths.get(javaHomeSysProp);
-            log.info("locateJavaHomeFromThisJvm: {}", javaHomeSysProp);
+            log.trace("locateJavaHomeFromThisJvm: {}", javaHomeSysProp);
             // before we do 2 system calls, let's check if we already have it
             if (!maybeJavaHomes.contains(p)) {
                 if (Files.isDirectory(p)) {
                     // note: we want the real java home, not a symlinked version of it
                     p = p.toRealPath();
                     if (!maybeJavaHomes.contains(p)) {
-                        log.info("  adding possible java home {}", p);
+                        log.trace("  adding possible java home {}", p);
                         maybeJavaHomes.add(p);
                     } else {
-                        log.info("  skipping, already present java home {}", p);
+                        log.trace("  skipping, already present java home {}", p);
                     }
                 }
             } else {
-                log.info("  skipping, already present java home {}", p);
+                log.trace("  skipping, already present java home {}", p);
             }
         }
     }
@@ -460,21 +460,21 @@ public class JavaHomes {
         String javaHomeEnvVar = System.getenv("JAVA_HOME");
         if (javaHomeEnvVar != null && !javaHomeEnvVar.isEmpty()) {
             Path p = Paths.get(javaHomeEnvVar);
-            log.info("locateJavaHomeFromJavaHomeEnvVar: {}", javaHomeEnvVar);
+            log.trace("locateJavaHomeFromJavaHomeEnvVar: {}", javaHomeEnvVar);
             // before we do 2 system calls, let's check if we already have it
             if (!maybeJavaHomes.contains(p)) {
                 if (Files.isDirectory(p)) {
                     // note: we want the real java home, not a symlinked version of it
                     p = p.toRealPath();
                     if (!maybeJavaHomes.contains(p)) {
-                        log.info("  adding possible java home {}", p);
+                        log.trace("  adding possible java home {}", p);
                         maybeJavaHomes.add(p);
                     } else {
-                        log.info("  skipping, already present java home {}", p);
+                        log.trace("  skipping, already present java home {}", p);
                     }
                 }
             } else {
-                log.info("  skipping, already present java home {}", p);
+                log.trace("  skipping, already present java home {}", p);
             }
         }
     }
@@ -488,7 +488,7 @@ public class JavaHomes {
             // split path on path separator
             final String[] paths = pathEnvVar.split(File.pathSeparator);
             for (String path : paths) {
-                log.info("locateJavaHomesFromPathEnvVar: {}", path);
+                log.trace("locateJavaHomesFromPathEnvVar: {}", path);
 
                 // does the path contain a java executable?
                 final Path javaExeFile = Paths.get(path).resolve(javaExeFileName);
@@ -497,12 +497,12 @@ public class JavaHomes {
                     Path p = javaExeFile.toRealPath().resolve("../..").normalize();
                     if (!maybeJavaHomes.contains(p)) {
                         maybeJavaHomes.add(p);
-                        log.info("  adding possible java home {}", p);
+                        log.trace("  adding possible java home {}", p);
                     } else {
-                        log.info("  skipping, already present java home {}", p);
+                        log.trace("  skipping, already present java home {}", p);
                     }
                 } else {
-                    log.info("  skipping, no {} present", javaExeFileName);
+                    log.trace("  skipping, no {} present", javaExeFileName);
                 }
             }
         }
@@ -513,11 +513,11 @@ public class JavaHomes {
     }
 
     static private void locateJavaHomesFromDir(Set<Path> maybeJavaHomes, Path searchDir, String nameRegex, Path subDir) throws IOException {
-        log.info("locateJavaHomesFromDir: {} with regex {}", searchDir, nameRegex);
+        log.trace("locateJavaHomesFromDir: {} with regex {}", searchDir, nameRegex);
 
         // does the search dir even exist?
         if (!Files.isDirectory(searchDir)) {
-            log.info("  skipping, dir does not exist (or is a file)");
+            log.trace("  skipping, dir does not exist (or is a file)");
             return;
         }
 
@@ -545,13 +545,13 @@ public class JavaHomes {
                         }
 
                         if (!maybeJavaHomes.contains(p)) {
-                            log.info("  adding possible java home {}", p);
+                            log.trace("  adding possible java home {}", p);
                             maybeJavaHomes.add(p);
                         } else {
-                            log.info("  skipping, already present java home {}", p);
+                            log.trace("  skipping, already present java home {}", p);
                         }
                     } else {
-                        log.info("  skipping, name {} does not match regex", name);
+                        log.trace("  skipping, name {} does not match regex", name);
                     }
                 }
             });
