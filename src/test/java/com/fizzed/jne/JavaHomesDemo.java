@@ -35,12 +35,15 @@ class JavaHomesDemo {
             log.info("  was java home");
             log.info("    javaExe: {}", javaHome.getJavaExe());
             log.info("    javacExe: {}", javaHome.getJavacExe());
+            log.info("    nativeImageExe: {}", javaHome.getNativeImageExe());
+            log.info("    imageType: {}", javaHome.getImageType());
             log.info("    version: {}", javaHome.getVersion());
             log.info("      major: {}", javaHome.getVersion().getMajor());
             log.info("      minor: {}", javaHome.getVersion().getMinor());
             log.info("      security: {}", javaHome.getVersion().getSecurity());
             log.info("    os: {}", javaHome.getOperatingSystem());
             log.info("    arch: {}", javaHome.getHardwareArchitecture());
+            log.info("    distro: {}", javaHome.getDistribution());
             log.info("    vendor: {}", javaHome.getVendor());
             log.info("    releaseProperties:");
             javaHome.getReleaseProperties().forEach((k, v) -> {
@@ -50,9 +53,6 @@ class JavaHomesDemo {
                 log.info("      {} -> {}", k, v);
             });
         }
-
-        // hello daddy
-        // mom is cute
     }
 
 }

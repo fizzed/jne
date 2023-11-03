@@ -100,7 +100,9 @@ class JavaHomesTest {
         final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
 
         assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getNativeImageExe(), is(nullValue()));
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.ZULU));
         assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
         assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(javaHome.getVersion().getMajor(), is(8));
@@ -194,8 +196,116 @@ class JavaHomesTest {
     }
 
     @Test
+    public void fromDirectoryJdkLiberica21() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-liberica-21");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("BellSoft"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.LIBERICA));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(21));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(1));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
+    public void fromDirectoryJdkCorretto17() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-corretto-17");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Amazon.com Inc."));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.CORRETTO));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(17));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(9));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
+    public void fromDirectoryJdkMicrosoft17() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-microsoft-17");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Microsoft"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.MICROSOFT));
+        assertThat(javaHome.getImageType(), is(JavaImageType.JDK));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(17));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(9));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
+    public void fromDirectoryJdkTemurin18() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-temurin-18");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Eclipse Adoptium"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.TEMURIN));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(18));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(2));
+        assertThat(javaHome.getVersion().getBuild(), is(1));
+    }
+
+    @Test
+    public void fromDirectoryJdkSemeru17() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-semeru-17");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("IBM Corporation"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.SEMERU));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(17));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(8));
+        assertThat(javaHome.getVersion().getBuild(), is(1));
+    }
+
+    @Test
+    public void fromDirectoryJdkDragonwell11() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-dragonwell-11");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Alibaba"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.DRAGONWELL));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(11));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(20));
+        assertThat(javaHome.getVersion().getBuild(), is(17));
+    }
+
+    @Test
     public void readJdk6VersionOutput() throws Exception {
-        // resolve the jre directory of the jdk such as how java 8 does it
         final String output = Resources.stringUTF8("/jdkversions/oracle-jdk-6.txt");
 
         final Map<String,String> props = JavaHomes.readJavaVersionOutput(output);
@@ -249,5 +359,12 @@ class JavaHomesTest {
         /*System.out.println("Queried version in " + timer);
         System.out.println(versionOutput);*/
     }
+
+    /*@Test
+    public void test() throws Exception {
+        System.getProperties().forEach((k,v) -> {
+            System.out.println(k + " -> " + v);
+        });
+    }*/
 
 }

@@ -66,15 +66,15 @@ public enum HardwareArchitecture {
             if (arch.name().equalsIgnoreCase(value)) {
                 return arch;
             }
-            if (arch.getAliases() != null) {
-                for (String alias : arch.getAliases()) {
+            if (arch.aliases != null) {
+                for (String alias : arch.aliases) {
                     if (alias.equalsIgnoreCase(value)) {
                         return arch;
                     }
                 }
             }
-            if (arch.getExtraAliases() != null) {
-                for (String alias : arch.getExtraAliases()) {
+            if (arch.extraAliases != null) {
+                for (String alias : arch.extraAliases) {
                     if (alias.equalsIgnoreCase(value)) {
                         return arch;
                     }

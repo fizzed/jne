@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -35,21 +34,27 @@ public class JavaHome {
     final private Path directory;
     final private Path javaExe;
     final private Path javacExe;
+    final private Path nativeImageExe;
     final private OperatingSystem operatingSystem;
     final private HardwareArchitecture hardwareArchitecture;
     final private ABI abi;
     final private String vendor;
+    final private JavaDistribution distribution;
     final private JavaVersion version;
     final private Map<String,String> releaseProperties;
 
-    JavaHome(Path directory, Path javaExe, Path javacExe, OperatingSystem operatingSystem, HardwareArchitecture hardwareArchitecture, ABI abi, String vendor, JavaVersion version, Map<String, String> releaseProperties) {
+    JavaHome(Path directory, Path javaExe, Path javacExe, Path nativeImageExe, OperatingSystem operatingSystem,
+             HardwareArchitecture hardwareArchitecture, ABI abi, String vendor, JavaDistribution distro, JavaVersion version,
+             Map<String, String> releaseProperties) {
         this.directory = directory;
         this.javaExe = javaExe;
         this.javacExe = javacExe;
+        this.nativeImageExe = nativeImageExe;
         this.operatingSystem = operatingSystem;
         this.hardwareArchitecture = hardwareArchitecture;
         this.abi = abi;
         this.vendor = vendor;
+        this.distribution = distro;
         this.version = version;
         this.releaseProperties = releaseProperties;
     }
@@ -64,6 +69,20 @@ public class JavaHome {
 
     public Path getJavacExe() {
         return javacExe;
+    }
+
+    public Path getNativeImageExe() {
+        return nativeImageExe;
+    }
+
+    public JavaImageType getImageType() {
+        if (this.nativeImageExe != null) {
+            return JavaImageType.NIK;
+        } else if (this.javacExe != null) {
+            return JavaImageType.JDK;
+        } else {
+            return JavaImageType.JRE;
+        }
     }
 
     public OperatingSystem getOperatingSystem() {
@@ -82,6 +101,10 @@ public class JavaHome {
         return vendor;
     }
 
+    public JavaDistribution getDistribution() {
+        return distribution;
+    }
+
     public JavaVersion getVersion() {
         return version;
     }
@@ -92,7 +115,12 @@ public class JavaHome {
 
     static public JavaHome current() throws IOException {
         Path javaHomeDir = Paths.get(System.getProperty("java.home"));
-        return JavaHomes.fromDirectory(javaHomeDir);
+        return current(javaHomeDir);
+    }
+
+    // for testing
+    static JavaHome current(Path javaHomeDir) throws IOException {
+        return JavaHomes.fromDirectory(javaHomeDir, false, JavaHomes.CURRENT_JVM_RELEASE_PROPERTIES_PROVIDER);
     }
 
 }

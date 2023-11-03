@@ -36,11 +36,92 @@ import java.util.stream.Stream;
 public class JavaHomes {
     static private final Logger log = LoggerFactory.getLogger(JavaHome.class);
 
+    public interface ReleasePropertiesProvider {
+
+        boolean asFallbackOnly();
+
+        Map<String,String> apply(Path javaHomeDir, Path javaExeFile) throws IOException;
+
+    }
+
+    static public final ReleasePropertiesProvider EXECUTE_JAVA_VERSION_RELEASE_PROPERTIES_PROVIDER = new ReleasePropertiesProvider() {
+
+        @Override
+        public boolean asFallbackOnly() {
+            return true;
+        }
+
+        @Override
+        public Map<String, String> apply(Path javaHomeDir, Path javaExeFile) throws IOException {
+            // otherwise, we could do "java -version" to try and detect it
+            try {
+                String versionOutput = executeJavaVersion(javaExeFile);
+
+                return readJavaVersionOutput(versionOutput);
+            } catch (Exception e) {
+                throw new IOException("Unable to execute -version command on " + javaExeFile, e);
+            }
+        }
+    };
+
+    static public final ReleasePropertiesProvider CURRENT_JVM_RELEASE_PROPERTIES_PROVIDER = new ReleasePropertiesProvider() {
+
+        @Override
+        public boolean asFallbackOnly() {
+            return false;
+        }
+
+        @Override
+        public Map<String, String> apply(Path javaHomeDir, Path javaExeFile) throws IOException {
+            final Map<String,String> releaseProperties = new HashMap<>();
+
+            // java.version -> 11.0.17                      java.version -> 1.8.0_352
+            // java.runtime.version -> 11.0.17+8-LTS
+            // java.vendor -> Azul Systems, Inc.            java.vendor -> Azul Systems, Inc.
+            // java.vm.vendor -> Azul Systems, Inc.
+            // java.vendor.version -> Zulu11.60+19-CA
+            // os.name -> Linux
+            // os.arch -> amd64
+            // java.vendor.url -> http://www.azul.com/
+            // java.version.date -> 2022-10-18
+            String javaVersion = System.getProperty("java.version");
+            if (javaVersion != null) {
+                releaseProperties.put("JAVA_VERSION", javaVersion);
+            }
+
+            String javaVendor = System.getProperty("java.vendor");
+            if (javaVendor != null) {
+                releaseProperties.put("IMPLEMENTOR", javaVendor);
+            }
+
+            String javaVendorVersion = System.getProperty("java.vendor.version");
+            if (javaVendorVersion != null) {
+                releaseProperties.put("IMPLEMENTOR_VERSION", javaVendorVersion);
+            }
+
+            String osName = System.getProperty("os.name");
+            if (osName != null) {
+                releaseProperties.put("OS_NAME", osName);
+            }
+
+            String osArch = System.getProperty("os.arch");
+            if (osArch != null) {
+                releaseProperties.put("OS_ARCH", osArch);
+            }
+
+            return releaseProperties;
+        }
+    };
+
     static public JavaHome fromDirectory(Path javaHomeDir) throws IOException {
         return fromDirectory(javaHomeDir, false);
     }
 
     static public JavaHome fromDirectory(Path javaHomeDir, boolean requireReleaseFile) throws IOException {
+        return fromDirectory(javaHomeDir, requireReleaseFile, EXECUTE_JAVA_VERSION_RELEASE_PROPERTIES_PROVIDER);
+    }
+
+    static public JavaHome fromDirectory(Path javaHomeDir, boolean requireReleaseFile, ReleasePropertiesProvider releasePropertiesFallbackProvider) throws IOException {
         if (!Files.isDirectory(javaHomeDir)) {
             throw new FileNotFoundException("Java home directory " + javaHomeDir + " does not exist");
         }
@@ -85,20 +166,25 @@ public class JavaHomes {
         }
 
         final String javacExeFileName = NativeTarget.resolveExecutableFileName(thisOs, "javac");
-        final Path _javacExeFile = javaHomeDir.resolve("bin").resolve(javacExeFileName);
-        final Path javacExeFile;
-        if (Files.isRegularFile(_javacExeFile)) {
-            javacExeFile = _javacExeFile;
-        } else {
+        Path javacExeFile = javaHomeDir.resolve("bin").resolve(javacExeFileName);
+        if (!Files.isRegularFile(javacExeFile)) {
             javacExeFile = null;
+        }
+
+        final String nativeImageExeFileName = NativeTarget.resolveExecutableFileName(thisOs, "native-image");
+        Path nativeImageExeFile = javaHomeDir.resolve("bin").resolve(nativeImageExeFileName);
+        if (!Files.isRegularFile(nativeImageExeFile)) {
+            nativeImageExeFile = null;
         }
 
         JavaVersion version = null;
         String vendor = null;
+        String implementorVersion = null;
         OperatingSystem operatingSystem = null;
         HardwareArchitecture hardwareArchitecture = null;
         ABI abi = null;
         Map<String,String> releaseProperties = null;
+        JavaDistribution distro;
 
         // Test #3: release file w/ java home (it contains valuable info)
         final Path releaseFile = javaHomeDir.resolve("release");
@@ -107,17 +193,27 @@ public class JavaHomes {
         }
 
         if (releaseProperties == null) {
-            if (requireReleaseFile){
+            if (requireReleaseFile) {
                 throw new FileNotFoundException("Java release file " + releaseFile + " was not found in " + javaHomeDir);
             }
-
-            // otherwise, we could do "java -version" to try and detect it
-            try {
-                String versionOutput = executeJavaVersion(javaExeFile);
-                releaseProperties = readJavaVersionOutput(versionOutput);
-            } catch (Exception e) {
-                throw new IOException("Unable to execute -version command on " + javaExeFile, e);
+            if (releasePropertiesFallbackProvider != null) {
+                releaseProperties = releasePropertiesFallbackProvider.apply(javaHomeDir, javaExeFile);
             }
+        } else if (releasePropertiesFallbackProvider != null && !releasePropertiesFallbackProvider.asFallbackOnly()) {
+            Map<String,String> extraReleaseProperties = releasePropertiesFallbackProvider.apply(javaHomeDir, javaExeFile);
+            // merge those into the existing
+            if (extraReleaseProperties != null) {
+                Map<String, String> finalReleaseProperties = releaseProperties;
+                extraReleaseProperties.forEach((k, v) -> {
+                    if (!finalReleaseProperties.containsKey(k)) {
+                        finalReleaseProperties.put(k, v);
+                    }
+                });
+            }
+        }
+
+        if (releasePropertiesFallbackProvider != null && (releaseProperties == null || !releasePropertiesFallbackProvider.asFallbackOnly())) {
+            releaseProperties = releasePropertiesFallbackProvider.apply(javaHomeDir, javaExeFile);
         }
 
         String releaseJavaVersion = releaseProperties.get("JAVA_VERSION");
@@ -152,8 +248,18 @@ public class JavaHomes {
         }
 
         vendor = releaseProperties.get("IMPLEMENTOR");
+        implementorVersion = releaseProperties.get("IMPLEMENTOR_VERSION");
 
-        return new JavaHome(javaHomeDir, javaExeFile, javacExeFile, operatingSystem, hardwareArchitecture, abi, vendor, version, releaseProperties);
+        // try to parse distribution from a few different values
+        distro = JavaDistribution.resolve(vendor);
+        if (distro == null) {
+            distro = JavaDistribution.resolve(implementorVersion);
+            if (distro == null) {
+                distro = JavaDistribution.resolve(javaHomeDir.toString());
+            }
+        }
+
+        return new JavaHome(javaHomeDir, javaExeFile, javacExeFile, nativeImageExeFile, operatingSystem, hardwareArchitecture, abi, vendor, distro, version, releaseProperties);
     }
 
     static public Map<String,String> readReleaseProperties(Path releaseFile) throws IOException {
