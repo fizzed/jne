@@ -34,12 +34,27 @@ public class JavaHomeFinder {
         JavaDistribution.CORRETTO
     };
 
+    private boolean sorted;
     private JavaImageType imageType;
     private HardwareArchitecture hardwareArchitecture;
     private Integer minVersion;
     private Integer maxVersion;
     private JavaDistribution distribution;
     private JavaDistribution[] preferredDistributions;
+
+    public boolean isSorted() {
+        return sorted;
+    }
+
+    public JavaHomeFinder sorted() {
+        this.sorted = true;
+        return this;
+    }
+
+    public JavaHomeFinder sorted(boolean sorted) {
+        this.sorted = sorted;
+        return this;
+    }
 
     public JavaImageType getImageType() {
         return imageType;
@@ -123,7 +138,8 @@ public class JavaHomeFinder {
 
     @Override
     public String toString() {
-        return "imageType=" + imageType +
+        return "sorted=" + sorted +
+            ", imageType=" + imageType +
             ", minVersion=" + minVersion +
             ", maxVersion=" + maxVersion +
             ", hwArch=" + hardwareArchitecture +
@@ -162,6 +178,9 @@ public class JavaHomeFinder {
             return Optional.empty();
         }
 
+        // the first java home is important (it should be the one running this JVM)
+        final JavaHome firstJavaHome = javaHomes.get(0);
+
         // filter our list down by image type, version, etc. (concrete criteria)
         final List<JavaHome> filteredJavaHomes = javaHomes.stream()
             .filter(v -> this.minVersion == null || v.getVersion().getMajor() >= this.minVersion)
@@ -169,9 +188,12 @@ public class JavaHomeFinder {
             .filter(v -> this.imageType == null || v.getImageType() == this.imageType)
             .filter(v -> this.hardwareArchitecture == null || v.getHardwareArchitecture() == this.hardwareArchitecture)
             .filter(v -> this.distribution == null || v.getDistribution() == this.distribution)
-            // sort what's left by the most recent version (descending)
-            .sorted((a, b) -> b.getVersion().compareTo(a.getVersion()))
             .collect(Collectors.toList());
+
+        if (this.sorted) {
+            // sort what's left by the most recent version (descending)
+            filteredJavaHomes.sort((a, b) -> b.getVersion().compareTo(a.getVersion()));
+        }
 
         // by preferred distribution?
         if (this.preferredDistributions != null) {
