@@ -158,6 +158,14 @@ class JavaVersionTest {
         assertThat(v.getBuild(), is(0));
         assertThat(v.toString(), is("7.0.45"));
         assertThat(v.toJavaVersion(), is("1.7.0_45"));
+
+        v = JavaVersion.parse("1.6.0-119");
+        assertThat(v.getMajor(), is(6));
+        assertThat(v.getMinor(), is(0));
+        assertThat(v.getSecurity(), is(119));
+        assertThat(v.getBuild(), is(0));
+        assertThat(v.toString(), is("6.0.119"));
+        assertThat(v.toJavaVersion(), is("1.6.0_119"));
     }
 
 }

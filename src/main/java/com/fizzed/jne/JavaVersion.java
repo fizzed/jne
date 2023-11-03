@@ -112,7 +112,7 @@ public class JavaVersion {
             // pre-Java 9 version number
             if (version.startsWith("1.")) {
                 // e.g. 1.8.0_352 which we normalize to the modern format so we can use its parsing routing
-                sourceVersion = version.substring(2).replace('_', '.');
+                sourceVersion = version.substring(2).replace('_', '.').replace('-', '.');
             }
 
             final int len = sourceVersion.length();

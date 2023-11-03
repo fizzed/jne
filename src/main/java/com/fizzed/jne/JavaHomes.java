@@ -318,9 +318,9 @@ public class JavaHomes {
             try {
                 javaHome = JavaHomes.fromDirectory(maybeJavaHome);
                 javaHomes.add(javaHome);
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 // not a jvm
-                log.info("  was NOT a java home");
+                log.info("  was NOT a java home", e);
             }
         }
 
