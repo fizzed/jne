@@ -26,18 +26,24 @@ package com.fizzed.jne;
 public enum OperatingSystem {
 
     WINDOWS("Windows", null),
-    MACOS("MacOS", new String[] { "osx" }),
+    MACOS("MacOS", new String[] { "osx" }, new String[] { "darwin" }),
     LINUX("Linux", null),
     FREEBSD("FreeBSD", null),
     OPENBSD("OpenBSD", null),
-    SOLARIS("Solaris", null);
+    SOLARIS("Solaris", new String[] { "sun" });
 
     private final String descriptor;
     private final String[] aliases;
+    private final String[] extraAliases;
 
     OperatingSystem(String descriptor, String[] aliases) {
+        this(descriptor, aliases, null);
+    }
+
+    OperatingSystem(String descriptor, String[] aliases, String[] extraAliases) {
         this.descriptor = descriptor;
         this.aliases = aliases;
+        this.extraAliases = extraAliases;
     }
 
     public String getDescriptor() {
@@ -48,14 +54,25 @@ public enum OperatingSystem {
         return aliases;
     }
 
+    public String[] getExtraAliases() {
+        return extraAliases;
+    }
+
     static public OperatingSystem resolve(String value) {
         for (OperatingSystem os : OperatingSystem.values()) {
             if (os.name().equalsIgnoreCase(value)) {
                 return os;
             }
-            if (os.getAliases() != null) {
-                for (String alias : os.getAliases()) {
+            if (os.aliases != null) {
+                for (String alias : os.aliases) {
                     if (alias.equalsIgnoreCase(value)) {
+                        return os;
+                    }
+                }
+            }
+            if (os.extraAliases != null) {
+                for (String extraAlias : os.extraAliases) {
+                    if (extraAlias.equalsIgnoreCase(value)) {
                         return os;
                     }
                 }

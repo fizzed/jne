@@ -74,5 +74,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.fizzed</groupId>
+            <artifactId>crux-util</artifactId>
+            <version>1.0.43</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>

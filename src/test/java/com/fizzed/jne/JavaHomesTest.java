@@ -20,11 +20,15 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.crux.util.Resources;
+import com.fizzed.crux.util.StopWatch;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -84,8 +88,8 @@ class JavaHomesTest {
         try {
             JavaHomes.fromDirectory(javaHomeDir);
             fail();
-        } catch (FileNotFoundException e) {
-            // expected
+        } catch (IOException e) {
+            // expected since java isn't a real executable
         }
     }
 
@@ -114,9 +118,136 @@ class JavaHomesTest {
         assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
         assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
         assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.WINDOWS));
+        assertThat(javaHome.getAbi(), is(ABI.DEFAULT));
         assertThat(javaHome.getVersion().getMajor(), is(11));
         assertThat(javaHome.getVersion().getMinor(), is(0));
         assertThat(javaHome.getVersion().getSecurity(), is(17));
+    }
+
+    @Test
+    public void fromDirectoryJdkZulu11Arm64Musl() throws Exception {
+        final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-arm64-musl");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.MUSL));
+        assertThat(javaHome.getVersion().getMajor(), is(11));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(20));
+        assertThat(javaHome.getVersion().getBuild(), is(1));
+    }
+
+    @Test
+    public void fromDirectoryJdkZulu11Armel() throws Exception {
+        final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-armel");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.ARMEL));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.DEFAULT));
+        assertThat(javaHome.getVersion().getMajor(), is(11));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(20));
+        assertThat(javaHome.getVersion().getBuild(), is(1));
+    }
+
+    @Test
+    public void fromDirectoryJdkZulu11Armhf() throws Exception {
+        final Path javaHomeDir = this.mockJdksDir.resolve("jdk-zulu-11-armhf");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.ARMHF));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.DEFAULT));
+        assertThat(javaHome.getVersion().getMajor(), is(11));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(19));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
+    public void fromDirectoryJdk8Legacy() throws Exception {
+        // resolve the jre directory of the jdk such as how java 8 does it
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-8-legacy/jre");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("Azul Systems, Inc."));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.ARMHF));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.DEFAULT));
+        assertThat(javaHome.getVersion().getMajor(), is(11));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(19));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
+    public void readJdk6VersionOutput() throws Exception {
+        // resolve the jre directory of the jdk such as how java 8 does it
+        final String output = Resources.stringUTF8("/jdkversions/oracle-jdk-6.txt");
+
+        final Map<String,String> props = JavaHomes.readJavaVersionOutput(output);
+
+        assertThat(props.get("JAVA_VERSION"), is("1.6.0_45"));
+        assertThat(props.get("IMPLEMENTOR_VERSION"), is(nullValue()));
+    }
+
+    @Test
+    public void readJdk7VersionOutput() throws Exception {
+        // resolve the jre directory of the jdk such as how java 8 does it
+        final String output = Resources.stringUTF8("/jdkversions/zulu-jdk-7.txt");
+
+        final Map<String,String> props = JavaHomes.readJavaVersionOutput(output);
+
+        assertThat(props.get("JAVA_VERSION"), is("1.7.0_352"));
+        assertThat(props.get("IMPLEMENTOR_VERSION"), is("Zulu 7.56.0.11-CA-linux64"));
+    }
+
+    @Test
+    public void readJdk11VersionOutput() throws Exception {
+        // resolve the jre directory of the jdk such as how java 8 does it
+        final String output = Resources.stringUTF8("/jdkversions/zulu-jdk-11.txt");
+
+        final Map<String,String> props = JavaHomes.readJavaVersionOutput(output);
+
+        assertThat(props.get("JAVA_VERSION"), is("11.0.17"));
+        assertThat(props.get("IMPLEMENTOR_VERSION"), is("Zulu11.60+19-CA"));
+    }
+
+    @Test
+    public void readJdk21VersionOutput() throws Exception {
+        // resolve the jre directory of the jdk such as how java 8 does it
+        final String output = Resources.stringUTF8("/jdkversions/graalvm-jdk-21.txt");
+
+        final Map<String,String> props = JavaHomes.readJavaVersionOutput(output);
+
+        assertThat(props.get("JAVA_VERSION"), is("21"));
+        assertThat(props.get("IMPLEMENTOR_VERSION"), is("Oracle GraalVM 21+35.1"));
+    }
+
+    @Test
+    public void executeJavaVersion() throws Exception {
+        final JavaHome javaHome = JavaHome.current();
+
+        final StopWatch timer = StopWatch.timeMillis();
+
+        final String versionOutput = JavaHomes.executeJavaVersion(javaHome.getJavaExe());
+
+        assertThat(versionOutput, is(not(nullValue())));
+        /*System.out.println("Queried version in " + timer);
+        System.out.println(versionOutput);*/
     }
 
 }

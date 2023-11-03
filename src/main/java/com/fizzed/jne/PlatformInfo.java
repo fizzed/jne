@@ -66,7 +66,8 @@ public class PlatformInfo {
     }
 
     static OperatingSystem detectOperatingSystemFromValues(String osName) {
-        if (osName != null) {
+        return OperatingSystem.resolve(osName);
+        /*if (osName != null) {
             osName = osName.toLowerCase();
             if (osName.contains("windows")) {
                 return OperatingSystem.WINDOWS;
@@ -82,7 +83,7 @@ public class PlatformInfo {
                 return OperatingSystem.OPENBSD;
             }
         }
-        return null;
+        return null;*/
     }
 
     //
@@ -135,7 +136,13 @@ public class PlatformInfo {
             abiType = abiType != null ? abiType.toLowerCase() : "none";
             bootLibPath = bootLibPath != null ? bootLibPath.toLowerCase() : "none";
 
-            if (osArch.contains("amd64") || osArch.contains("x86_64")) {
+            // delegate most of the lookup to the HW enum
+            HardwareArchitecture hardwareArchitecture = HardwareArchitecture.resolve(osArch);
+            if (hardwareArchitecture != null) {
+                return hardwareArchitecture;
+            }
+
+            /*if (osArch.contains("amd64") || osArch.contains("x86_64")) {
                 return HardwareArchitecture.X64;
             } else if (osArch.contains("i386") || osArch.contains("i686") || osArch.contains("x86")) {
                 return HardwareArchitecture.X32;
@@ -143,7 +150,7 @@ public class PlatformInfo {
                 return HardwareArchitecture.ARM64;
             } else if (osArch.contains("armv7l")) {
                 return HardwareArchitecture.ARMHF;
-            } else if (osArch.contains("arm") || osArch.contains("aarch32")) {
+            } else*/ if (osArch.contains("arm") || osArch.contains("aarch32")) {
                 // unfortunately, this arch is used for ARMEL vs ARMHF, we can leverage the mapped files on linux to help differentiate
                 log.trace("System property arch [{}] is ambiguous, will try a few workarounds", osArch);
                 // abitype? e.g. gnueabihf
@@ -168,7 +175,7 @@ public class PlatformInfo {
                     return linuxMappedFilesResult.getArch();
                 }
                 // the most common is likely hard float
-            } else if (osArch.contains("riscv64")) {
+            } /*else if (osArch.contains("riscv64")) {
                 return HardwareArchitecture.RISCV64;
             } else if (osArch.contains("s390x")) {
                 return HardwareArchitecture.S390X;
@@ -176,7 +183,7 @@ public class PlatformInfo {
                 return HardwareArchitecture.PPC64LE;
             } else if (osArch.contains("mips64el") || osArch.contains("mips64le")) {
                 return HardwareArchitecture.MIPS64LE;
-            }
+            }*/
         }
         return null;
     }

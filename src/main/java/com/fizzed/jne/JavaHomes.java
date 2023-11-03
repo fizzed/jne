@@ -23,14 +23,13 @@ package com.fizzed.jne;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -38,6 +37,10 @@ public class JavaHomes {
     static private final Logger log = LoggerFactory.getLogger(JavaHome.class);
 
     static public JavaHome fromDirectory(Path javaHomeDir) throws IOException {
+        return fromDirectory(javaHomeDir, false);
+    }
+
+    static public JavaHome fromDirectory(Path javaHomeDir, boolean requireReleaseFile) throws IOException {
         if (!Files.isDirectory(javaHomeDir)) {
             throw new FileNotFoundException("Java home directory " + javaHomeDir + " does not exist");
         }
@@ -46,10 +49,20 @@ public class JavaHomes {
 
         // Test #1: bin/java exists?
         final String javaExeFileName = NativeTarget.resolveExecutableFileName(thisOs, "java");
-        final Path javaExeFile = javaHomeDir.resolve("bin").resolve(javaExeFileName);
+        Path javaExeFile = javaHomeDir.resolve("bin").resolve(javaExeFileName);
 
         if (!Files.isRegularFile(javaExeFile)) {
             throw new FileNotFoundException("Java executable " + javaExeFile + " was not found in " + javaHomeDir);
+        }
+
+        // For old Java 8, sometimes we're in the "jre" directory, where we really need to probe the directory above
+        if ("jre".equalsIgnoreCase(javaHomeDir.getFileName().toString())) {
+            Path jdkHomeDir = javaHomeDir.getParent();
+            Path javaExeFileAlt = jdkHomeDir.resolve("bin").resolve(javaExeFileName);
+            if (Files.isRegularFile(javaExeFileAlt)) {
+                javaHomeDir = jdkHomeDir;
+                javaExeFile = javaExeFileAlt;
+            }
         }
 
         // Test #2: sometimes we can find a bin/java, especially if we're dealing with a directory simply on the PATH
@@ -79,27 +92,53 @@ public class JavaHomes {
         final Path releaseFile = javaHomeDir.resolve("release");
         if (Files.isRegularFile(releaseFile)) {
             releaseProperties = JavaHomes.readReleaseProperties(releaseFile);
-
-            String releaseJavaVersion = releaseProperties.get("JAVA_VERSION");
-            if (releaseJavaVersion != null) {
-                version = JavaVersion.parse(releaseJavaVersion);
-            }
-
-            String releaseOs = releaseProperties.get("OS_NAME");
-            if (releaseOs != null) {
-                operatingSystem = OperatingSystem.resolve(releaseOs);
-            }
-
-            String releaseArch = releaseProperties.get("OS_ARCH");
-            if (releaseArch != null) {
-                hardwareArchitecture = HardwareArchitecture.resolve(releaseArch);
-                // TODO: need special handling for "arm"
-            }
-
-            vendor = releaseProperties.get("IMPLEMENTOR");
-        } else {
-            throw new FileNotFoundException("Java release file " + releaseFile + " was not found in " + javaHomeDir);
         }
+
+        if (releaseProperties == null) {
+            if (requireReleaseFile){
+                throw new FileNotFoundException("Java release file " + releaseFile + " was not found in " + javaHomeDir);
+            }
+            // otherwise, we could do "java -version" to try and detect it
+            try {
+                String versionOutput = executeJavaVersion(javaExeFile);
+                releaseProperties = readJavaVersionOutput(versionOutput);
+            } catch (Exception e) {
+                throw new IOException("Unable to execute -version command on " + javaExeFile, e);
+            }
+        }
+
+        String releaseJavaVersion = releaseProperties.get("JAVA_VERSION");
+        if (releaseJavaVersion != null) {
+            version = JavaVersion.parse(releaseJavaVersion);
+        }
+
+        String releaseOs = releaseProperties.get("OS_NAME");
+        if (releaseOs != null) {
+            operatingSystem = OperatingSystem.resolve(releaseOs);
+        }
+
+        String releaseArch = releaseProperties.get("OS_ARCH");
+        if (releaseArch != null) {
+            hardwareArchitecture = HardwareArchitecture.resolve(releaseArch);
+            // special handling for "arm"
+            if (hardwareArchitecture == null) {
+                if ("arm".equalsIgnoreCase(releaseArch)) {
+                    String sunArchAbi = releaseProperties.get("SUN_ARCH_ABI");
+                    if ("gnueabihf".equalsIgnoreCase(sunArchAbi)) {
+                        hardwareArchitecture = HardwareArchitecture.ARMHF;
+                    } else if ("gnueabi".equalsIgnoreCase(sunArchAbi)) {
+                        hardwareArchitecture = HardwareArchitecture.ARMEL;
+                    }
+                }
+            }
+        }
+
+        String releaseLibc = releaseProperties.get("LIBC");
+        if (releaseLibc != null) {
+            abi = ABI.resolve(releaseLibc);
+        }
+
+        vendor = releaseProperties.get("IMPLEMENTOR");
 
         return new JavaHome(javaHomeDir, javaExeFile, javacExeFile, operatingSystem, hardwareArchitecture, abi, vendor, version, releaseProperties);
     }
@@ -122,6 +161,75 @@ public class JavaHomes {
                 nameValues.put(name, value);
             }
         }
+        return nameValues;
+    }
+
+    static public String executeJavaVersion(Path javaExeFile) throws IOException, InterruptedException {
+        final Process process = new ProcessBuilder()
+            .command(javaExeFile.toString(), "-version")
+            .redirectErrorStream(true)
+            .start();
+
+        // we do not need the input stream
+        process.getOutputStream().close();
+
+        // read all the output
+        final StringBuilder output = new StringBuilder();
+        final byte[] buf = new byte[1024];
+        try (InputStream input = process.getInputStream()) {
+            int read = 1;
+            while (read > 0) {
+                read = input.read(buf);
+                if (read > 0) {
+                    output.append(new String(buf, 0, read, StandardCharsets.UTF_8));
+                }
+            }
+        }
+
+        // the exit value MUST be zero
+        process.waitFor(5, TimeUnit.SECONDS);
+
+        if (process.exitValue() != 0) {
+            throw new IOException("Version command failed with exit value " + process.exitValue());
+        }
+
+        return output.toString();
+    }
+
+    static public Map<String,String> readJavaVersionOutput(String versionOutput) throws IOException {
+        final String[] lines = versionOutput.split("\n");
+        final Map<String,String> nameValues = new HashMap<>();
+
+        // first line should have the version
+        String line1 = lines[0];
+        int doubleQuoteStartPos = line1.indexOf('"');
+        if (doubleQuoteStartPos > 0) {
+            int doubleQuoteEndPos = line1.indexOf('"', doubleQuoteStartPos+1);
+            if (doubleQuoteEndPos > doubleQuoteStartPos) {
+                String version = line1.substring(doubleQuoteStartPos+1, doubleQuoteEndPos);
+                nameValues.put("JAVA_VERSION", version.trim());
+            }
+        }
+
+        // second line should have the implementer version
+        if (lines.length > 1) {
+            String line2 = lines[1];
+            int implStartPos = line2.toLowerCase().indexOf("runtime environment ");
+            if (implStartPos > 0) {
+                int implEndPos = line2.indexOf(" (build", implStartPos+1);
+                if (implEndPos > implStartPos+23) {
+                    String implementerVersion = line2.substring(implStartPos+20, implEndPos);
+
+                    // remove ( and ) from it?
+                    if (implementerVersion.charAt(0) == '(' && implementerVersion.charAt(implementerVersion.length()-1) == ')') {
+                        implementerVersion = implementerVersion.substring(1, implementerVersion.length()-1);
+                    }
+
+                    nameValues.put("IMPLEMENTOR_VERSION", implementerVersion.trim());
+                }
+            }
+        }
+
         return nameValues;
     }
 
