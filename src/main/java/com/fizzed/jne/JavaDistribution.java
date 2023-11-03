@@ -36,6 +36,10 @@ public enum JavaDistribution {
     NITRO("Fizzed", "https://github.com/fizzed/nitro", new String[] { "fizzed", "nitro" }),
     JETBRAINS("JetBrains", "https://github.com/JetBrains/JetBrainsRuntime", new String[] { "jetbrains" }),
     SAPMACHINE("SAP", "https://sap.github.io/SapMachine", new String[] { "sap", "sapmachine" }),
+
+    // Tencent KONA
+    // Trava
+
     //
     // these are provided by many package managers / os distros
     //

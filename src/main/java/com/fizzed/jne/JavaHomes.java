@@ -153,14 +153,17 @@ public class JavaHomes {
             throw new FileNotFoundException("Java lib directory " + javaLibDir + " was not found in " + javaHomeDir);
         }
 
-        // Test #3: must also have jmods and/or a jre
+        // Test #3: must also have jmods, release, and/or a jre
         final Path jmodsDir = javaHomeDir.resolve("jmods");
         if (!Files.isDirectory(jmodsDir)) {
-            final Path jreDir = javaHomeDir.resolve("jre");
-            if (!Files.isDirectory(jreDir)) {
-                final Path rtJarFile = javaLibDir.resolve("rt.jar");
-                if (!Files.exists(rtJarFile)) {
-                    throw new FileNotFoundException("Java jmods/jre directory not found in " + javaHomeDir);
+            final Path releaseFile = javaHomeDir.resolve("release");
+            if (!Files.exists(releaseFile)) {
+                final Path jreDir = javaHomeDir.resolve("jre");
+                if (!Files.isDirectory(jreDir)) {
+                    final Path rtJarFile = javaLibDir.resolve("rt.jar");
+                    if (!Files.exists(rtJarFile)) {
+                        throw new FileNotFoundException("Java jmods/jre directory, or release file not found in " + javaHomeDir);
+                    }
                 }
             }
         }

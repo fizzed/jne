@@ -214,6 +214,24 @@ class JavaHomesTest {
     }
 
     @Test
+    public void fromDirectoryJreLiberica21() throws Exception {
+        final Path javaHomeJreDir = this.mockJdksDir.resolve("jre-liberica-21");
+
+        final JavaHome javaHome = JavaHomes.fromDirectory(javaHomeJreDir);
+
+        assertThat(javaHome.getJavaExe(), is(not(nullValue())));
+        assertThat(javaHome.getVendor(), is("BellSoft"));
+        assertThat(javaHome.getDistribution(), is(JavaDistribution.LIBERICA));
+        assertThat(javaHome.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(javaHome.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(javaHome.getAbi(), is(ABI.GNU));
+        assertThat(javaHome.getVersion().getMajor(), is(21));
+        assertThat(javaHome.getVersion().getMinor(), is(0));
+        assertThat(javaHome.getVersion().getSecurity(), is(1));
+        assertThat(javaHome.getVersion().getBuild(), is(0));
+    }
+
+    @Test
     public void fromDirectoryJdkCorretto17() throws Exception {
         final Path javaHomeJreDir = this.mockJdksDir.resolve("jdk-corretto-17");
 
