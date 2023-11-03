@@ -171,11 +171,15 @@ public class blaze {
             .setHost("bmh-build-x64-win11-1"),
 
         //
-        // test-only containers
+        // CI/Test Local Machine
         //
 
         new Target(localNativeTarget.toJneOsAbi(), localNativeTarget.toJneArch(), "local machine")
             .setTags("test"),
+
+        //
+        // CI/Test Linux
+        //
 
         new Target("linux", "x64", "ubuntu16.04, jdk11")
             .setTags("test")
@@ -197,23 +201,28 @@ public class blaze {
             .setTags("test")
             .setContainerImage("fizzed/buildx:x64-ubuntu22-jdk21"),
 
-        /*new Target("linux", "arm64")
+        new Target("linux", "arm64", "Ubuntu 16.04, JDK 11")
             .setTags("test")
-            .setHost("bmh-build-arm64-ubuntu22-1"),*/
-
-        new Target("linux", "arm64", "ubuntu16.04, jdk11")
-            .setTags("test")
+            .setHost("bmh-hv-6")
             .setContainerImage("fizzed/buildx:arm64-ubuntu16-jdk11"),
 
-
-        new Target("windows", "x64", "win10")
+        new Target("linux", "armhf", "Ubuntu 16.04, JDK 11")
             .setTags("test")
-            .setHost("bmh-build-x64-win10-1"),
+            .setHost("bmh-hv-6")
+            .setContainerImage("fizzed/buildx:armhf-ubuntu16-jdk11"),
 
-        new Target("windows", "arm64", "win11")
+        new Target("linux", "armel", "Debian 11, JDK 11")
             .setTags("test")
-            .setHost("bmh-build-arm64-win11-1"),
+            .setHost("bmh-hv-6")
+            .setContainerImage("fizzed/buildx:armel-debian11-jdk11"),
 
+        new Target("linux", "riscv64", "debian11")
+            .setTags("test")
+            .setHost("bmh-build-riscv64-debian11-1"),
+
+        //
+        // CI/Test Linux (w/ MUSL)
+        //
 
         new Target("linux_musl", "x64", "alpine3.11, jdk11")
             .setTags("test")
@@ -221,38 +230,32 @@ public class blaze {
 
         new Target("linux_musl", "arm64", "alpine3.11, jdk11")
             .setTags("test")
-            // faster to run on an arm64 box?
-            //.setHost("bmh-build-arm64-ubuntu22-1")
-            .setContainerImage("fizzed/buildx:arm64v8-alpine3.11-jdk11")
+            .setHost("bmh-hv-6")
+            .setContainerImage("fizzed/buildx:arm64v8-alpine3.11-jdk11"),
 
-        /*
-        */
+        //
+        // CI/Test MacOS
+        //
 
-        /*
-        new Target("linux", "armhf-test")
+        new Target("macos", "arm64", "MacOS 12")
             .setTags("test")
-            .setContainerImage("fizzed/buildx:arm32v7-ubuntu18-jdk11"),
+            .setHost("bmh-build-arm64-macos12-1"),
 
-        new Target("linux", "armel-test")
-            .setTags("test")
-            .setContainerImage("fizzed/buildx:arm32v5-debian11-jdk11"),
+        //
+        // CI/Test Windows
+        //
 
-        new Target("linux", "armel-test")
-            .setTags("test")
-            .setContainerImage("fizzed/buildx:arm32v5-debian11-jdk11"),
-
-        new Target("linux", "riscv64-test")
-            .setTags("test")
-            .setContainerImage("fizzed/buildx:riscv64-ubuntu20-jdk19"),
-
-        new Target("windows", "x64-test", "win10")
+        new Target("windows", "x64", "Windows 10")
             .setTags("test")
             .setHost("bmh-build-x64-win10-1"),
 
-        new Target("windows", "x64-test", "win7")
+        new Target("windows", "x64", "Windows 7")
             .setTags("test")
             .setHost("bmh-build-x64-win7-1"),
-        */
+
+        new Target("windows", "arm64", "Windows 11")
+            .setTags("test")
+            .setHost("bmh-build-arm64-win11-1")
     );
 
     @Task(order = 50)

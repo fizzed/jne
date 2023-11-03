@@ -1,4 +1,4 @@
-# Java Native Extractor by Fizzed
+# Java Native Environment by Fizzed
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.fizzed/jne?style=flat-square)](https://mvnrepository.com/artifact/com.fizzed/jne)
 
@@ -17,10 +17,40 @@
 
 ## Overview
 
-Java library (targeting 6+, plus 8, 11, 17, 21 etc) for finding, extracting, and using os and architecture
-dependent files (executables, libraries, and/or other files) that are packaged
-as resources within jar files. Extensive support and testing for operating system, libc (e.g. glibc vs. musl), and
-hardware architecture detection.
+Java library (8, 11, 17, 21 etc) for working with "native" resources on the JVM.  Utilities for finding & extracting
+OS and hardware architecture dependent files, executables, and libraries (e.g. including libraries as resources in JARs),
+as well as utilities for detecting installed JDKs, or calculating the "targets" of native compilation.
+
+This is a battle-tested library w/ extensive test coverage and automated CI across various operating systems, versions,
+and architectures.
+
+## Features
+
+ - JNE class: helps to find, extract, and load OS, ABI, and hardware architecture dependent files, executables, and
+libraries
+ - NativeTarget class: helps to compile native code by determining various "targets" for Rust, C/C++, or for CI frameworks
+ - JavaHome, JavaHomes classes: helps to detect JDKs installed on the local system, as well as versions, distribution,
+JDK vs. JRE, etc.
+ - Support for Linux, Windows, MacOS, FreeBSD, OpenBSD operating systems
+ - Support for x64, x32, arm64, armhf, armel, riscv64 hardware architecture
+ - Support for GNU & MUSL abis
+ - Support for multiple operating systems and architectures so that a single jar dependency can support them all.
+ - Support for finding executables (e.g. cat or cat.exe)
+ - Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
+ - Support for finding generic files (e.g. movie.swf)
+ - Use a one-time temporary directory for extracted executables (thus same apps running multiple instances get their own executable copy)
+ - Specify a directory to extract executables to (useful for single instance daemons).
+ - Specify if executables should be deleted on VM exit. If disabled and an extracted directory is specified, then a "hash" is calculated for an extracted
+executable so that if the next run of the app has a dependency change then the latest executable will be used.
+ - Optional fallback to x86 executables on x64 platforms where an x64-specific executable is not found/included.  Useful in the case where an x86 executable
+is good for either architecture and you want to save space by not including both versions in your JAR.
+ - Utility classes for double-locking, safe loading of libraries.
+
+## OS/Architecture Dependent Extraction at Runtime
+
+JNE can helps with finding, extracting, and using os and architecture dependent files (executables, libraries, and/or
+other files) that are packaged as resources within jar files. Extensive support and testing for operating system, libc
+(e.g. glibc vs. musl), and hardware architecture detection.
 
 Allows them to be easily included as part of a Java application and intelligently extracted for use at runtime. This library makes
 it easy to build your own custom "bin" directory based on the runtime operating
@@ -55,27 +85,6 @@ or temporary directory and returned as a File object. This File object can then
 be included as the first argument to a Process or ProcessBuilder object. There
 are other options as well (e.g. fallback to x86 resources on x64 platforms) so
 please see features below.
-
-## Features
-
- - Support for multiple operating systems and architectures so that a single
-   jar dependency can support them all.
- - Support for finding executables (e.g. cat or cat.exe)
- - Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
- - Support for finding generic files (e.g. movie.swf)
- - Use a one-time temporary directory for extracted executables (thus same apps
-   running multiple instances get their own executable copy)
- - Specify a directory to extract executables to (useful for single instance
-   daemons).
- - Specify if executables should be deleted on VM exit. If disabled and an
-   extracted directory is specified, then a "hash" is calculated for an extracted
-   executable so that if the next run of the app has a dependency change then
-   the latest executable will be used.
- - Optional fallback to x86 executables on x64 platforms where an x64-specific
-   executable is not found/included.  Useful in the case where an x86 executable
-   is good for either architecture and you want to save space by not including both
-   versions in your JAR.
- - Utility classes for double-locking, safe loading of libraries.
 
 ## Operating Systems
 
@@ -196,8 +205,7 @@ information on how this works, please visit https://github.com/fizzed/blaze-buil
 
 You can test this library on a wide variety of operating systems and architectures
 
-    ./build-dockers.sh
-    ./test-on-dockers.sh
+    java -jar blaze.jar test
 
 ## License
 

@@ -3,4 +3,4 @@
 *.iml
 native/libhelloj/helloj/HelloLib.class
 .buildx
-.buildx-temp
+.buildx-cache
