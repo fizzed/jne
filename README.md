@@ -13,6 +13,33 @@
 [![MacOS x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/macos-x64.yaml?branch=master&label=MacOS%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/macos-x64.yaml)
 [![Windows x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/windows-x64.yaml?branch=master&label=Windows%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/windows-x64.yaml)
 
+## Overview
+
+Java library (8, 11, 17, 21 etc) for working with "native" resources on the JVM.  Utilities for finding & extracting
+OS and hardware architecture dependent files, executables, and libraries (e.g. including libraries as resources in JARs),
+as well as utilities for detecting installed JDKs, or calculating the "targets" of native compilation.
+
+This is a battle-tested library w/ extensive test coverage and automated CI across various operating systems, versions,
+and architectures.
+
+Includes the following features:
+
+- JNE class: helps to find, extract, and load OS, ABI, and hardware architecture dependent files, executables, and libraries
+- NativeTarget class: helps to compile native code by determining various "targets" for Rust, C/C++, or for CI frameworks
+- JavaHome, JavaHomes classes: helps to detect JDKs installed on the local system, as well as versions, distribution, JDK vs. JRE, etc.
+- Support for Linux, Windows, MacOS, FreeBSD, OpenBSD operating systems
+- Support for x64, x32, arm64, armhf, armel, riscv64 hardware architecture
+- Support for GNU & MUSL abis
+- Support for multiple operating systems and architectures so that a single jar dependency can support them all.
+- Support for finding executables (e.g. cat or cat.exe)
+- Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
+- Support for finding generic files (e.g. movie.swf)
+- Use a one-time temporary directory for extracted executables (thus same apps running multiple instances get their own executable copy)
+- Specify a directory to extract executables to (useful for single instance daemons).
+- Specify if executables should be deleted on VM exit. If disabled and an extracted directory is specified, then a "hash" is calculated for an extracted executable so that if the next run of the app has a dependency change then the latest executable will be used.
+- Optional fallback to x86 executables on x64 platforms where an x64-specific executable is not found/included.  Useful in the case where an x86 executable is good for either architecture and you want to save space by not including both versions in your JAR.
+- Utility classes for double-locking, safe loading of libraries.
+
 ## Sponsorship & Support
 
 ![](https://cdn.fizzed.com/github/fizzed-logo-100.png)
@@ -28,37 +55,6 @@ Project sponsors may include the following benefits:
 - Feature development & roadmap
 - Priority bug fixes
 - Privately hosted continuous integration tests for their unique edge or use cases
-
-## Overview
-
-Java library (8, 11, 17, 21 etc) for working with "native" resources on the JVM.  Utilities for finding & extracting
-OS and hardware architecture dependent files, executables, and libraries (e.g. including libraries as resources in JARs),
-as well as utilities for detecting installed JDKs, or calculating the "targets" of native compilation.
-
-This is a battle-tested library w/ extensive test coverage and automated CI across various operating systems, versions,
-and architectures.
-
-## Features
-
- - JNE class: helps to find, extract, and load OS, ABI, and hardware architecture dependent files, executables, and
-libraries
- - NativeTarget class: helps to compile native code by determining various "targets" for Rust, C/C++, or for CI frameworks
- - JavaHome, JavaHomes classes: helps to detect JDKs installed on the local system, as well as versions, distribution,
-JDK vs. JRE, etc.
- - Support for Linux, Windows, MacOS, FreeBSD, OpenBSD operating systems
- - Support for x64, x32, arm64, armhf, armel, riscv64 hardware architecture
- - Support for GNU & MUSL abis
- - Support for multiple operating systems and architectures so that a single jar dependency can support them all.
- - Support for finding executables (e.g. cat or cat.exe)
- - Support for finding libraries (e.g. sample.dll/libsample.dylib/libsample.so)
- - Support for finding generic files (e.g. movie.swf)
- - Use a one-time temporary directory for extracted executables (thus same apps running multiple instances get their own executable copy)
- - Specify a directory to extract executables to (useful for single instance daemons).
- - Specify if executables should be deleted on VM exit. If disabled and an extracted directory is specified, then a "hash" is calculated for an extracted
-executable so that if the next run of the app has a dependency change then the latest executable will be used.
- - Optional fallback to x86 executables on x64 platforms where an x64-specific executable is not found/included.  Useful in the case where an x86 executable
-is good for either architecture and you want to save space by not including both versions in your JAR.
- - Utility classes for double-locking, safe loading of libraries.
 
 ## OS/Architecture Dependent Extraction at Runtime
 
