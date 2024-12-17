@@ -170,6 +170,18 @@ final JavaHome jdk21 = new JavaHomeFinder()
     .find();
 ```
 
+To build a native language model to help build native-specific targets, urls, etc.
+
+```java
+final NativeTarget nativeTarget = NativeTarget.detect();
+final NativeLanguageModel nlm = new NativeLanguageModel()
+    .add("version", "17.0.1")
+    .add(OperatingSystem.MACOS, "darwin")
+    .add(HardwareArchitecture.X64, "amd64");
+
+final String fileName = nlm.format("restic_{version}_{os}_{arch}.bz2", nativeTarget);
+```
+
 ## Demo
 
 To run a demo of a "cat" executable
