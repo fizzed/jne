@@ -1,5 +1,9 @@
 # Java Native Extractor by Fizzed
 
+## 4.3.0 - 2024-12-23
+
+ - Add support for nested JAR extraction (jar-in-jar) for locating resources (@hildo)
+
 ## 4.2.0 - 2024-12-17
 
  - Add new NativeLanguageModel utility class for helping build custom native lingo such as "amd64" instead of X64
