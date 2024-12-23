@@ -51,7 +51,14 @@ public class JarUtil {
         
         String tempJarFile = file.substring(0, exclaimPos);
         //System.out.println("tempJarFile: " + tempJarFile);
-        
+        if (tempJarFile.startsWith("nested:/")) {
+            // e.g. jar:nested:/backend.jar/!BOOT-INF/lib/cedar-java-4.2.2-uber.jar!/jne/linux/x86_64/libcedar_java_ffi.so
+            StringBuilder sb = new StringBuilder("file:/");
+            sb.append(tempJarFile.substring(8));
+            tempJarFile = sb.toString();
+            //System.out.println("tempJarFile mkii: " + tempJarFile);
+        }
+
         try {
             File jarFile = new File(new URL(tempJarFile).toURI());
             //System.out.println("jarFile: " + jarFile);
