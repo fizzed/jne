@@ -203,22 +203,22 @@ public class blaze {
 
         new Target("linux", "arm64", "Ubuntu 16.04, JDK 11")
             .setTags("test")
-            .setHost("bmh-hv-6")
+            .setHost("build-arm64-linux-latest")
             .setContainerImage("fizzed/buildx:arm64-ubuntu16-jdk11"),
 
         new Target("linux", "armhf", "Ubuntu 16.04, JDK 11")
             .setTags("test")
-            .setHost("bmh-hv-6")
+            .setHost("build-arm64-linux-latest")
             .setContainerImage("fizzed/buildx:armhf-ubuntu16-jdk11"),
 
         new Target("linux", "armel", "Debian 11, JDK 11")
             .setTags("test")
-            .setHost("bmh-hv-6")
+            .setHost("build-arm64-linux-latest")
             .setContainerImage("fizzed/buildx:armel-debian11-jdk11"),
 
         new Target("linux", "riscv64", "debian11")
             .setTags("test")
-            .setHost("bmh-build-riscv64-debian11-1"),
+            .setHost("build-riscv64-linux-latest"),
 
         //
         // CI/Test Linux (w/ MUSL)
@@ -230,7 +230,7 @@ public class blaze {
 
         new Target("linux_musl", "arm64", "alpine3.11, jdk11")
             .setTags("test")
-            .setHost("bmh-hv-6")
+            .setHost("build-arm64-linux-latest")
             .setContainerImage("fizzed/buildx:arm64v8-alpine3.11-jdk11"),
 
         //
