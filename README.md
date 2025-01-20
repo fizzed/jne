@@ -150,7 +150,7 @@ Published to maven central use the following
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
-    <version>VERSION</version>
+    <version>4.3.0</version>
 </dependency>
 ```
 
