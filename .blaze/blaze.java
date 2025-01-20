@@ -1,24 +1,23 @@
 import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
+import com.fizzed.blaze.project.PublicBlaze;
 import com.fizzed.buildx.Buildx;
 import com.fizzed.buildx.ContainerBuilder;
 import com.fizzed.buildx.Target;
 import com.fizzed.jne.NativeTarget;
 import com.fizzed.jne.OperatingSystem;
-import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.fizzed.blaze.Contexts.withBaseDir;
 import static com.fizzed.blaze.Systems.*;
 import static com.fizzed.blaze.util.Globber.globber;
 import static java.util.Arrays.asList;
 
-public class blaze {
+public class blaze extends PublicBlaze {
 
-    private final Logger log = Contexts.logger();
-    private final Path projectDir = withBaseDir("../").toAbsolutePath();
     private final NativeTarget localNativeTarget = NativeTarget.detect();
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
@@ -84,7 +83,7 @@ public class blaze {
         rm(this.targetDir).recursive().force().verbose().run();
     }
 
-    private final List<Target> crossTargets = asList(
+    private final List<Target> crossBuildTargets = asList(
         //
         // Linux
         //
@@ -260,7 +259,7 @@ public class blaze {
 
     @Task(order = 50)
     public void cross_build_containers() throws Exception {
-        new Buildx(crossTargets)
+        new Buildx(crossBuildTargets)
             .containersOnly()
             .execute((target, project) -> {
                 // no customization needed
@@ -272,7 +271,7 @@ public class blaze {
 
     @Task(order = 51)
     public void cross_build_natives() throws Exception {
-        new Buildx(crossTargets)
+        new Buildx(crossBuildTargets)
             .tags("build")
             .execute((target, project) -> {
                 /*String buildScript = "setup/build-native-lib-linux-action.sh";
@@ -292,39 +291,12 @@ public class blaze {
             });
     }
 
-    /*@Task(order = 53)
-    public void cross_tests() throws Exception {
-        new Buildx(crossTargets)
-            .tags("test")
-            .execute((target, project) -> {
-                project.action("java", "-jar", "blaze.jar", "test")
-                    .run();
-            });
-    }*/
-
-    private final List<Target> crossTestTargets = asList(
-        new Target("linux", "x64").setTags("test").setHost("bmh-build-x64-linux-latest"),
-        new Target("linux", "arm64").setTags("test").setHost("bmh-build-arm64-linux-latest"),
-        new Target("linux", "riscv64").setTags("test").setHost("bmh-build-riscv64-linux-latest"),
-        new Target("linux", "armhf").setTags("test").setHost("bmh-build-armhf-linux-latest"),
-        new Target("linux_musl", "x64").setTags("test").setHost("bmh-build-x64-linux-musl-latest"),
-        new Target("macos", "x64").setTags("test").setHost("bmh-build-x64-macos-latest"),
-        new Target("macos", "arm64").setTags("test").setHost("bmh-build-arm64-macos-latest"),
-        new Target("windows", "x64").setTags("test").setHost("bmh-build-x64-windows-latest"),
-        new Target("windows", "arm64").setTags("test").setHost("bmh-build-arm64-windows-latest"),
-        new Target("freebsd", "x64").setTags("test").setHost("bmh-build-x64-freebsd-latest")
-        // openbsd
-        //new Target("openbsd", "x64").setTags("test").setHost("bmh-build-x64-openbsd-latest")
-    );
-
-    @Task(order = 53)
-    public void cross_tests() throws Exception {
-        new Buildx(crossTestTargets)
-            .tags("test")
-            .execute((target, project) -> {
-                project.action("mvn", "clean", "test")
-                    .run();
-            });
+    @Override
+    protected List<Target> crossTestTargets() {
+        // everything but openbsd
+        return super.crossTestTargets().stream()
+            .filter(v -> !v.getOs().contains("openbsd"))
+            .collect(Collectors.toList());
     }
 
 }
