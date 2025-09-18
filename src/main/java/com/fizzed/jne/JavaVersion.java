@@ -163,6 +163,10 @@ public class JavaVersion implements Comparable<JavaVersion> {
                 minor = Integer.parseInt(sourceVersion.substring(periodPos1+1, periodPos2 > 0 ? periodPos2 : len));
                 if (periodPos2 > 0 && periodPos2 < len-1) {
                     int periodPos3 = sourceVersion.indexOf('.', periodPos2+1);
+                    // instead of a . it may be a +
+                    if (periodPos3 < 0) {
+                        periodPos3 = sourceVersion.indexOf('+', periodPos2+1);
+                    }
                     security = Integer.parseInt(sourceVersion.substring(periodPos2+1, periodPos3 > 0 ? periodPos3 : len));
                     if (periodPos3 > 0 && periodPos3 < len-1) {
                         // e.g. 9.0.1.1

@@ -132,6 +132,14 @@ class JavaVersionTest {
         assertThat(v.getSecurity(), is(3));
         assertThat(v.getBuild(), is(1));
         assertThat(v.toString(), is("21.2.3.1"));
+
+        // another alternative we've seen too
+        v = JavaVersion.parse("25.2.13+14");
+        assertThat(v.getMajor(), is(25));
+        assertThat(v.getMinor(), is(2));
+        assertThat(v.getSecurity(), is(13));
+        assertThat(v.getBuild(), is(14));
+        assertThat(v.toString(), is("25.2.13.14"));
     }
 
     @Test
