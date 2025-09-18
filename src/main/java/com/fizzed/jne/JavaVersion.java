@@ -149,6 +149,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
         try {
             String sourceVersion = version;
 
+            // does it end with a +NUM ?
+            int plusPos = version.lastIndexOf('+');
+            String buildNumberString = null;
+            if (plusPos > 0) {
+                buildNumberString = version.substring(plusPos + 1);
+                sourceVersion = version.substring(0, plusPos);
+            }
+
             // pre-Java 9 version number
             if (version.startsWith("1.")) {
                 // e.g. 1.8.0_352 which we normalize to the modern format so we can use its parsing routing
@@ -163,10 +171,6 @@ public class JavaVersion implements Comparable<JavaVersion> {
                 minor = Integer.parseInt(sourceVersion.substring(periodPos1+1, periodPos2 > 0 ? periodPos2 : len));
                 if (periodPos2 > 0 && periodPos2 < len-1) {
                     int periodPos3 = sourceVersion.indexOf('.', periodPos2+1);
-                    // instead of a . it may be a +
-                    if (periodPos3 < 0) {
-                        periodPos3 = sourceVersion.indexOf('+', periodPos2+1);
-                    }
                     security = Integer.parseInt(sourceVersion.substring(periodPos2+1, periodPos3 > 0 ? periodPos3 : len));
                     if (periodPos3 > 0 && periodPos3 < len-1) {
                         // e.g. 9.0.1.1
@@ -180,6 +184,11 @@ public class JavaVersion implements Comparable<JavaVersion> {
             } else {
                 // e.g. 9
             }
+
+            if (buildNumberString != null) {
+                build = Integer.parseInt(buildNumberString);
+            }
+
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("java version [" + version + "] invalid format: not of X.X.X", e);
         }
