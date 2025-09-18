@@ -30,7 +30,11 @@ public enum OperatingSystem {
     LINUX("Linux", null),
     FREEBSD("FreeBSD", null),
     OPENBSD("OpenBSD", null),
-    SOLARIS("Solaris", new String[] { "sun" }, new String[] { "sunos" });
+    NETBSD("NetBSD", null),
+    DRAGONFLYBSD("DragonFlyBSD", null),
+    SOLARIS("Solaris", new String[] { "sun" }, new String[] { "sunos" }),
+    AIX("AIX", null),
+    ANDROID("Android", null);
 
     private final String descriptor;
     private final String[] aliases;

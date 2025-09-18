@@ -33,7 +33,8 @@ public enum HardwareArchitecture {
     RISCV64("riscv64", null, new String[] { "riscv64gc" }),                    // used by llvm
     MIPS64LE("mips64le", new String[] { "mips64el" }),
     S390X("s390x", null),
-    PPC64LE("ppc64le", null);
+    PPC64LE("ppc64le", null),       // Introduced with the POWER8 processor and is the focus for modern OpenPOWER architecture. Uses little-endian byte ordering, where the least significant byte of a word is stored at the lowest memory address.
+    PPC64("ppc64", null);           // Associated with older 64-bit PowerPC processors like the PowerPC 970 (used in the PowerMac G5) and earlier POWER series chips.
 
     private final String descriptor;
     private final String[] aliases;
