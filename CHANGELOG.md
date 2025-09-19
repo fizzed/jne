@@ -1,5 +1,12 @@
 # Java Native Extractor by Fizzed
 
+## 4.4.0 - 2025-09-19
+
+ - Add support & runners for Java 25
+ - JavaVersion class now parse additional common formats of numbers
+ - Added support for PPC64 and a few more operating systems
+ - Compiler flags now include "parameters" so classes like JavaVersion can be deserialized by Jackson
+
 ## 4.3.0 - 2024-12-23
 
  - Add support for nested JAR extraction (jar-in-jar) for locating resources (@hildo)
