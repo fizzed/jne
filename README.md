@@ -10,6 +10,7 @@ The following Java versions and platforms are tested using GitHub workflows:
 [![Java 11](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java11.yaml?branch=master&label=Java%2011&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java11.yaml)
 [![Java 17](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java17.yaml?branch=master&label=Java%2017&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java17.yaml)
 [![Java 21](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java21.yaml?branch=master&label=Java%2021&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java21.yaml)
+[![Java 25](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java25.yaml?branch=master&label=Java%2025&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java25.yaml)
 
 [![Linux x64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/java8.yaml?branch=master&label=Linux%20x64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/java8.yaml)
 [![MacOS arm64](https://img.shields.io/github/actions/workflow/status/fizzed/jne/macos-arm64.yaml?branch=master&label=MacOS%20arm64&style=flat-square)](https://github.com/fizzed/jne/actions/workflows/macos-arm64.yaml)
