@@ -127,6 +127,7 @@ public class UserEnvironment {
         if (etcPasswd != null) {
             final EtcPasswd.Entry entry = etcPasswd.findEntryByUserName(userEnvironment.user);
             if (entry != null) {
+                log.debug("Using /etc/passwd for detecting user environment for {}", userEnvironment.user);
                 userEnvironment.homeDir = Paths.get(entry.getHome());
                 userEnvironment.userId = entry.getUserId();
                 userEnvironment.groupId = entry.getGroupId();
@@ -145,6 +146,7 @@ public class UserEnvironment {
             try {
                 MacDscl macDscl = MacDscl.readByUser(userEnvironment.user);
                 if (macDscl != null) {
+                    log.debug("Using dscl output for detecting user environment for {}", userEnvironment.user);
                     userEnvironment.homeDir = macDscl.getHomeDir();
                     userEnvironment.userId = macDscl.getUniqueId();
                     userEnvironment.groupId = macDscl.getPrimaryGroupId();
@@ -159,6 +161,8 @@ public class UserEnvironment {
         }
 
         if (os == OperatingSystem.WINDOWS) {
+            log.debug("Using windows env vars for user environment for {}", userEnvironment.user);
+
             // environment variables (regardless of whether we are elevated or not) will setup everything nicely
             final String homeDrive = trimToNull(System.getenv("HOMEDRIVE"));
             final String homePath = trimToNull(System.getenv("HOMEPATH"));
