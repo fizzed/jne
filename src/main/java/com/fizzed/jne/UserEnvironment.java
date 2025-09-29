@@ -8,7 +8,7 @@ public class UserEnvironment {
 
 
 
-    static public ShellType detectShellType() {
+    /*static public ShellType detectShellType() {
         
 
 
@@ -73,6 +73,6 @@ public class UserEnvironment {
 
         // we were not able to detect it
         return null;
-    }
+    }*/
 
 }
