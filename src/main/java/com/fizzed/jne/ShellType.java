@@ -33,4 +33,21 @@ public enum ShellType {
     CMD,
     PS;
 
+    static public ShellType detectFromBin(String text) {
+        if (text != null) {
+            if (text.endsWith("/bash")) {
+                return ShellType.BASH;
+            } else if (text.endsWith("/zsh")) {
+                return ShellType.ZSH;
+            } else if (text.endsWith("/csh")) {
+                return ShellType.CSH;
+            } else if (text.endsWith("/ksh")) {
+                return ShellType.KSH;
+            } else if (text.endsWith("/sh")) {
+                return ShellType.SH;
+            }
+        }
+        return null;
+    }
+
 }
