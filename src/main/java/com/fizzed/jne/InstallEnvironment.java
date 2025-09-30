@@ -93,6 +93,8 @@ public class InstallEnvironment {
     public Path getApplicationDir() {
         if (operatingSystem == OperatingSystem.WINDOWS) {
             return applicationRootDir.resolve(this.applicationName);
+        } else if (operatingSystem == OperatingSystem.MACOS) {
+            return applicationRootDir.resolve(this.applicationName + ".app");
         } else {
             return applicationRootDir.resolve(this.unitName);
         }
