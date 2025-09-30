@@ -31,14 +31,19 @@ public class InstallEnvironmentDemo {
 
         log.info("unitName: {}", ie.getUnitName());
         log.info("applicationName: {}", ie.getApplicationName());
+        log.info("");
         log.info("applicationRootDir: {}", ie.getApplicationRootDir());
         log.info("systemRootDir: {}", ie.getSystemRootDir());
-        log.info("localSystemRootDir: {}", ie.getLocalSystemRootDir());
+        log.info("localRootDir: {}", ie.getLocalRootDir());
         log.info("");
         log.info("applicationDir: {}", ie.getApplicationDir());
         log.info("systemBinDir: {}", ie.getSystemBinDir());
+        log.info("systemShareDir: {}", ie.getSystemShareDir());
+
         log.info("localApplicationDir: {}", ie.getLocalApplicationDir());
-        log.info("localSystemBinDir: {}", ie.getLocalSystemBinDir());
+        log.info("optApplicationDir: {}", ie.getOptApplicationDir());
+        log.info("localBinDir: {}", ie.getLocalBinDir());
+        log.info("localShareDir: {}", ie.getLocalShareDir());
     }
 
 }

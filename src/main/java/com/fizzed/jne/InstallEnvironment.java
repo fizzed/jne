@@ -20,8 +20,10 @@ public class InstallEnvironment {
     private Path applicationRootDir;
     // e.g. /usr, C:\Windows\system32
     private Path systemRootDir;
+    // e.g. /opt, C:\Opt
+    private Path optRootDir;
     // e.g. /usr/local, C:\Opt
-    private Path localSystemRootDir;
+    private Path localRootDir;
 
     public OperatingSystem getOperatingSystem() {
         return operatingSystem;
@@ -68,12 +70,21 @@ public class InstallEnvironment {
         return this;
     }
 
-    public Path getLocalSystemRootDir() {
-        return localSystemRootDir;
+    public Path getOptRootDir() {
+        return optRootDir;
     }
 
-    public InstallEnvironment setLocalSystemRootDir(Path localSystemRootDir) {
-        this.localSystemRootDir = localSystemRootDir;
+    public InstallEnvironment setOptRootDir(Path optRootDir) {
+        this.optRootDir = optRootDir;
+        return this;
+    }
+
+    public Path getLocalRootDir() {
+        return localRootDir;
+    }
+
+    public InstallEnvironment setLocalRootDir(Path localRootDir) {
+        this.localRootDir = localRootDir;
         return this;
     }
 
@@ -95,12 +106,28 @@ public class InstallEnvironment {
         }
     }
 
-    public Path getLocalApplicationDir() {
-        return this.localSystemRootDir.resolve(this.unitName);
+    public Path getSystemShareDir() {
+        if (operatingSystem == OperatingSystem.WINDOWS) {
+            return this.systemRootDir;
+        } else {
+            return this.systemRootDir.resolve("share");
+        }
     }
 
-    public Path getLocalSystemBinDir() {
-        return this.localSystemRootDir.resolve("bin");
+    public Path getLocalApplicationDir() {
+        return this.localRootDir.resolve(this.unitName);
+    }
+
+    public Path getOptApplicationDir() {
+        return this.optRootDir.resolve(this.unitName);
+    }
+
+    public Path getLocalBinDir() {
+        return this.localRootDir.resolve("bin");
+    }
+
+    public Path getLocalShareDir() {
+        return this.localRootDir.resolve("share");
     }
 
     static public InstallEnvironment detect(String applicationName, String unitName) {
@@ -120,17 +147,19 @@ public class InstallEnvironment {
         ie.unitName = unitName;
 
         if (os == OperatingSystem.LINUX) {
-            ie.localSystemRootDir = Paths.get("/usr/local");
+            ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
             // this is sort of debatable, some apps puts stuff in /opt, but many others will put it in /usr/local
             // opt: Used for installing optional, add-on application software packages, especially those not managed
             // by the system's package manager. Each package often resides in its own subdirectory, like /opt/someapp
             ie.applicationRootDir = Paths.get("/opt");
+            ie.optRootDir = ie.applicationRootDir;
         } else if (os == OperatingSystem.FREEBSD || os == OperatingSystem.OPENBSD || os == OperatingSystem.NETBSD || os == OperatingSystem.DRAGONFLYBSD) {
-            ie.localSystemRootDir = Paths.get("/usr/local");
+            ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
-            // unlike linux, freebsd puts stuff in /usr/local
-            ie.applicationRootDir = ie.localSystemRootDir;
+            // unlike linux, freebsd puts stuff in /usr/local, which also is like /opt
+            ie.applicationRootDir = ie.localRootDir;
+            ie.optRootDir = ie.applicationRootDir;
         } else if (os == OperatingSystem.WINDOWS) {
             String programFiles = trimToNull(System.getenv("ProgramFiles"));
             String systemRoot = trimToNull(System.getenv("SystemRoot"));
@@ -156,7 +185,8 @@ public class InstallEnvironment {
             ie.applicationRootDir = Paths.get(programFiles);
             ie.systemRootDir = Paths.get(systemRoot).resolve("system32");
             // we will take the drive of ProgramFiles, and create an Opt there to install things to
-            ie.localSystemRootDir = ie.applicationRootDir.resolve("..").resolve("Opt").normalize();
+            ie.localRootDir = ie.applicationRootDir.resolve("..").resolve("Opt").normalize();
+            ie.optRootDir = ie.localRootDir;
         }
 
         return ie;
