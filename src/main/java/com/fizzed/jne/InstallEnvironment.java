@@ -160,6 +160,11 @@ public class InstallEnvironment {
             // unlike linux, freebsd puts stuff in /usr/local, which also is like /opt
             ie.applicationRootDir = ie.localRootDir;
             ie.optRootDir = ie.applicationRootDir;
+        } else if (os == OperatingSystem.MACOS) {
+            ie.localRootDir = Paths.get("/usr/local");
+            ie.systemRootDir = Paths.get("/usr");
+            ie.applicationRootDir = Paths.get("/Applications");
+            ie.optRootDir = Paths.get("/opt");
         } else if (os == OperatingSystem.WINDOWS) {
             String programFiles = trimToNull(System.getenv("ProgramFiles"));
             String systemRoot = trimToNull(System.getenv("SystemRoot"));
