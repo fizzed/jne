@@ -31,9 +31,14 @@ public class InstallEnvironmentDemo {
 
         log.info("unitName: {}", ie.getUnitName());
         log.info("applicationName: {}", ie.getApplicationName());
+        log.info("applicationRootDir: {}", ie.getApplicationRootDir());
+        log.info("systemRootDir: {}", ie.getSystemRootDir());
+        log.info("localSystemRootDir: {}", ie.getLocalSystemRootDir());
+        log.info("");
         log.info("applicationDir: {}", ie.getApplicationDir());
-        log.info("systemDir: {}", ie.getSystemDir());
-        log.info("localSystemDir: {}", ie.getLocalSystemDir());
+        log.info("systemBinDir: {}", ie.getSystemBinDir());
+        log.info("localApplicationDir: {}", ie.getLocalApplicationDir());
+        log.info("localSystemBinDir: {}", ie.getLocalSystemBinDir());
     }
 
 }
