@@ -23,39 +23,41 @@ package com.fizzed.jne;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 public class InstallEnvironmentDemo {
     static private final Logger log = LoggerFactory.getLogger(InstallEnvironmentDemo.class);
 
     static public void main(String[] args) throws Exception {
 
-        InstallEnvironment ie = InstallEnvironment.detect("Apache Maven", "maven", EnvScope.USER);
+        InstallEnvironment ie = InstallEnvironment.detect("Apache Maven", "maven", EnvScope.SYSTEM);
 
         log.info("unitName: {}", ie.getUnitName());
         log.info("applicationName: {}", ie.getApplicationName());
         log.info("");
         log.info("applicationRootDir: {}", ie.getApplicationRootDir());
         log.info("systemRootDir: {}", ie.getSystemRootDir());
+        log.info("optRootDir: {}", ie.getOptRootDir());
         log.info("localRootDir: {}", ie.getLocalRootDir());
         log.info("");
-        log.info("applicationDir: {}", ie.getApplicationDir());
         log.info("systemBinDir: {}", ie.getSystemBinDir());
         log.info("systemShareDir: {}", ie.getSystemShareDir());
-
-        log.info("localApplicationDir: {}", ie.getLocalApplicationDir());
+        log.info("");
+        log.info("applicationDir: {}", ie.getApplicationDir());
         log.info("optApplicationDir: {}", ie.getOptApplicationDir());
+        log.info("localApplicationDir: {}", ie.getLocalApplicationDir());
         log.info("localBinDir: {}", ie.getLocalBinDir());
         log.info("localShareDir: {}", ie.getLocalShareDir());
 
+        log.info("");
+        log.info("is {} writable? {}", ie.getSystemBinDir(), Files.isWritable(ie.getSystemBinDir()));
+
         ie.installEnv(
-            asList(new EnvVar("TEST","Hello")),
-            asList(
-                new EnvPath(Paths.get("C:\\Opt\\bin"), false),
-                new EnvPath(Paths.get("C:\\Opt\\bin2"), true)
-            )
+            singletonList(new EnvPath(Paths.get("C:\\Opt\\bin"))),
+            singletonList(new EnvVar("TEST_VAR_OK_TO_DELETE","Hello World"))
         );
     }
 

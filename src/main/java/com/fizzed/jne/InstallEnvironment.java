@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -213,7 +214,11 @@ public class InstallEnvironment {
         return dir;
     }
 
-    public void installEnv(List<EnvVar> vars, List<EnvPath> paths) throws Exception {
+    public void installEnv(List<EnvPath> paths) throws IOException, InterruptedException {
+        this.installEnv(paths, Collections.emptyList());
+    }
+
+    public void installEnv(List<EnvPath> paths, List<EnvVar> vars) throws IOException, InterruptedException {
 
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
             // we are going to query the user OR system env vars via registry
