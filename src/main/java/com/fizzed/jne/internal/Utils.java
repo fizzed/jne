@@ -73,6 +73,16 @@ public class Utils {
             }
         }
 
+        // Read the error from the process's input stream (standard error)
+        //final StringBuilder error = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                //output.append(line).append(System.lineSeparator());
+                System.err.println(line);
+            }
+        }
+
         // Wait for the process to complete and get its exit code
         int exitCode = process.waitFor();
 
@@ -81,6 +91,25 @@ public class Utils {
         }
 
         return output.toString();
+    }
+
+    static public boolean searchEnvVar(String name, String value) {
+        final String currentEnvVar = trimToNull(System.getenv(name));
+
+        return currentEnvVar != null && currentEnvVar.equals(value);
+    }
+
+    static public boolean searchEnvPath(Path path) {
+        final String currentPathVar = trimToNull(System.getenv("PATH"));
+        final String[] currentPathVarParts = currentPathVar != null ? currentPathVar.split(File.pathSeparator) : new String[0];
+
+        for (String currentPathVarPart : currentPathVarParts) {
+            if (currentPathVarPart != null && currentPathVarPart.equalsIgnoreCase(path.toString())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

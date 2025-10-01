@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.fizzed.jne.internal.Utils.trimToNull;
@@ -139,7 +140,7 @@ public class InstallEnvironment {
         return this.localRootDir.resolve("share");
     }
 
-    private void installEnv(UserEnvironment userEnvironment, EnvScope scope, List<EnvVar> vars, List<EnvPath> paths) throws Exception {
+    public void installEnv(UserEnvironment userEnvironment, EnvScope scope, List<EnvVar> vars, List<EnvPath> paths) throws Exception {
         // some possible locations we will use
 //        final ShellType shellType = userEnvironment.getShellType();
 //        final Path homeDir = userEnvironment.getHomeDir();
@@ -148,12 +149,39 @@ public class InstallEnvironment {
             // shell is irrelevant on windows, env vars and PATH are setup in the registry
             // e.g. setx MY_VARIABLE "MyValue" OR setx MY_VARIABLE "MyValue" /M
             for (EnvVar var : vars) {
-                if (scope == EnvScope.SYSTEM) {
-                    Utils.execAndGetOutput(asList("setx", var.getName(), var.getValue(), "/M"));
+                final boolean exists = Utils.searchEnvVar(var.getName(), var.getValue());
+                if (!exists) {
+                    final List<String> envVarCmd = new ArrayList<>(asList("setx", var.getName(), var.getValue()));
+                    if (scope == EnvScope.SYSTEM) {
+                        // we just tack on a /M to make it system-wide
+                        envVarCmd.add("/M");
+                    }
+                    Utils.execAndGetOutput(envVarCmd);
+                    log.info("Installed environment variable {} (with {} scope)", var, scope);
                 } else {
-                    Utils.execAndGetOutput(asList("setx", var.getName(), var.getValue()));
+                    log.info("Skipped installing environment variable {} (it already exists)", var);
                 }
-                log.info("Installed {} environment variable {} (with {} scope)",  this.unitName, var, scope);
+            }
+
+            // PATH is set the same way, we will need to read the current value, append/prepend if the path does not yet exist
+            for (EnvPath path : paths) {
+                final boolean exists = Utils.searchEnvPath(path.getValue());
+                if (!exists) {
+                    final List<String> envVarCmd =  new ArrayList<>(asList("setx", "PATH"));
+                    if (path.getPrepend()) {
+                        envVarCmd.add(path.getValue() + ";%PATH%");
+                    } else {
+                        envVarCmd.add("%PATH%;" + path.getValue());
+                    }
+                    if (scope == EnvScope.SYSTEM) {
+                        // we just tack on a /M to make it system-wide
+                        envVarCmd.add("/M");
+                    }
+                    Utils.execAndGetOutput(envVarCmd);
+                    log.info("Installed environment path {} (with {} scope)", path, scope);
+                } else {
+                    log.info("Skipped installing environment path {} (it already exists)", path);
+                }
             }
         }
 
@@ -384,6 +412,11 @@ public class InstallEnvironment {
 
         public Path getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return this.value.toString();
         }
 
     }

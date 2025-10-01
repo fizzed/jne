@@ -23,6 +23,10 @@ package com.fizzed.jne;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Paths;
+
+import static java.util.Arrays.asList;
+
 public class InstallEnvironmentDemo {
     static private final Logger log = LoggerFactory.getLogger(InstallEnvironmentDemo.class);
 
@@ -44,6 +48,12 @@ public class InstallEnvironmentDemo {
         log.info("optApplicationDir: {}", ie.getOptApplicationDir());
         log.info("localBinDir: {}", ie.getLocalBinDir());
         log.info("localShareDir: {}", ie.getLocalShareDir());
+
+        ie.installEnv(
+            UserEnvironment.detectLogical(),
+            InstallEnvironment.EnvScope.USER,
+            asList(new InstallEnvironment.EnvVar("TEST","Hello")),
+            asList(new InstallEnvironment.EnvPath(true, Paths.get("C:\\Opt\\bin"))));
     }
 
 }
