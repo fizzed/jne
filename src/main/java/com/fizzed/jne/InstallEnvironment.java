@@ -26,9 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -220,6 +222,8 @@ public class InstallEnvironment {
 
     public void installEnv(List<EnvPath> paths, List<EnvVar> vars) throws IOException, InterruptedException {
 
+        log.debug("Installing environment for os={}, shellType={}", this.operatingSystem, this.userEnvironment.getShellType());
+
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
             // we are going to query the user OR system env vars via registry
             final Map<String,String> currentEnvInRegistry;
@@ -270,6 +274,43 @@ public class InstallEnvironment {
                     log.info("Skipped installing environment path {} (it already exists)", path);
                 }
             }
+
+        } else if (this.userEnvironment.getShellType() == ShellType.BASH) {
+
+            // first, we will generate the lines we will either put into a .sh file or tack onto something like ~/.bashrc
+            final List<String> shellLines = new ArrayList<>();
+            for (EnvVar var : vars) {
+                shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
+            }
+            for (EnvPath path : paths) {
+                if (path.getPrepend()) {
+                    shellLines.add("export PATH=\"" + path.getValue() + ":$PATH\"");
+                } else {
+                    shellLines.add("export PATH=\"$PATH:" + path.getValue() + "\"");
+                }
+            }
+
+
+            Path bashEtcProfileDir = Paths.get("/etc/profile.d");
+
+            if (this.operatingSystem == OperatingSystem.FREEBSD
+                    || this.operatingSystem == OperatingSystem.OPENBSD
+                    || this.operatingSystem == OperatingSystem.NETBSD
+                    || this.operatingSystem == OperatingSystem.DRAGONFLYBSD) {
+
+                bashEtcProfileDir = Paths.get("/usr/local/etc/profile.d");
+            }
+
+            final Path targetFile = bashEtcProfileDir.resolve(this.unitName + ".sh");
+
+
+
+            // overwrite the existing file (if its present)
+            Files.write(targetFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+//            log.info("Installed {} environment for {} to {}", shellType, env.getApplication(), targetFile);
+//            log.info("");
+//            log.info("Usually a REBOOT is required for this system-wide profile to be activated...");
         }
 
 

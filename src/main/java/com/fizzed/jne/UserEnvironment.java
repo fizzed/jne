@@ -80,12 +80,16 @@ public class UserEnvironment {
         return shellType;
     }
 
+    static private final MemoizedInitializer<UserEnvironment> effectiveUserEnvironmentRef = new MemoizedInitializer<>();
+
     static public UserEnvironment detectEffective() {
-        return detect(false);
+        return effectiveUserEnvironmentRef.once(() -> detect(false));
     }
 
+    static private final MemoizedInitializer<UserEnvironment> logicalUserEnvironmentRef = new MemoizedInitializer<>();
+
     static public UserEnvironment detectLogical() {
-        return detect(true);
+        return logicalUserEnvironmentRef.once(() -> detect(true));
     }
 
     static private UserEnvironment detect(boolean logical) {
