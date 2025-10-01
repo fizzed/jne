@@ -27,6 +27,10 @@ public class EnvPath {
     final private boolean prepend;
     final private Path value;
 
+    public EnvPath(Path value) {
+        this(value, false);
+    }
+
     public EnvPath(Path value, boolean prepend) {
         this.prepend = prepend;
         this.value = value;

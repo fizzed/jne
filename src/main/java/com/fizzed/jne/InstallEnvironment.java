@@ -25,6 +25,8 @@ import com.fizzed.jne.internal.WindowsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -166,8 +168,41 @@ public class InstallEnvironment {
         return this.localRootDir.resolve("bin");
     }
 
+    public Path resolveLocalBinDir(boolean createIfMissing) throws IOException {
+        return this.resolveDir(this.getLocalBinDir(), createIfMissing);
+    }
+
     public Path getLocalShareDir() {
         return this.localRootDir.resolve("share");
+    }
+
+    public Path resolveLocalShareDir(boolean createIfMissing) throws IOException {
+        return this.resolveDir(this.getLocalShareDir(), createIfMissing);
+    }
+
+    private Path resolveDir(Path dir, boolean createIfMissing) throws IOException {
+        if (Files.exists(dir)) {
+            if (!Files.isWritable(dir)) {
+                throw new IOException("Directory " + dir + " exists but is not writable (perhaps you need to run as sudo or fix permissions?)");
+            }
+        } else {
+            if (createIfMissing) {
+                Files.createDirectories(dir);
+                if (this.scope == EnvScope.USER) {
+                    // if USER scope, make sure its xrw only for our user
+                    dir.toFile().setExecutable(true, true);
+                    dir.toFile().setWritable(true, true);
+                    dir.toFile().setReadable(true, true);
+                } else {
+                    dir.toFile().setExecutable(true, true);
+                    dir.toFile().setWritable(true, false);
+                    dir.toFile().setReadable(true, true);
+                }
+            } else {
+                throw new IOException("Directory " + dir + " does not exist (perhaps you need to create it first then re-run your command?)");
+            }
+        }
+        return dir;
     }
 
     public void installEnv(List<EnvVar> vars, List<EnvPath> paths) throws Exception {
