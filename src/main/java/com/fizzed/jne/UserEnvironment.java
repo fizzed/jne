@@ -26,10 +26,12 @@ import com.fizzed.jne.internal.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.fizzed.jne.internal.Utils.trimToNull;
+import static java.util.Arrays.asList;
 
 /**
  * The key properties of a "user environment" that effect installing/running apps, etc.
@@ -50,7 +52,7 @@ public class UserEnvironment {
         return user;
     }
 
-    public Boolean getElevated() {
+    public Boolean isElevated() {
         return elevated;
     }
 
@@ -109,19 +111,50 @@ public class UserEnvironment {
         // 3. are going to proceed with the effective or logical user?
         userEnvironment.user = user;
         userEnvironment.elevated = false;
+
         if (logical && elevatedUser != null) {
             userEnvironment.user = elevatedUser;
+        }
+
+        if (elevatedUser != null) {
             userEnvironment.elevated = true;
         }
 
-        // 3. try to detect home directory, shell for a specific user
-        detectHomeAndShellType(userEnvironment);
+        final OperatingSystem os = PlatformInfo.detectOperatingSystem();
+
+        // 3. if we haven't detected if we are elevated yet, let's try a few more ways
+        if (!userEnvironment.elevated) {
+            if (os == OperatingSystem.WINDOWS) {
+                // we can test if C:\Windows\system32 is writable
+                String systemDrive = trimToNull(System.getenv("SystemDrive"));
+                if (systemDrive != null) {
+                    final Path systemDir = Paths.get(systemDrive + "\\Windows").resolve("system32");
+                    userEnvironment.elevated = Files.isWritable(systemDir);
+                }
+            } else if ("root".equals(user)) {
+                // is the user named root? (most obvious)
+                userEnvironment.elevated = true;
+            } else {
+                // e.g. id -u is zero
+                try {
+                    String output = Utils.execAndGetOutput(asList("id", "-u"));
+                    if ("0".equals(output)) {
+                        userEnvironment.elevated = true;
+                    }
+                } catch (Exception e) {
+                    // we will just ignore the output
+                }
+            }
+        }
+
+        // 4. try to detect home directory, shell for a specific user
+        detectHomeAndShellType(os, userEnvironment);
 
         return userEnvironment;
     }
 
 
-    static private void detectHomeAndShellType(UserEnvironment userEnvironment) {
+    static private void detectHomeAndShellType(OperatingSystem os, UserEnvironment userEnvironment) {
         // first, if we're on a linux/unix/bsd environment, /etc/passwd will have what we want
         final EtcPasswd etcPasswd = EtcPasswd.detect();
         if (etcPasswd != null) {
@@ -137,9 +170,6 @@ public class UserEnvironment {
                 return;
             }
         }
-
-        // second, we now need to know what operating system we're on so we can detect things faster
-        final OperatingSystem os = PlatformInfo.detectOperatingSystem();
 
         // we may be on a macos, which requires using (dscl . -read /Users/builder) to determine a shell present
         if (os == OperatingSystem.MACOS) {

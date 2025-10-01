@@ -34,11 +34,11 @@ public class UserEnvironmentDemo {
 
         //MacDscl.read(Paths.get("/Users/jjlauer"));
 
-//        UserEnvironment userEnvironment = UserEnvironment.detectLogical();
-        UserEnvironment userEnvironment = UserEnvironment.detectEffective();
+        UserEnvironment userEnvironment = UserEnvironment.detectLogical();
+//        UserEnvironment userEnvironment = UserEnvironment.detectEffective();
 
         log.info("user: {}", userEnvironment.getUser());
-        log.info("elevated: {}", userEnvironment.getElevated());
+        log.info("elevated: {}", userEnvironment.isElevated());
         log.info("displayName: {}", userEnvironment.getDisplayName());
         log.info("userId: {}", userEnvironment.getUserId());
         log.info("groupId: {}", userEnvironment.getGroupId());
