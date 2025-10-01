@@ -1,6 +1,27 @@
 package com.fizzed.jne;
 
+/*-
+ * #%L
+ * jne
+ * %%
+ * Copyright (C) 2016 - 2025 Fizzed, Inc
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.fizzed.jne.internal.Utils;
+import com.fizzed.jne.internal.WindowsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +32,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import static com.fizzed.jne.internal.Utils.joinIfDelimiterMissing;
 import static com.fizzed.jne.internal.Utils.trimToNull;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
@@ -146,10 +169,18 @@ public class InstallEnvironment {
 //        final Path homeDir = userEnvironment.getHomeDir();
 
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
+            // we are going to query the user OR system env vars via registry
+            final Map<String,String> currentEnvInRegistry;
+            if (scope == EnvScope.USER) {
+                currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables();
+            } else {
+                currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables();
+            }
+
             // shell is irrelevant on windows, env vars and PATH are setup in the registry
             // e.g. setx MY_VARIABLE "MyValue" OR setx MY_VARIABLE "MyValue" /M
             for (EnvVar var : vars) {
-                final boolean exists = Utils.searchEnvVar(var.getName(), var.getValue());
+                final boolean exists = Utils.searchEnvVar(currentEnvInRegistry, var.getName(), var.getValue());
                 if (!exists) {
                     final List<String> envVarCmd = new ArrayList<>(asList("setx", var.getName(), var.getValue()));
                     if (scope == EnvScope.SYSTEM) {
@@ -164,15 +195,19 @@ public class InstallEnvironment {
             }
 
             // PATH is set the same way, we will need to read the current value, append/prepend if the path does not yet exist
+            // if we modify the PATH multiple times we need to keep track of the entire change
+            String pathValueInRegistry = currentEnvInRegistry.get("PATH");
             for (EnvPath path : paths) {
-                final boolean exists = Utils.searchEnvPath(path.getValue());
+                final boolean exists = Utils.searchEnvPath(pathValueInRegistry, path.getValue());
                 if (!exists) {
                     final List<String> envVarCmd =  new ArrayList<>(asList("setx", "PATH"));
                     if (path.getPrepend()) {
-                        envVarCmd.add(path.getValue() + ";%PATH%");
+                        pathValueInRegistry = joinIfDelimiterMissing(path.getValue().toString(), pathValueInRegistry, ";");
                     } else {
-                        envVarCmd.add("%PATH%;" + path.getValue());
+                        pathValueInRegistry = joinIfDelimiterMissing(pathValueInRegistry, path.getValue().toString(), ";");
                     }
+                    // we will set the ENTIRE value again
+                    envVarCmd.add(pathValueInRegistry);
                     if (scope == EnvScope.SYSTEM) {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
@@ -401,7 +436,7 @@ public class InstallEnvironment {
         final private boolean prepend;
         final private Path value;
 
-        public EnvPath(boolean prepend, Path value) {
+        public EnvPath(Path value, boolean prepend) {
             this.prepend = prepend;
             this.value = value;
         }

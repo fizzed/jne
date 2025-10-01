@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 public class Utils {
 
@@ -94,14 +95,25 @@ public class Utils {
     }
 
     static public boolean searchEnvVar(String name, String value) {
-        final String currentEnvVar = trimToNull(System.getenv(name));
+        return searchEnvVar(System.getenv(), name, value);
+    }
+
+    static public boolean searchEnvVar(Map<String,String> env, String name, String value) {
+        final String currentEnvVar = trimToNull(env.get(name));
 
         return currentEnvVar != null && currentEnvVar.equals(value);
     }
 
     static public boolean searchEnvPath(Path path) {
-        final String currentPathVar = trimToNull(System.getenv("PATH"));
-        final String[] currentPathVarParts = currentPathVar != null ? currentPathVar.split(File.pathSeparator) : new String[0];
+        return searchEnvPath(System.getenv(), path);
+    }
+
+    static public boolean searchEnvPath(Map<String,String> env, Path path) {
+        return searchEnvPath(trimToNull(env.get("PATH")), path);
+    }
+
+    static public boolean searchEnvPath(String pathValueInEnv, Path path) {
+        final String[] currentPathVarParts = pathValueInEnv != null ? pathValueInEnv.split(File.pathSeparator) : new String[0];
 
         for (String currentPathVarPart : currentPathVarParts) {
             if (currentPathVarPart != null && currentPathVarPart.equalsIgnoreCase(path.toString())) {
@@ -110,6 +122,18 @@ public class Utils {
         }
 
         return false;
+    }
+
+    static public String joinIfDelimiterMissing(String v1, String v2, String delimiter) {
+        if (v1 == null) {
+            return v2;
+        } else if (v2 == null) {
+            return v1;
+        }
+        if (v1.endsWith(delimiter)) {
+            return v1 + v2;
+        }
+        return v1 + delimiter + v2;
     }
 
 }

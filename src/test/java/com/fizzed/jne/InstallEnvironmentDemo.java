@@ -25,6 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 
+import com.fizzed.jne.InstallEnvironment.EnvScope;
+import com.fizzed.jne.InstallEnvironment.EnvVar;
+import com.fizzed.jne.InstallEnvironment.EnvPath;
+
 import static java.util.Arrays.asList;
 
 public class InstallEnvironmentDemo {
@@ -54,9 +58,9 @@ public class InstallEnvironmentDemo {
 
         ie.installEnv(
             UserEnvironment.detectLogical(),
-            InstallEnvironment.EnvScope.USER,
-            asList(new InstallEnvironment.EnvVar("TEST","Hello")),
-            asList(new InstallEnvironment.EnvPath(true, Paths.get("C:\\Opt\\bin"))));
+            EnvScope.USER,
+            asList(new EnvVar("TEST","Hello")),
+            asList(new EnvPath(Paths.get("C:\\Opt\\bin"), false), new EnvPath(Paths.get("C:\\Opt\\bin2"), true)));
     }
 
 }
