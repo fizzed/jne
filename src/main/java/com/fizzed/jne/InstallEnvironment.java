@@ -78,55 +78,55 @@ public class InstallEnvironment {
         return unitName;
     }
 
-    public InstallEnvironment setUnitName(String unitName) {
+    /*public InstallEnvironment setUnitName(String unitName) {
         this.unitName = unitName;
         return this;
-    }
+    }*/
 
     public String getApplicationName() {
         return applicationName;
     }
 
-    public InstallEnvironment setApplicationName(String applicationName) {
+    /*public InstallEnvironment setApplicationName(String applicationName) {
         this.applicationName = applicationName;
         return this;
-    }
+    }*/
 
     public Path getApplicationRootDir() {
         return applicationRootDir;
     }
 
-    public InstallEnvironment setApplicationRootDir(Path applicationRootDir) {
+    /*public InstallEnvironment setApplicationRootDir(Path applicationRootDir) {
         this.applicationRootDir = applicationRootDir;
         return this;
-    }
+    }*/
 
     public Path getSystemRootDir() {
         return systemRootDir;
     }
 
-    public InstallEnvironment setSystemRootDir(Path systemRootDir) {
+    /*public InstallEnvironment setSystemRootDir(Path systemRootDir) {
         this.systemRootDir = systemRootDir;
         return this;
-    }
+    }*/
 
     public Path getOptRootDir() {
         return optRootDir;
     }
 
-    public InstallEnvironment setOptRootDir(Path optRootDir) {
+    /*public InstallEnvironment setOptRootDir(Path optRootDir) {
         this.optRootDir = optRootDir;
         return this;
-    }
+    }*/
 
     public Path getLocalRootDir() {
         return localRootDir;
     }
 
-    public InstallEnvironment setLocalRootDir(Path localRootDir) {
+    /*public InstallEnvironment setLocalRootDir(Path localRootDir) {
         this.localRootDir = localRootDir;
         return this;
-    }
+    }*/
 
     // these are dynamic based on the roots
 
@@ -160,8 +160,16 @@ public class InstallEnvironment {
         return this.localRootDir.resolve(this.unitName);
     }
 
+    public Path resolveLocalApplicationDir(boolean createIfMissing) throws IOException {
+        return this.resolveDir(this.getLocalApplicationDir(), createIfMissing);
+    }
+
     public Path getOptApplicationDir() {
         return this.optRootDir.resolve(this.unitName);
+    }
+
+    public Path resolveOptApplicationDir(boolean createIfMissing) throws IOException {
+        return this.resolveDir(this.getOptApplicationDir(), createIfMissing);
     }
 
     public Path getLocalBinDir() {
@@ -399,7 +407,7 @@ public class InstallEnvironment {
             final UserEnvironment ue = UserEnvironment.detectLogical();
             ie.localRootDir = ue.getHomeDir().resolve(".local");
             ie.systemRootDir = ie.localRootDir;
-            ie.applicationRootDir = ie.localRootDir;
+            ie.applicationRootDir = ue.getHomeDir().resolve("Applications");
             ie.optRootDir = ie.localRootDir;
         } else if (os == OperatingSystem.LINUX) {
             ie.localRootDir = Paths.get("/usr/local");
