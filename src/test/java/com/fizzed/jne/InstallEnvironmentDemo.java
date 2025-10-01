@@ -25,17 +25,14 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 
-import com.fizzed.jne.InstallEnvironment.EnvScope;
-import com.fizzed.jne.InstallEnvironment.EnvVar;
-import com.fizzed.jne.InstallEnvironment.EnvPath;
-
 import static java.util.Arrays.asList;
 
 public class InstallEnvironmentDemo {
     static private final Logger log = LoggerFactory.getLogger(InstallEnvironmentDemo.class);
 
     static public void main(String[] args) throws Exception {
-        InstallEnvironment ie = InstallEnvironment.detect("Apache Maven", "maven");
+
+        InstallEnvironment ie = InstallEnvironment.detect("Apache Maven", "maven", EnvScope.USER);
 
         log.info("unitName: {}", ie.getUnitName());
         log.info("applicationName: {}", ie.getApplicationName());
@@ -53,14 +50,13 @@ public class InstallEnvironmentDemo {
         log.info("localBinDir: {}", ie.getLocalBinDir());
         log.info("localShareDir: {}", ie.getLocalShareDir());
 
-        // windows: reg query HKEY_CURRENT_USER\Environment
-        // windows: reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
-
         ie.installEnv(
-            UserEnvironment.detectLogical(),
-            EnvScope.USER,
             asList(new EnvVar("TEST","Hello")),
-            asList(new EnvPath(Paths.get("C:\\Opt\\bin"), false), new EnvPath(Paths.get("C:\\Opt\\bin2"), true)));
+            asList(
+                new EnvPath(Paths.get("C:\\Opt\\bin"), false),
+                new EnvPath(Paths.get("C:\\Opt\\bin2"), true)
+            )
+        );
     }
 
 }

@@ -25,11 +25,8 @@ import com.fizzed.jne.internal.WindowsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +34,17 @@ import java.util.Map;
 import static com.fizzed.jne.internal.Utils.joinIfDelimiterMissing;
 import static com.fizzed.jne.internal.Utils.trimToNull;
 import static java.util.Arrays.asList;
-import static java.util.Optional.ofNullable;
 
 public class InstallEnvironment {
     static private final Logger log = LoggerFactory.getLogger(InstallEnvironment.class);
 
+    private final UserEnvironment userEnvironment;
+    private final EnvScope scope;
+    private final OperatingSystem operatingSystem;
     // e.g. jdk, maven
     private String unitName;
     // e.g. OpenJDK 21, Apache Maven, etc.
     private String applicationName;
-    private OperatingSystem operatingSystem;
     // e.g. /usr/local, C:\Program Files, etc.
     private Path applicationRootDir;
     // e.g. /usr, C:\Windows\system32
@@ -56,13 +54,22 @@ public class InstallEnvironment {
     // e.g. /usr/local, C:\Opt
     private Path localRootDir;
 
-    public OperatingSystem getOperatingSystem() {
-        return operatingSystem;
+    private InstallEnvironment(UserEnvironment userEnvironment, EnvScope scope, OperatingSystem operatingSystem) {
+        this.userEnvironment = userEnvironment;
+        this.scope = scope;
+        this.operatingSystem = operatingSystem;
     }
 
-    public InstallEnvironment setOperatingSystem(OperatingSystem operatingSystem) {
-        this.operatingSystem = operatingSystem;
-        return this;
+    public UserEnvironment getUserEnvironment() {
+        return userEnvironment;
+    }
+
+    public EnvScope getScope() {
+        return scope;
+    }
+
+    public OperatingSystem getOperatingSystem() {
+        return operatingSystem;
     }
 
     public String getUnitName() {
@@ -163,15 +170,12 @@ public class InstallEnvironment {
         return this.localRootDir.resolve("share");
     }
 
-    public void installEnv(UserEnvironment userEnvironment, EnvScope scope, List<EnvVar> vars, List<EnvPath> paths) throws Exception {
-        // some possible locations we will use
-//        final ShellType shellType = userEnvironment.getShellType();
-//        final Path homeDir = userEnvironment.getHomeDir();
+    public void installEnv(List<EnvVar> vars, List<EnvPath> paths) throws Exception {
 
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
             // we are going to query the user OR system env vars via registry
             final Map<String,String> currentEnvInRegistry;
-            if (scope == EnvScope.USER) {
+            if (this.scope == EnvScope.USER) {
                 currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables();
             } else {
                 currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables();
@@ -183,7 +187,7 @@ public class InstallEnvironment {
                 final boolean exists = Utils.searchEnvVar(currentEnvInRegistry, var.getName(), var.getValue());
                 if (!exists) {
                     final List<String> envVarCmd = new ArrayList<>(asList("setx", var.getName(), var.getValue()));
-                    if (scope == EnvScope.SYSTEM) {
+                    if (this.scope == EnvScope.SYSTEM) {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
@@ -208,7 +212,7 @@ public class InstallEnvironment {
                     }
                     // we will set the ENTIRE value again
                     envVarCmd.add(pathValueInRegistry);
-                    if (scope == EnvScope.SYSTEM) {
+                    if (this.scope == EnvScope.SYSTEM) {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
@@ -332,9 +336,18 @@ public class InstallEnvironment {
     }
 
     static public InstallEnvironment detect(String applicationName, String unitName) {
+        return detect(applicationName, unitName, EnvScope.SYSTEM);
+    }
+
+    static public InstallEnvironment detect(String applicationName, String unitName, EnvScope scope) {
+        return detect(applicationName, unitName, scope, UserEnvironment.detectLogical());
+    }
+
+    static public InstallEnvironment detect(String applicationName, String unitName, EnvScope scope, UserEnvironment userEnvironment) {
         if (applicationName == null || unitName == null) {
             throw new IllegalArgumentException("applicationName and unitName must not be null");
         }
+
         // unitName must all be lowercase, can include a hypen or underscore, but no whitespace
         if (!unitName.matches("^[a-z0-9\\-_]+$")) {
             throw new IllegalArgumentException("unitName must be all lowercase, can include a hypen or underscore, but no whitespace");
@@ -342,12 +355,18 @@ public class InstallEnvironment {
 
         final OperatingSystem os = PlatformInfo.detectOperatingSystem();
 
-        final InstallEnvironment ie = new InstallEnvironment();
-        ie.operatingSystem = os;
+        final InstallEnvironment ie = new InstallEnvironment(userEnvironment, scope, os);
         ie.applicationName = applicationName;
         ie.unitName = unitName;
 
-        if (os == OperatingSystem.LINUX) {
+        if (scope == EnvScope.USER) {
+            // regardless of operating system, user-specific installs all go to same place
+            final UserEnvironment ue = UserEnvironment.detectLogical();
+            ie.localRootDir = ue.getHomeDir().resolve(".local");
+            ie.systemRootDir = ie.localRootDir;
+            ie.applicationRootDir = ie.localRootDir;
+            ie.optRootDir = ie.localRootDir;
+        } else if (os == OperatingSystem.LINUX) {
             ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
             // this is sort of debatable, some apps puts stuff in /opt, but many others will put it in /usr/local
@@ -396,64 +415,6 @@ public class InstallEnvironment {
         }
 
         return ie;
-    }
-
-    static public enum EnvScope {
-        SYSTEM,
-        USER;
-    }
-
-    static public class EnvVar {
-
-        final private String name;
-        final private String value;
-
-        public EnvVar(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public EnvVar(String name, Path value) {
-            this(name, value.toAbsolutePath().toString());
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return this.name + "=" + this.value;
-        }
-    }
-
-    static public class EnvPath {
-
-        final private boolean prepend;
-        final private Path value;
-
-        public EnvPath(Path value, boolean prepend) {
-            this.prepend = prepend;
-            this.value = value;
-        }
-
-        public boolean getPrepend() {
-            return prepend;
-        }
-
-        public Path getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return this.value.toString();
-        }
-
     }
 
 }
