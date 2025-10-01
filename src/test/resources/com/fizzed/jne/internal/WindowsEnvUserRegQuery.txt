@@ -1,0 +1,9 @@
+
+HKEY_CURRENT_USER\Environment
+    Path    REG_EXPAND_SZ    C:\Opt\bin;%PATH%
+    TEMP    REG_EXPAND_SZ    %USERPROFILE%\AppData\Local\Temp
+    TMP    REG_EXPAND_SZ    %USERPROFILE%\AppData\Local\Temp
+    OneDrive    REG_EXPAND_SZ    C:\Users\jjlauer\OneDrive
+    GOPATH    REG_EXPAND_SZ    %USERPROFILE%\go
+    TEST    REG_SZ    Hello
+

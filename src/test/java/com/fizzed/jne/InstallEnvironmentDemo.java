@@ -49,6 +49,9 @@ public class InstallEnvironmentDemo {
         log.info("localBinDir: {}", ie.getLocalBinDir());
         log.info("localShareDir: {}", ie.getLocalShareDir());
 
+        // windows: reg query HKEY_CURRENT_USER\Environment
+        // windows: reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+
         ie.installEnv(
             UserEnvironment.detectLogical(),
             InstallEnvironment.EnvScope.USER,
