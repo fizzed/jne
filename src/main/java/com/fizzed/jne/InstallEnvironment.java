@@ -195,14 +195,9 @@ public class InstallEnvironment {
             if (createIfMissing) {
                 Files.createDirectories(dir);
                 if (this.scope == EnvScope.USER) {
-                    // if USER scope, make sure its xrw only for our user
-                    dir.toFile().setExecutable(true, true);
-                    dir.toFile().setWritable(true, true);
-                    dir.toFile().setReadable(true, true);
+                    Chmod.chmod(dir, "700");
                 } else {
-                    dir.toFile().setExecutable(true, true);
-                    dir.toFile().setWritable(true, false);
-                    dir.toFile().setReadable(true, true);
+                    Chmod.chmod(dir, "755");
                 }
             } else {
                 throw new IOException("Directory " + dir + " does not exist (perhaps you need to create it first then re-run your command?)");
@@ -282,13 +277,41 @@ public class InstallEnvironment {
                         envVarCmd.add("/M");
                     }
                     Utils.execAndGetOutput(envVarCmd);
-                    log.info("Installed environment path {} (with {} scope)", path, scope);
+                    log.info("Installed environment path {} (with {} scope)", path, this.scope);
                 } else {
                     log.info("Skipped installing environment path {} (it already exists)", path);
                 }
             }
 
-        } else if (this.userEnvironment.getShellType() == ShellType.BASH) {
+            // for windows, we are now done
+            return;
+        }
+
+
+        // on macos, system-scoped env installs will have PATH setup in a special way, but env vars will be setup
+        // first, we will generate the lines we will either put into a .sh file or tack onto something like ~/.bashrc
+        if (this.operatingSystem == OperatingSystem.MACOS && this.scope == EnvScope.SYSTEM) {
+
+            final List<String> shellLines = new ArrayList<>();
+            for (EnvPath path : filteredPaths) {
+                // thre is no prepend/append support for macos
+                shellLines.add(path.getValue().toString());
+            }
+
+            final Path targetFile = Paths.get("/etc/paths.d").resolve(this.unitName);
+
+            writeLinesToFile(targetFile, shellLines, false);
+
+            // now we will proceed and allow ZSH, etc. to be setup, but no need to do any env vars, so we'll clear those out
+            filteredPaths.clear();
+
+            log.info("Installed environment paths {} to {} (with {} scope)", filteredPaths, targetFile, this.scope);
+        }
+
+
+        // for bash, we can setup system and user with the same shell syntax, they just go into different files, where
+        // the global one will be truncated and the per-user one needs some smart appending
+        if (this.userEnvironment.getShellType() == ShellType.BASH) {
 
             // first, we will generate the lines we will either put into a .sh file or tack onto something like ~/.bashrc
             final List<String> shellLines = new ArrayList<>();
@@ -327,52 +350,40 @@ public class InstallEnvironment {
                 writeLinesToFile(targetFile, filteredShellLines, true);
             }
 
-            log.info("Installed {} environment to {}", ShellType.BASH, targetFile);
+            log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
+
+            return;     // we are done with bash setup
+        }
+
+        if (this.userEnvironment.getShellType() == ShellType.ZSH) {
+
+            // since system-wide paths were already installed above, everything nicely now goes into the same file
+            final Path targetFile = this.userEnvironment.getHomeDir().resolve(".zprofile");
+
+            final List<String> shellLines = new ArrayList<>();
+            for (EnvVar var : vars) {
+                shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
+            }
+            for (EnvPath path : filteredPaths) {
+                // if [[ ! "$PATH" == *:"$NEW_PATH":* ]]; then export PATH="$PATH:$NEW_PATH"; fi
+                if (path.getPrepend()) {
+                    shellLines.add("if [[ ! \"$PATH\" == *:\"" + path.getValue() + "\":* ]]; then export PATH=\"$PATH:" + path.getValue() + "\"; fi");
+                } else {
+                    shellLines.add("if [[ ! \"$PATH\" == *:\"" + path.getValue() + "\":* ]]; then export PATH=\"" + path.getValue() + "\":$PATH; fi");
+                }
+            }
+
+            final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
+
+            writeLinesToFile(targetFile, filteredShellLines, true);
+
+            log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
+            
         }
 
 
 
-        /*final Path bashEtcProfileDir = Paths.get("/etc/profile.d");
-        final Path bashEtcLocalProfileDir = Paths.get("/usr/local/etc/profile.d");
-
-        // linux and freebsd share the same strategy, just different locations
-        if (shellType == ShellType.BASH && (
-            (nativeTarget.getOperatingSystem() == OperatingSystem.LINUX && Files.exists(bashEtcProfileDir))
-                || nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD)) {
-
-            Path targetDir = bashEtcProfileDir;
-
-            if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD) {
-                targetDir = bashEtcLocalProfileDir;
-                // on freebsd, we need to make sure the local profile dir exists
-                if (!Files.exists(targetDir)) {
-                    mkdir(targetDir)
-                        .parents()
-                        .verbose()
-                        .run();
-                    // everyone needs to be able to read & execute
-                    this.chmodBinFile(targetDir);
-                }
-            }
-
-            final Path targetFile = targetDir.resolve(env.getApplication() + ".sh");
-
-            // build the shell file
-            final StringBuilder sb = new StringBuilder();
-            for (EnvVar var : env.getVars()) {
-                sb.append("export ").append(var.getName()).append("=\"").append(var.getValue()).append("\"\n");
-            }
-            for (EnvPath path : env.getPaths()) {
-                sb.append("export PATH=\"").append(path.getValue()).append(":$PATH\"\n");
-            }
-
-            // overwrite the existing file (if its present)
-            Files.write(targetFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            log.info("Installed {} environment for {} to {}", shellType, env.getApplication(), targetFile);
-            log.info("");
-            log.info("Usually a REBOOT is required for this system-wide profile to be activated...");
-
+        /*
         } else if (shellType == ShellType.ZSH && nativeTarget.getOperatingSystem() == OperatingSystem.MACOS) {
 
             final Path pathsDir = Paths.get("/etc/paths.d");
