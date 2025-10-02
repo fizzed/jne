@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.List;
@@ -144,6 +145,24 @@ class UtilsTest {
             Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
 
             assertThat(readFileToString(tp.getPath()), is("Hello\n \nWorld\n"));
+        }
+    }
+
+    @Test
+    void writeLinesForAppendingToFileExampleBashrcWithTwoNewlines() throws IOException {
+        final Path exampleBashrcFile = Resources.file("/com/fizzed/jne/internal/ExampleBashrc.txt");
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.copy(exampleBashrcFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            assertThat(readFileToString(tp.getPath()), endsWith("$ \"\n\n"));
+
+            int newlinesNeeded = Utils.newlinesNeededForAppending(tp.getPath());
+            assertThat(newlinesNeeded, is(0));
+
+            // an empty list means we shouldn't even do anything to the file for appending
+            Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
+
+            assertThat(readFileToString(tp.getPath()), endsWith("$ \"\n\nWorld\n"));
         }
     }
 
