@@ -26,18 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.fizzed.jne.internal.Utils.*;
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 
 public class InstallEnvironment {
     static private final Logger log = LoggerFactory.getLogger(InstallEnvironment.class);
@@ -220,6 +216,24 @@ public class InstallEnvironment {
     }
 
     public void installEnv(List<EnvPath> paths, List<EnvVar> vars) throws IOException, InterruptedException {
+        // to simplify method, null values swapped with empty lists
+        paths = ofNullable(paths).orElseGet(Collections::emptyList);
+        vars = ofNullable(vars).orElseGet(Collections::emptyList);
+
+        // filter paths requested down to the actual list (removing well-known paths)
+        final List<EnvPath> filteredPaths = this.filterWellKnownEnvPaths(paths);
+
+        // make sure we are installing stuff
+        if (filteredPaths.isEmpty() && vars.isEmpty()) {
+            return; // nothing to actually do, entirely skip install
+        }
+
+        // check we're not installing any vars that are prohibited
+        final List<EnvVar> blacklistedVars = this.findBlacklistedEnvVars(vars);
+
+        if (blacklistedVars != null && !blacklistedVars.isEmpty()) {
+            throw new IOException("The following environment variables are prohibited from installation: " + blacklistedVars);
+        }
 
         log.debug("Installing environment for os={}, shellType={}", this.operatingSystem, this.userEnvironment.getShellType());
 
@@ -252,7 +266,7 @@ public class InstallEnvironment {
             // PATH is set the same way, we will need to read the current value, append/prepend if the path does not yet exist
             // if we modify the PATH multiple times we need to keep track of the entire change
             String pathValueInRegistry = currentEnvInRegistry.get("PATH");
-            for (EnvPath path : paths) {
+            for (EnvPath path : filteredPaths) {
                 final boolean exists = Utils.searchEnvPath(pathValueInRegistry, path.getValue());
                 if (!exists) {
                     final List<String> envVarCmd =  new ArrayList<>(asList("setx", "PATH"));
@@ -281,7 +295,7 @@ public class InstallEnvironment {
             for (EnvVar var : vars) {
                 shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
-            for (EnvPath path : paths) {
+            for (EnvPath path : filteredPaths) {
                 if (path.getPrepend()) {
                     shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"" + path.getValue() + ":$PATH\"; fi");
                 } else {
@@ -425,6 +439,56 @@ public class InstallEnvironment {
 
             log.info("Usually LOGOUT/LOGIN is required for this profile to be activated...");
         }*/
+    }
+
+    private List<EnvPath> filterWellKnownEnvPaths(List<EnvPath> paths) {
+        if (paths == null) {
+            return null;
+        }
+
+        final Set<Path> wellKnownSystemPaths = this.wellKnownEnvPaths();
+        final List<EnvPath> filteredPaths = new ArrayList<>();
+        for (EnvPath path : paths) {
+            if (!wellKnownSystemPaths.contains(path.getValue())) {
+                filteredPaths.add(path);
+            }
+        }
+        return filteredPaths;
+    }
+
+    private Set<Path> wellKnownEnvPaths() {
+        // these are paths that should never be installed as environment paths since they are well-known, and the
+        // chance of duplication is extremely high
+        final Set<Path> wellKnownPaths = new HashSet<>();
+        wellKnownPaths.add(Paths.get("/bin"));
+        wellKnownPaths.add(Paths.get("/usr/bin"));
+        wellKnownPaths.add(Paths.get("/usr/sbin"));
+        wellKnownPaths.add(Paths.get("/usr/local/bin"));
+        wellKnownPaths.add(Paths.get("/usr/local/sbin"));
+        wellKnownPaths.add(Paths.get("C:\\Windows\\System32"));
+        return wellKnownPaths;
+    }
+
+    private List<EnvVar> findBlacklistedEnvVars(List<EnvVar> vars) {
+        if (vars == null) {
+            return null;
+        }
+
+        final Set<String> blacklistedEnvVars = this.blacklistedEnvVars();
+        final List<EnvVar> matched = new ArrayList<>();
+        for (EnvVar var : vars) {
+            if (blacklistedEnvVars.contains(var.getName())) {
+                matched.add(var);
+            }
+        }
+        return matched;
+    }
+
+    private Set<String> blacklistedEnvVars() {
+        // these are env vars that should never be installed
+        final Set<String> blacklistedVars = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        blacklistedVars.add("PATH");
+        return blacklistedVars;
     }
 
     static public InstallEnvironment detect(String applicationName, String unitName) {
