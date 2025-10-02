@@ -36,8 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.fizzed.jne.internal.Utils.joinIfDelimiterMissing;
-import static com.fizzed.jne.internal.Utils.trimToNull;
+import static com.fizzed.jne.internal.Utils.*;
 import static java.util.Arrays.asList;
 
 public class InstallEnvironment {
@@ -290,27 +289,29 @@ public class InstallEnvironment {
                 }
             }
 
+            final Path targetFile;
 
-            Path bashEtcProfileDir = Paths.get("/etc/profile.d");
+            if (scope == EnvScope.SYSTEM) {
+                Path bashEtcProfileDir = Paths.get("/etc/profile.d");
 
-            if (this.operatingSystem == OperatingSystem.FREEBSD
+                if (this.operatingSystem == OperatingSystem.FREEBSD
                     || this.operatingSystem == OperatingSystem.OPENBSD
                     || this.operatingSystem == OperatingSystem.NETBSD
                     || this.operatingSystem == OperatingSystem.DRAGONFLYBSD) {
 
-                bashEtcProfileDir = Paths.get("/usr/local/etc/profile.d");
+                    bashEtcProfileDir = Paths.get("/usr/local/etc/profile.d");
+                }
+
+                targetFile = bashEtcProfileDir.resolve(this.unitName + ".sh");
+
+                writeLinesToFile(targetFile, shellLines, false);
+            } else {
+                targetFile = this.userEnvironment.getHomeDir().resolve(".bashrc");
+
+                writeLinesToFile(targetFile, shellLines, true);
             }
 
-            final Path targetFile = bashEtcProfileDir.resolve(this.unitName + ".sh");
-
-
-
-            // overwrite the existing file (if its present)
-            Files.write(targetFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-//            log.info("Installed {} environment for {} to {}", shellType, env.getApplication(), targetFile);
-//            log.info("");
-//            log.info("Usually a REBOOT is required for this system-wide profile to be activated...");
+            log.info("Installed {} environment to {}", ShellType.BASH, targetFile);
         }
 
 

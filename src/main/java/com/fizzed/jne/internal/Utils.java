@@ -20,13 +20,12 @@ package com.fizzed.jne.internal;
  * #L%
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
@@ -134,6 +133,75 @@ public class Utils {
             return v1 + v2;
         }
         return v1 + delimiter + v2;
+    }
+
+    static public void writeLinesToFile(Path file, List<String> lines, boolean append) throws IOException {
+        // build the lines into a full string
+        final StringBuilder sb = new StringBuilder();
+
+        // if we are appending to a file, we need to be careful about adding newlines befoe we write our content
+        if (append && Files.exists(file) && Files.size(file) > 0) {
+            // if the file doesn't end with a newline, we'll need to add more than 1
+            if (!endsWithNewline(file)) {
+                sb.append(System.lineSeparator());
+            }
+            sb.append(System.lineSeparator());
+        }
+
+        for (String line : lines) {
+            sb.append(line).append(System.lineSeparator());
+        }
+
+        if (append){
+            Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } else {
+            Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+    }
+
+    /**
+     * Checks if the file specified by the Path ends with a Line Feed ('\n') character.
+     * * Note: This method specifically checks the *last byte* of the file. If the file
+     * uses Windows-style newlines (CRLF: '\r\n'), the last byte will still be '\n' (LF),
+     * and this method will return true.
+     *
+     * @param path The path to the file to check.
+     * @return true if the file ends with '\n', false otherwise.
+     * @throws IOException if an I/O error occurs during file access or if the path is invalid.
+     */
+    static public boolean endsWithNewline(Path path) throws IOException {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null.");
+        }
+
+        // Ensure the path refers to an existing, readable regular file
+        if (!Files.exists(path) || !Files.isRegularFile(path)) {
+            // Throw a specific exception if the file isn't valid for checking
+            throw new IOException("Path does not refer to an existing regular file: " + path);
+        }
+
+        long fileSize = Files.size(path);
+
+        // An empty file (size 0) cannot end with a newline
+        if (fileSize == 0) {
+            return false;
+        }
+
+        // Use RandomAccessFile for efficient access to the last byte.
+        // Java 8 and earlier are compatible with the toFile() conversion.
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            // Move file pointer to the position of the last byte
+            raf.seek(fileSize - 1);
+
+            // Read the last byte (returns -1 at EOF, but we checked the size)
+            int lastByte = raf.read();
+
+            // Check if the last byte is a Line Feed (LF, '\n')
+            return lastByte == 10;
+        } catch (IOException e) {
+            // Re-throw the exception, providing context about the file that failed
+            throw new IOException("Error accessing file to check newline status: " + path, e);
+        }
     }
 
 }
