@@ -308,7 +308,9 @@ public class InstallEnvironment {
             } else {
                 targetFile = this.userEnvironment.getHomeDir().resolve(".bashrc");
 
-                writeLinesToFile(targetFile, shellLines, true);
+                final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
+
+                writeLinesToFile(targetFile, filteredShellLines, true);
             }
 
             log.info("Installed {} environment to {}", ShellType.BASH, targetFile);

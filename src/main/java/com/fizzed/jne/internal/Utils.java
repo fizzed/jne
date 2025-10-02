@@ -26,10 +26,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
+
+    static public String readFileToString(Path file) throws IOException {
+        if (file == null) {
+            throw new IllegalArgumentException("Path cannot be null.");
+        }
+
+        if (!Files.exists(file)) {
+            throw new FileNotFoundException("File not found: " + file);
+        }
+
+        byte[] bytes = Files.readAllBytes(file);
+
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
 
     static public String trimToNull(String value) {
         if (value != null) {
@@ -135,28 +150,100 @@ public class Utils {
         return v1 + delimiter + v2;
     }
 
+    /**
+     * Filters the input list and returns a new list containing only lines that
+     * do not exist within the specified file, while preserving the original order.
+     *
+     * @param lines The list of strings to be filtered. (Not modified)
+     * @param file  The Path to the file containing existing lines (potentially massive).
+     * @return A new List<String> with existing lines filtered out.
+     * @throws IOException If an I/O error occurs reading the file.
+     */
+    public static List<String> filterLinesIfPresentInFile(Path file, List<String> lines) throws IOException {
+        if (lines == null) {
+            return new ArrayList<>();
+        }
+
+        if (lines.isEmpty() || file == null || !Files.exists(file)) {
+            return new ArrayList<>(lines);
+        }
+
+        // 1. Create a Set of all unique lines present in the input list (O(N_L) time/memory).
+        // This is used for fast O(1) lookups as we stream the file.
+        Set<String> linesInList = new HashSet<>(lines);
+
+        // 2. Create a Set to collect all lines that are found in the file and must be removed.
+        Set<String> linesToRemove = new HashSet<>();
+
+        // 3. Stream the file line by line (O(N_F) time).
+        // Files.lines() ensures only one line is loaded into memory at a time, keeping memory low.
+        try (Stream<String> fileStream = Files.lines(file, StandardCharsets.UTF_8)) {
+            fileStream.forEach(fileLine -> {
+                // Check if the line from the massive file is one we are looking for. (O(1) lookup)
+                if (linesInList.contains(fileLine)) {
+                    // If found, mark it for removal from the original list.
+                    linesToRemove.add(fileLine);
+                }
+            });
+        }
+
+        // 4. Create a new list retaining the order and excluding lines found in the file. (O(N_L) time).
+        // The original 'lines' list is NOT modified.
+        return lines.stream()
+            .filter(line -> !linesToRemove.contains(line))
+            .collect(Collectors.toList());
+    }
+
     static public void writeLinesToFile(Path file, List<String> lines, boolean append) throws IOException {
         // build the lines into a full string
         final StringBuilder sb = new StringBuilder();
 
-        // if we are appending to a file, we need to be careful about adding newlines befoe we write our content
-        if (append && Files.exists(file) && Files.size(file) > 0) {
+        // if we are appending to a file, we need to be careful about adding newlines before we write our content
+        if (append && !lines.isEmpty() && Files.exists(file) && Files.size(file) > 0) {
             // if the file doesn't end with a newline, we'll need to add more than 1
-            if (!endsWithNewline(file)) {
-                sb.append(System.lineSeparator());
+            if (!endsWithNewlineForAppending(file)) {
+                sb.append("\n");
             }
-            sb.append(System.lineSeparator());
+            sb.append("\n");
         }
 
         for (String line : lines) {
-            sb.append(line).append(System.lineSeparator());
+            sb.append(line).append("\n");
         }
 
-        if (append){
+        if (append) {
             Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } else {
             Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         }
+    }
+
+    static public boolean endsWithNewlineForAppending2(Path file) throws IOException {
+        final StringBuilder currentLine = new StringBuilder();
+        int lineCount = 0;
+
+        // Use BufferedReader for efficient, low-memory, character-by-character reading
+        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            int charCode;
+
+            // Read until the end of the file is reached (-1)
+            while ((charCode = reader.read()) != -1) {
+                char c = (char)charCode;
+                currentLine.append(c);
+
+                // Only use '\n' as the line termination character.
+                if (c == '\n') {
+                    lineCount++;
+
+                    // line is complete. It may contain a preceding '\r' (for \r\n)
+                    currentLine.setLength(0); // Reset buffer
+                }
+            }
+        }
+
+        // if the currentLine is empty, we know the last line
+
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -169,22 +256,21 @@ public class Utils {
      * @return true if the file ends with '\n', false otherwise.
      * @throws IOException if an I/O error occurs during file access or if the path is invalid.
      */
-    static public boolean endsWithNewline(Path path) throws IOException {
+    static public boolean endsWithNewlineForAppending(Path path) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("Path cannot be null.");
         }
 
         // Ensure the path refers to an existing, readable regular file
-        if (!Files.exists(path) || !Files.isRegularFile(path)) {
-            // Throw a specific exception if the file isn't valid for checking
-            throw new IOException("Path does not refer to an existing regular file: " + path);
+        if (!Files.exists(path)) {
+            return true;
         }
 
         long fileSize = Files.size(path);
 
         // An empty file (size 0) cannot end with a newline
         if (fileSize == 0) {
-            return false;
+            return true;
         }
 
         // Use RandomAccessFile for efficient access to the last byte.
