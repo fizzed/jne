@@ -199,12 +199,11 @@ public class Utils {
         final StringBuilder sb = new StringBuilder();
 
         // if we are appending to a file, we need to be careful about adding newlines before we write our content
-        if (append && !lines.isEmpty() && Files.exists(file) && Files.size(file) > 0) {
-            // if the file doesn't end with a newline, we'll need to add more than 1
-            if (!endsWithNewlineForAppending(file)) {
+        if (append && !lines.isEmpty() && Files.exists(file)) {
+            int newlinesNeededCount = newlinesNeededForAppending(file);
+            for (int i = 0; i < newlinesNeededCount; i++) {
                 sb.append("\n");
             }
-            sb.append("\n");
         }
 
         for (String line : lines) {
@@ -218,9 +217,10 @@ public class Utils {
         }
     }
 
-    static public boolean endsWithNewlineForAppending2(Path file) throws IOException {
+    static public int newlinesNeededForAppending(Path file) throws IOException {
         final StringBuilder currentLine = new StringBuilder();
         int lineCount = 0;
+        boolean wasLastLine2Empty = false;
 
         // Use BufferedReader for efficient, low-memory, character-by-character reading
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
@@ -235,15 +235,35 @@ public class Utils {
                 if (c == '\n') {
                     lineCount++;
 
+                    wasLastLine2Empty = currentLine.toString().trim().length() == 0;
+
                     // line is complete. It may contain a preceding '\r' (for \r\n)
                     currentLine.setLength(0); // Reset buffer
                 }
             }
         }
 
-        // if the currentLine is empty, we know the last line
+        final String lastLine = currentLine.toString();
 
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (lastLine.length() == 0) {
+            if (lineCount == 0) {
+                return 0;
+            } else {
+                if (wasLastLine2Empty) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        } else {
+            if (lastLine.trim().length() == 0) {
+                // if the last line is all whitespace, visually we only need one newline
+                return 1;
+            } else {
+                // otherwise, the line consists of real chars and we need to append 2
+                return 2;
+            }
+        }
     }
 
     /**

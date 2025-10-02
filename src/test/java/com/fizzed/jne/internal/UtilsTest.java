@@ -117,7 +117,33 @@ class UtilsTest {
             // an empty list means we shouldn't even do anything to the file for appending
             Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
 
+            assertThat(readFileToString(tp.getPath()), is("Hello\n \nWorld\n"));
+        }
+    }
+
+    @Test
+    void writeLinesForAppendingToFileThatHasTwoNewlines() throws IOException {
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            // make the file non-empty
+            Files.write(tp.getPath(), "Hello\n\n".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            // an empty list means we shouldn't even do anything to the file for appending
+            Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
+
             assertThat(readFileToString(tp.getPath()), is("Hello\n\nWorld\n"));
+        }
+    }
+
+    @Test
+    void writeLinesForAppendingToFileThatHasTwoNewlinesAlt() throws IOException {
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            // make the file non-empty
+            Files.write(tp.getPath(), "Hello\n \n".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            // an empty list means we shouldn't even do anything to the file for appending
+            Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
+
+            assertThat(readFileToString(tp.getPath()), is("Hello\n \nWorld\n"));
         }
     }
 

@@ -283,9 +283,9 @@ public class InstallEnvironment {
             }
             for (EnvPath path : paths) {
                 if (path.getPrepend()) {
-                    shellLines.add("export PATH=\"" + path.getValue() + ":$PATH\"");
+                    shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"" + path.getValue() + ":$PATH\"; fi");
                 } else {
-                    shellLines.add("export PATH=\"$PATH:" + path.getValue() + "\"");
+                    shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"$PATH:" + path.getValue() + "\"; fi");
                 }
             }
 
