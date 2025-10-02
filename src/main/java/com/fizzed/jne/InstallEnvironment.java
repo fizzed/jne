@@ -360,16 +360,17 @@ public class InstallEnvironment {
             // since system-wide paths were already installed above, everything nicely now goes into the same file
             final Path targetFile = this.userEnvironment.getHomeDir().resolve(".zprofile");
 
+            // typeset is a ZSH way to adding path or path=(), but they will still have duplicates, or re-order the path
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
                 shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
             for (EnvPath path : filteredPaths) {
-                // if [[ ! "$PATH" == *:"$NEW_PATH":* ]]; then export PATH="$PATH:$NEW_PATH"; fi
+                // [[ ! "$PATH" =~ (^|:)/new/path/to/add(:|$) ]] && export PATH="$PATH:/new/path/to/add"
                 if (path.getPrepend()) {
-                    shellLines.add("if [[ ! \"$PATH\" == *:\"" + path.getValue() + "\":* ]]; then export PATH=\"$PATH:" + path.getValue() + "\"; fi");
+                    shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"");
                 } else {
-                    shellLines.add("if [[ ! \"$PATH\" == *:\"" + path.getValue() + "\":* ]]; then export PATH=\"" + path.getValue() + "\":$PATH; fi");
+                    shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"" + path.getValue() + ":$PATH\"");
                 }
             }
 
@@ -378,7 +379,7 @@ public class InstallEnvironment {
             writeLinesToFile(targetFile, filteredShellLines, true);
 
             log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
-            
+
         }
 
 
