@@ -231,6 +231,8 @@ public class InstallEnvironment {
             throw new IOException("The following environment variables are prohibited from installation: " + blacklistedVars);
         }
 
+        // an empty line for logging what we install
+        log.info("");
         log.debug("Installing environment for os={}, shellType={}", this.operatingSystem, this.userEnvironment.getShellType());
 
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
@@ -358,7 +360,6 @@ public class InstallEnvironment {
             // since system-wide paths were already installed above, everything nicely now goes into the same file
             final Path targetFile = this.userEnvironment.getHomeDir().resolve(".zprofile");
 
-            // typeset is a ZSH way to adding path or path=(), but they will still have duplicates, or re-order the path
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
                 shellLines.add(new ShellBuilder(ShellType.ZSH).exportEnvVar(var));
@@ -371,6 +372,33 @@ public class InstallEnvironment {
 
             writeLinesToFile(targetFile, filteredShellLines, true);
             this.logEnvWritten(targetFile, shellLines, true);
+
+            return;     // we are done with zsh setup
+        }
+
+        if (this.userEnvironment.getShellType() == ShellType.CSH) {
+
+            final Path targetFile;
+            if (this.scope == EnvScope.SYSTEM) {
+                targetFile = Paths.get("/etc/csh.cshrc");
+            } else {
+                targetFile = this.userEnvironment.getHomeDir().resolve(".cshrc");
+            }
+
+            final List<String> shellLines = new ArrayList<>();
+            for (EnvVar var : vars) {
+                shellLines.add(new ShellBuilder(ShellType.CSH).exportEnvVar(var));
+            }
+            for (EnvPath path : filteredPaths) {
+                shellLines.add(new ShellBuilder(ShellType.CSH).addEnvPath(path));
+            }
+
+            final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
+
+            writeLinesToFile(targetFile, filteredShellLines, true);
+            this.logEnvWritten(targetFile, shellLines, true);
+
+            return;     // we are done with zsh setup
         }
 
 
@@ -446,7 +474,6 @@ public class InstallEnvironment {
 
     private void logEnvWritten(Path file, List<String> shellLines, boolean append) {
         final String appendStr = append ? "appending (or confirming already present)" : "writing";
-        log.info("");
         log.info("Installed the {} {} environment by {} the following lines to {}:", this.scope.toString().toLowerCase(), this.userEnvironment.getShellType().toString().toLowerCase(), appendStr, file);
         log.info("");
         for (String line : shellLines) {
