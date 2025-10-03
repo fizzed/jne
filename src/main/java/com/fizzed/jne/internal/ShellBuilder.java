@@ -58,9 +58,9 @@ public class ShellBuilder {
                 }
             case ZSH:
                 if (path.isPrepend()) {
-                    return "[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"";
-                } else {
                     return "[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"" + path.getValue() + ":$PATH\"";
+                } else {
+                    return "[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"";
                 }
             case CSH:
                 // Since csh/tcsh doesn't support the case statement trick for environment variables like PATH, you must rely on the shell's string matching capabilities (!~).
