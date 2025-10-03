@@ -154,7 +154,8 @@ class UtilsTest {
         try (TemporaryPath tp = TemporaryPath.tempFile()) {
             Files.copy(exampleBashrcFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            assertThat(readFileToString(tp.getPath()), endsWith("$ \"\n\n"));
+            // make this more windows unit test battleproof
+            assertThat(readFileToString(tp.getPath()).replace("\r", ""), endsWith("$ \"\n\n"));
 
             int newlinesNeeded = Utils.newlinesNeededForAppending(tp.getPath());
             assertThat(newlinesNeeded, is(0));
@@ -162,7 +163,7 @@ class UtilsTest {
             // an empty list means we shouldn't even do anything to the file for appending
             Utils.writeLinesToFile(tp.getPath(), asList("World"), true);
 
-            assertThat(readFileToString(tp.getPath()), endsWith("$ \"\n\nWorld\n"));
+            assertThat(readFileToString(tp.getPath()).replace("\r", ""), endsWith("$ \"\n\nWorld\n"));
         }
     }
 
