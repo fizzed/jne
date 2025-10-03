@@ -302,11 +302,10 @@ public class InstallEnvironment {
             final Path targetFile = Paths.get("/etc/paths.d").resolve(this.unitName);
 
             writeLinesToFile(targetFile, shellLines, false);
+            this.logEnvWritten(targetFile, shellLines, false);
 
             // now we will proceed and allow ZSH, etc. to be setup, but no need to do any env vars, so we'll clear those out
             filteredPaths.clear();
-
-            log.info("Installed environment paths {} to {} (with {} scope)", filteredPaths, targetFile, this.scope);
         }
 
 
@@ -319,16 +318,10 @@ public class InstallEnvironment {
             for (EnvVar var : vars) {
                 // even though we're BASH, the global profile using BOURNE shell syntax
                 shellLines.add(new ShellBuilder(ShellType.SH).exportEnvVar(var));
-                //shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
             for (EnvPath path : filteredPaths) {
                 // even though we're BASH, the global profile using BOURNE shell syntax
                 shellLines.add(new ShellBuilder(ShellType.SH).addEnvPath(path));
-                /*if (path.isPrepend()) {
-                    shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"" + path.getValue() + ":$PATH\"; fi");
-                } else {
-                    shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"$PATH:" + path.getValue() + "\"; fi");
-                }*/
             }
 
             final Path targetFile;
@@ -347,15 +340,15 @@ public class InstallEnvironment {
                 targetFile = bashEtcProfileDir.resolve(this.unitName + ".sh");
 
                 writeLinesToFile(targetFile, shellLines, false);
+                this.logEnvWritten(targetFile, shellLines, false);
             } else {
                 targetFile = this.userEnvironment.getHomeDir().resolve(".bashrc");
 
                 final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
 
                 writeLinesToFile(targetFile, filteredShellLines, true);
+                this.logEnvWritten(targetFile, shellLines, true);
             }
-
-            log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
 
             return;     // we are done with bash setup
         }
@@ -369,23 +362,15 @@ public class InstallEnvironment {
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
                 shellLines.add(new ShellBuilder(ShellType.ZSH).exportEnvVar(var));
-                //shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
             for (EnvPath path : filteredPaths) {
-                // [[ ! "$PATH" =~ (^|:)/new/path/to/add(:|$) ]] && export PATH="$PATH:/new/path/to/add"
                 shellLines.add(new ShellBuilder(ShellType.ZSH).addEnvPath(path));
-                /*if (path.isPrepend()) {
-                    shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"");
-                } else {
-                    shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"" + path.getValue() + ":$PATH\"");
-                }*/
             }
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
 
             writeLinesToFile(targetFile, filteredShellLines, true);
-
-            log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
+            this.logEnvWritten(targetFile, shellLines, true);
         }
 
 
@@ -457,6 +442,17 @@ public class InstallEnvironment {
 
             log.info("Usually LOGOUT/LOGIN is required for this profile to be activated...");
         }*/
+    }
+
+    private void logEnvWritten(Path file, List<String> shellLines, boolean append) {
+        final String appendStr = append ? "appending (or confirming already present)" : "writing";
+        log.info("");
+        log.info("Installed the {} {} environment by {} the following lines to {}:", this.scope.toString().toLowerCase(), this.userEnvironment.getShellType().toString().toLowerCase(), appendStr, file);
+        log.info("");
+        for (String line : shellLines) {
+            log.info("  {}", line);
+        }
+        log.info("");
     }
 
     private List<EnvPath> filterWellKnownEnvPaths(List<EnvPath> paths) {
