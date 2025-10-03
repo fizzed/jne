@@ -36,12 +36,12 @@ public class EnvPath {
         this.value = value;
     }
 
-    public boolean getPrepend() {
-        return prepend;
+    public boolean isPrepend() {
+        return this.prepend;
     }
 
     public Path getValue() {
-        return value;
+        return this.value;
     }
 
     @Override

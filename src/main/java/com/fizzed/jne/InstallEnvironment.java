@@ -20,6 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.jne.internal.ShellBuilder;
 import com.fizzed.jne.internal.Utils;
 import com.fizzed.jne.internal.WindowsRegistry;
 import org.slf4j.Logger;
@@ -265,7 +266,7 @@ public class InstallEnvironment {
                 final boolean exists = Utils.searchEnvPath(pathValueInRegistry, path.getValue());
                 if (!exists) {
                     final List<String> envVarCmd =  new ArrayList<>(asList("setx", "PATH"));
-                    if (path.getPrepend()) {
+                    if (path.isPrepend()) {
                         pathValueInRegistry = joinIfDelimiterMissing(path.getValue().toString(), pathValueInRegistry, ";");
                     } else {
                         pathValueInRegistry = joinIfDelimiterMissing(pathValueInRegistry, path.getValue().toString(), ";");
@@ -316,14 +317,18 @@ public class InstallEnvironment {
             // first, we will generate the lines we will either put into a .sh file or tack onto something like ~/.bashrc
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
-                shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
+                // even though we're BASH, the global profile using BOURNE shell syntax
+                shellLines.add(new ShellBuilder(ShellType.SH).exportEnvVar(var));
+                //shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
             for (EnvPath path : filteredPaths) {
-                if (path.getPrepend()) {
+                // even though we're BASH, the global profile using BOURNE shell syntax
+                shellLines.add(new ShellBuilder(ShellType.SH).addEnvPath(path));
+                /*if (path.isPrepend()) {
                     shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"" + path.getValue() + ":$PATH\"; fi");
                 } else {
                     shellLines.add("if [ ! -z \"${PATH##*"+path.getValue()+"*}\" ]; then export PATH=\"$PATH:" + path.getValue() + "\"; fi");
-                }
+                }*/
             }
 
             final Path targetFile;
@@ -363,15 +368,17 @@ public class InstallEnvironment {
             // typeset is a ZSH way to adding path or path=(), but they will still have duplicates, or re-order the path
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
-                shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
+                shellLines.add(new ShellBuilder(ShellType.ZSH).exportEnvVar(var));
+                //shellLines.add("export " + var.getName() + "=\"" + var.getValue() + "\"");
             }
             for (EnvPath path : filteredPaths) {
                 // [[ ! "$PATH" =~ (^|:)/new/path/to/add(:|$) ]] && export PATH="$PATH:/new/path/to/add"
-                if (path.getPrepend()) {
+                shellLines.add(new ShellBuilder(ShellType.ZSH).addEnvPath(path));
+                /*if (path.isPrepend()) {
                     shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"");
                 } else {
                     shellLines.add("[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"" + path.getValue() + ":$PATH\"");
-                }
+                }*/
             }
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
@@ -379,7 +386,6 @@ public class InstallEnvironment {
             writeLinesToFile(targetFile, filteredShellLines, true);
 
             log.info("Installed {} environment to {} (for {} scope)", ShellType.BASH, targetFile, this.scope);
-
         }
 
 
