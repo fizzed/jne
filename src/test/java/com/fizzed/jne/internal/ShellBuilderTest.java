@@ -106,7 +106,7 @@ class ShellBuilderTest {
         assumeTrue(shellExe != null, "No /bin/zsh on local system, skipping test");
 
         try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
-            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.SH);
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.ZSH);
 
             final List<String> shellLines = asList(
                 shellBuilder.exportEnvVar(new EnvVar("TEST", "Hello World")),
@@ -129,7 +129,7 @@ class ShellBuilderTest {
         assumeTrue(shellExe != null, "No /bin/zsh on local system, skipping test");
 
         try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
-            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.SH);
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.ZSH);
 
             final List<String> shellLines = asList(
                 "PATH=/usr/bin:/usr/local/bin",
@@ -163,7 +163,7 @@ class ShellBuilderTest {
         assumeTrue(shellExe != null, "No /bin/csh on local system, skipping test");
 
         try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
-            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.SH);
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.CSH);
 
             final List<String> shellLines = asList(
                 shellBuilder.exportEnvVar(new EnvVar("TEST", "Hello World")),
@@ -175,6 +175,36 @@ class ShellBuilderTest {
             final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
+        }
+    }
+
+    @Test
+    public void cshAddEnvPath() throws IOException, InterruptedException {
+        // if /bin/zsh is available, we will run this test
+        final Path shellExe = Utils.which("csh");
+
+        assumeTrue(shellExe != null, "No /bin/csh on local system, skipping test");
+
+        try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.CSH);
+
+            final List<String> shellLines = asList(
+                    "setenv PATH \"/usr/bin:/usr/local/bin\"",
+                    // this should not be added again if our dup checks are working
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/bin"), false)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/local/bin"), false)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/local/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/home/jjlauer/.local/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/opt/bin"), false)),
+                    "echo \"$PATH\""
+            );
+
+            Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
+
+            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+
+            assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }
     }
 
