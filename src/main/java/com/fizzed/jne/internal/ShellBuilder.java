@@ -50,6 +50,7 @@ public class ShellBuilder {
         switch (shellType) {
             case SH:
             case BASH:
+            case KSH:       // openbsd ksh is posix-compliant and its best to stick with that method
                 if (path.isPrepend()) {
                     return "case \":$PATH:\" in *:\"" + path.getValue() + "\":*) ;; *) PATH=\"" + path.getValue() + "${PATH:+:$PATH}\" ;; esac; export PATH";
                 } else {

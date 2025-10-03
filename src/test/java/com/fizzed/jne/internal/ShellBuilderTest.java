@@ -208,4 +208,61 @@ class ShellBuilderTest {
         }
     }
 
+    //
+    // KSH
+    //
+
+    @Test
+    public void kshExportEnvVar() throws IOException, InterruptedException {
+        // if /bin/ksh is available, we will run this test
+        final Path shellExe = Utils.which("ksh");
+
+        assumeTrue(shellExe != null, "No /bin/ksh on local system, skipping test");
+
+        try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.KSH);
+
+            final List<String> shellLines = asList(
+                    shellBuilder.exportEnvVar(new EnvVar("TEST", "Hello World")),
+                    "echo \"$TEST\""
+            );
+
+            Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
+
+            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+
+            assertThat(output.trim(), is("Hello World"));
+        }
+    }
+
+    @Test
+    public void kshAddEnvPath() throws IOException, InterruptedException {
+        // if /bin/ksh is available, we will run this test
+        final Path shellExe = Utils.which("ksh");
+
+        assumeTrue(shellExe != null, "No /bin/ksh on local system, skipping test");
+
+        try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.KSH);
+
+            final List<String> shellLines = asList(
+                    "PATH=/usr/bin:/usr/local/bin",
+                    // this should not be added again if our dup checks are working
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/bin"), false)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/local/bin"), false)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/usr/local/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/home/jjlauer/.local/bin"), true)),
+                    shellBuilder.addEnvPath(new EnvPath(Paths.get("/opt/bin"), false)),
+                    "echo \"$PATH\""
+            );
+
+            Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
+
+            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+
+            assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
+        }
+    }
+
 }
