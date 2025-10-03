@@ -100,7 +100,7 @@ class ShellBuilderTest {
 
     @Test
     public void zshExportEnvVar() throws IOException, InterruptedException {
-        // if /bin/sh is available, we will run this test
+        // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("zsh");
 
         assumeTrue(shellExe != null, "No /bin/zsh on local system, skipping test");
@@ -123,7 +123,7 @@ class ShellBuilderTest {
 
     @Test
     public void zshAddEnvPath() throws IOException, InterruptedException {
-        // if /bin/sh is available, we will run this test
+        // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("zsh");
 
         assumeTrue(shellExe != null, "No /bin/zsh on local system, skipping test");
@@ -148,6 +148,33 @@ class ShellBuilderTest {
             final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
+        }
+    }
+
+    //
+    // CSH
+    //
+
+    @Test
+    public void cshExportEnvVar() throws IOException, InterruptedException {
+        // if /bin/csh is available, we will run this test
+        final Path shellExe = Utils.which("csh");
+
+        assumeTrue(shellExe != null, "No /bin/csh on local system, skipping test");
+
+        try (TemporaryPath temporaryPath = TemporaryPath.tempFile("", ".sh")) {
+            final ShellBuilder shellBuilder = new ShellBuilder(ShellType.SH);
+
+            final List<String> shellLines = asList(
+                shellBuilder.exportEnvVar(new EnvVar("TEST", "Hello World")),
+                "echo \"$TEST\""
+            );
+
+            Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
+
+            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+
+            assertThat(output.trim(), is("Hello World"));
         }
     }
 

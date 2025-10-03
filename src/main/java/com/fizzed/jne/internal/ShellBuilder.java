@@ -61,6 +61,14 @@ public class ShellBuilder {
                 } else {
                     return "[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"" + path.getValue() + ":$PATH\"";
                 }
+            case CSH:
+                // Since csh/tcsh doesn't support the case statement trick for environment variables like PATH, you must rely on the shell's string matching capabilities (!~).
+                // set newpath = "/path/to/prepend"; if ("$PATH" !~ *${newpath}*) setenv PATH "${newpath}:${PATH}"
+                if (path.isPrepend()) {
+                    return "if (\"$PATH\" !~ *${" + path.getValue() + "}*) setenv PATH \"${" + path.getValue() + "}:${PATH}\"";
+                } else {
+                    return "if (\"$PATH\" !~ *${" + path.getValue() + "}*) setenv PATH \"${PATH}:${" + path.getValue() + "}\"";
+                }
             default:
                 throw new IllegalArgumentException("Unsupported shell type: " + shellType);
         }
