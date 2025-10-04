@@ -1,5 +1,10 @@
 # Java Native Extractor by Fizzed
 
+## 4.5.0 - 2025-10-03
+
+ - Added UserEnvironment, InstallEnvironment, Chmod, and many other utility classes for installing and
+   updating the user's environment (e.g. shell scripts, windows registry, etc.)
+
 ## 4.4.0 - 2025-09-19
 
  - Add support & runners for Java 25
