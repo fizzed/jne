@@ -233,9 +233,11 @@ public class InstallEnvironment {
 
         // an empty line for logging what we install
         log.info("");
-        log.debug("Installing environment for os={}, shellType={}", this.operatingSystem, this.userEnvironment.getShellType());
 
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
+            log.info("Installing the {} environment by modifying the windows registry with the following:", this.scope.toString().toLowerCase());
+            log.info("");
+
             // we are going to query the user OR system env vars via registry
             final Map<String,String> currentEnvInRegistry;
             if (this.scope == EnvScope.USER) {
@@ -255,9 +257,9 @@ public class InstallEnvironment {
                         envVarCmd.add("/M");
                     }
                     Utils.execAndGetOutput(envVarCmd);
-                    log.info("Installed environment variable {} (with {} scope)", var, scope);
+                    log.info(" set {}={}", var.getName(), var.getValue());
                 } else {
-                    log.info("Skipped installing environment variable {} (it already exists)", var);
+                    log.info(" set {}={} (skipped as this already was present)", var.getName(), var.getValue());
                 }
             }
 
@@ -280,11 +282,13 @@ public class InstallEnvironment {
                         envVarCmd.add("/M");
                     }
                     Utils.execAndGetOutput(envVarCmd);
-                    log.info("Installed environment path {} (with {} scope)", path, this.scope);
+                    log.info(" added to path {}", path.getValue());
                 } else {
-                    log.info("Skipped installing environment path {} (it already exists)", path);
+                    log.info(" added to path {} (skipped as this was already present)", path.getValue());
                 }
             }
+
+            log.info("");
 
             // for windows, we are now done
             return;
@@ -306,7 +310,7 @@ public class InstallEnvironment {
             writeLinesToFile(targetFile, shellLines, false);
             this.logEnvWritten(targetFile, shellLines, false);
 
-            // now we will proceed and allow ZSH, etc. to be setup, but no need to do any env vars, so we'll clear those out
+            // now we will proceed and allow ZSH, etc. to be setup, but no need to do any env paths, so we'll clear those out
             filteredPaths.clear();
         }
 
@@ -315,7 +319,28 @@ public class InstallEnvironment {
         // the global one will be truncated and the per-user one needs some smart appending
         if (this.userEnvironment.getShellType() == ShellType.BASH) {
 
-            // first, we will generate the lines we will either put into a .sh file or tack onto something like ~/.bashrc
+            // for base, usually its /usr/local/etc/profile.d, then /etc/profile.d, then /etc/profile, then ~/.bashrc
+            // we'll first default the location to ~/.bashrc, but if we find the other two, we'll use them instead'
+            boolean append = true;
+            Path targetFile = this.userEnvironment.getHomeDir().resolve(".bashrc");
+            if (this.scope == EnvScope.SYSTEM) {
+                final Path usrLocalEtcProfileDotDir = Paths.get("/usr/local/etc/profile.d");
+                final Path etcProfileDotDir = Paths.get("/etc/profile.d");
+                final Path etcProfileFile = Paths.get("/etc/profile");
+
+                if (Files.exists(usrLocalEtcProfileDotDir) && Files.isDirectory(usrLocalEtcProfileDotDir)) {
+                    targetFile = usrLocalEtcProfileDotDir.resolve(this.unitName + ".sh");
+                    append = false;
+                } else if (Files.exists(etcProfileDotDir) && Files.isDirectory(etcProfileDotDir)) {
+                    targetFile = etcProfileDotDir.resolve(this.unitName + ".sh");
+                    append = false;
+                } else if (Files.exists(etcProfileFile)) {
+                    targetFile = etcProfileFile;
+                } else {
+                    log.warn("Unable to locate system-wide profile file for BASH, will use ~/.bashrc instead");
+                }
+            }
+
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
                 // even though we're BASH, the global profile using BOURNE shell syntax
@@ -326,31 +351,14 @@ public class InstallEnvironment {
                 shellLines.add(new ShellBuilder(ShellType.SH).addEnvPath(path));
             }
 
-            final Path targetFile;
-
-            if (scope == EnvScope.SYSTEM) {
-                Path bashEtcProfileDir = Paths.get("/etc/profile.d");
-
-                if (this.operatingSystem == OperatingSystem.FREEBSD
-                    || this.operatingSystem == OperatingSystem.OPENBSD
-                    || this.operatingSystem == OperatingSystem.NETBSD
-                    || this.operatingSystem == OperatingSystem.DRAGONFLYBSD) {
-
-                    bashEtcProfileDir = Paths.get("/usr/local/etc/profile.d");
-                }
-
-                targetFile = bashEtcProfileDir.resolve(this.unitName + ".sh");
-
-                writeLinesToFile(targetFile, shellLines, false);
-                this.logEnvWritten(targetFile, shellLines, false);
-            } else {
-                targetFile = this.userEnvironment.getHomeDir().resolve(".bashrc");
-
-                final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
-
-                writeLinesToFile(targetFile, filteredShellLines, true);
-                this.logEnvWritten(targetFile, shellLines, true);
+            // if we're appending we need to filter the lines
+            List<String> filteredShellLines = shellLines;
+            if (append) {
+                filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
             }
+
+            writeLinesToFile(targetFile, filteredShellLines, append);
+            this.logEnvWritten(targetFile, shellLines, append);
 
             return;     // we are done with bash setup
         }
@@ -378,11 +386,12 @@ public class InstallEnvironment {
 
         if (this.userEnvironment.getShellType() == ShellType.CSH) {
 
-            final Path targetFile;
+            Path targetFile = this.userEnvironment.getHomeDir().resolve(".cshrc");
             if (this.scope == EnvScope.SYSTEM) {
-                targetFile = Paths.get("/etc/csh.cshrc");
-            } else {
-                targetFile = this.userEnvironment.getHomeDir().resolve(".cshrc");
+                final Path etcCshrcFile = Paths.get("/etc/csh.cshrc");
+                if (Files.exists(etcCshrcFile)) {
+                    targetFile = etcCshrcFile;
+                }
             }
 
             final List<String> shellLines = new ArrayList<>();
@@ -398,78 +407,64 @@ public class InstallEnvironment {
             writeLinesToFile(targetFile, filteredShellLines, true);
             this.logEnvWritten(targetFile, shellLines, true);
 
-            return;     // we are done with zsh setup
+            return;     // we are done with csh setup
         }
 
+        if (this.userEnvironment.getShellType() == ShellType.KSH) {
 
-
-        /*
-        } else if (shellType == ShellType.ZSH && nativeTarget.getOperatingSystem() == OperatingSystem.MACOS) {
-
-            final Path pathsDir = Paths.get("/etc/paths.d");
-            final Path pathFile = pathsDir.resolve(env.getApplication());
-
-            // build the path file
-            final StringBuilder sb = new StringBuilder();
-            for (EnvPath path : env.getPaths()) {
-                sb.append(path.getValue()).append("\n");
+            // for ksh, usually its /etc/profile.d/file.sh, then /etc/profile, then ~/.profile -- but on most openbsd
+            // systems, /etc/profile.d and /etc/profile do not exist :-( -- so we'll check for them here first
+            // we'll first default the location to ~/.profile, but if we find the other two, we'll use them instead'
+            boolean append = true;
+            Path targetFile = this.userEnvironment.getHomeDir().resolve(".profile");
+            if (this.scope == EnvScope.SYSTEM) {
+                final Path etcProfileDotDir = Paths.get("/etc/profile.d");
+                final Path etcProfileFile = Paths.get("/etc/profile");
+                if (Files.exists(etcProfileDotDir) && Files.isDirectory(etcProfileDotDir)) {
+                    targetFile = etcProfileDotDir.resolve(this.unitName + ".sh");
+                    append = false;
+                } else if (Files.exists(etcProfileFile)) {
+                    targetFile = etcProfileFile;
+                } else {
+                    log.warn("Unable to locate system-wide profile file for KSH, will use ~/.profile instead");
+                }
             }
 
-            // overwrite the existing file (if its present)
-            Files.write(pathFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            log.info("Installed {} path for {} to {}", shellType, env.getApplication(), pathFile);
-
-            // environment vars are more tricky, they need to be appended to ~/.zprofile
-            final Path profileFile = homeDir.resolve(".zprofile");
-            final List<String> profileFileLines = readFileLines(profileFile);
-
-            for (EnvVar var : env.getVars()) {
-                // this is the line we want to have present
-                String line = "export " + var.getName() + "=\"" + var.getValue() + "\"";
-                appendLineIfNotExists(profileFileLines, profileFile, line);
+            final List<String> shellLines = new ArrayList<>();
+            for (EnvVar var : vars) {
+                shellLines.add(new ShellBuilder(ShellType.CSH).exportEnvVar(var));
+            }
+            for (EnvPath path : filteredPaths) {
+                shellLines.add(new ShellBuilder(ShellType.CSH).addEnvPath(path));
             }
 
-            log.info("Usually a REBOOT is required for this system-wide profile to be activated...");
-
-        } else if (shellType == ShellType.CSH) {
-            final Path profileFile = homeDir.resolve(".cshrc");
-            final List<String> profileFileLines = readFileLines(profileFile);
-
-            // append env vars first
-            for (EnvVar var : env.getVars()) {
-                // this is the line we want to have present
-                String line = "setenv " + var.getName() + " \"" + var.getValue() + "\"";
-                appendLineIfNotExists(profileFileLines, profileFile, line);
+            List<String> filteredShellLines = shellLines;
+            if (append) {
+                filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
             }
 
-            for (EnvPath path : env.getPaths()) {
-                // this is the line we want to have present
-                String line = "setenv PATH \"" + path.getValue() + ":${PATH}\"";
-                appendLineIfNotExists(profileFileLines, profileFile, line);
-            }
+            writeLinesToFile(targetFile, filteredShellLines, append);
+            this.logEnvWritten(targetFile, shellLines, append);
 
-            log.info("Usually LOGOUT/LOGIN is required for this profile to be activated...");
+            return;     // we are done with ksh setup
+        }
 
-        } else if (shellType == ShellType.KSH) {
-            final Path profileFile = homeDir.resolve(".profile");
-            final List<String> profileFileLines = readFileLines(profileFile);
+        // hmm... we don't actually know how to handle this shell type
+        log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        log.warn("");
+        log.warn("Unable to install environment for shell type {} (we don't have support for it yet)", this.userEnvironment.getShellType());
+        log.warn("");
+        log.warn("You will need to install the following environment variables and paths yourself:");
+        log.warn("");
+        for (EnvVar var : vars) {
+            log.warn("  set var: {}={}", var.getName(), var.getValue());
+        }
+        for (EnvPath path : paths) {
+            log.warn("  add path: {}", path.getValue());
+        }
+        log.warn("");
+        log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-            // append env vars first
-            for (EnvVar var : env.getVars()) {
-                // this is the line we want to have present
-                String line = "export " + var.getName() + "=\"" + var.getValue() + "\"";
-                appendLineIfNotExists(profileFileLines, profileFile, line);
-            }
-
-            for (EnvPath path : env.getPaths()) {
-                // this is the line we want to have present
-                String line = "export PATH=\"" + path.getValue() + ":$PATH\"";
-                appendLineIfNotExists(profileFileLines, profileFile, line);
-            }
-
-            log.info("Usually LOGOUT/LOGIN is required for this profile to be activated...");
-        }*/
     }
 
     private void logEnvWritten(Path file, List<String> shellLines, boolean append) {
