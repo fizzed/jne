@@ -215,6 +215,7 @@ public class InstallEnvironment {
         // to simplify method, null values swapped with empty lists
         paths = ofNullable(paths).orElseGet(Collections::emptyList);
         vars = ofNullable(vars).orElseGet(Collections::emptyList);
+        final ShellType shellType = this.userEnvironment.getShellType();
 
         // filter paths requested down to the actual list (removing well-known paths)
         final List<EnvPath> filteredPaths = this.filterWellKnownEnvPaths(paths);
@@ -317,7 +318,7 @@ public class InstallEnvironment {
 
         // for bash, we can setup system and user with the same shell syntax, they just go into different files, where
         // the global one will be truncated and the per-user one needs some smart appending
-        if (this.userEnvironment.getShellType() == ShellType.BASH) {
+        if (shellType == ShellType.BASH) {
 
             // for base, usually its /usr/local/etc/profile.d, then /etc/profile.d, then /etc/profile, then ~/.bashrc
             // we'll first default the location to ~/.bashrc, but if we find the other two, we'll use them instead'
@@ -363,17 +364,17 @@ public class InstallEnvironment {
             return;     // we are done with bash setup
         }
 
-        if (this.userEnvironment.getShellType() == ShellType.ZSH) {
+        if (shellType == ShellType.ZSH) {
 
             // since system-wide paths were already installed above, everything nicely now goes into the same file
             final Path targetFile = this.userEnvironment.getHomeDir().resolve(".zprofile");
 
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(ShellType.ZSH).exportEnvVar(var));
+                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
             }
             for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(ShellType.ZSH).addEnvPath(path));
+                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
             }
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
@@ -384,7 +385,7 @@ public class InstallEnvironment {
             return;     // we are done with zsh setup
         }
 
-        if (this.userEnvironment.getShellType() == ShellType.CSH) {
+        if (shellType == ShellType.CSH) {
 
             Path targetFile = this.userEnvironment.getHomeDir().resolve(".cshrc");
             if (this.scope == EnvScope.SYSTEM) {
@@ -396,10 +397,10 @@ public class InstallEnvironment {
 
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(ShellType.CSH).exportEnvVar(var));
+                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
             }
             for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(ShellType.CSH).addEnvPath(path));
+                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
             }
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
@@ -410,7 +411,7 @@ public class InstallEnvironment {
             return;     // we are done with csh setup
         }
 
-        if (this.userEnvironment.getShellType() == ShellType.KSH) {
+        if (shellType == ShellType.KSH) {
 
             // for ksh, usually its /etc/profile.d/file.sh, then /etc/profile, then ~/.profile -- but on most openbsd
             // systems, /etc/profile.d and /etc/profile do not exist :-( -- so we'll check for them here first
@@ -432,10 +433,10 @@ public class InstallEnvironment {
 
             final List<String> shellLines = new ArrayList<>();
             for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(ShellType.CSH).exportEnvVar(var));
+                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
             }
             for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(ShellType.CSH).addEnvPath(path));
+                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
             }
 
             List<String> filteredShellLines = shellLines;
