@@ -1,0 +1,5 @@
+Hello World
+
+This is cool
+
+export PATH="$PATH:/test/bin"

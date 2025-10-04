@@ -73,15 +73,20 @@ public class PlatformInfoTest {
         assertThat(PlatformInfo.detectHardwareArchitectureFromValues("armv7l", null, null, null), is(HardwareArchitecture.ARMHF));
     }
 
-    @Test @EnabledOnOs(OS.LINUX)
+    @Test
     public void doDetectLinuxLibC() {
         // we can only perform this test on linux
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
 
+        // this should actually not fail on any operating system
         LinuxLibC libc = PlatformInfo.detectLinuxLibC();
 
-        assertThat(libc, is(not(nullValue())));
-        assertThat(libc, is(not(LinuxLibC.UNKNOWN)));
+        if (operatingSystem == OperatingSystem.LINUX) {
+            assertThat(libc, is(not(nullValue())));
+            assertThat(libc, is(not(LinuxLibC.UNKNOWN)));
+        } else {
+            assertThat(libc, is(nullValue()));
+        }
     }
 
 }

@@ -220,23 +220,28 @@ public class PlatformInfo {
         return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
             @Override
             public LinuxLibC init() {
-            // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
-            LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
+                // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
+                LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
 
-            if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
-                return detectedFilesResult.getLibc();
-            }
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                    return detectedFilesResult.getLibc();
+                }
 
-            // step 2: search /lib/ directory for MUSL and/or architecture
-            detectedFilesResult = detectLinuxLibFiles();
+                // step 2: search /lib/ directory for MUSL and/or architecture
+                detectedFilesResult = detectLinuxLibFiles();
 
-            if (detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
-                return detectedFilesResult.getLibc();
-            }
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                    return detectedFilesResult.getLibc();
+                }
 
-            // fallback: we will assume this is GLIBC
-            log.debug("Will assume we are running on GLIBC");
-            return LinuxLibC.GLIBC;
+                // if detectedFilesResult is null, we probably aren't even on linux
+                if (detectedFilesResult == null) {
+                    return null;
+                }
+
+                // fallback: we will assume this is GLIBC
+                log.debug("Will assume we are running on GLIBC");
+                return LinuxLibC.GLIBC;
             }
         });
     }

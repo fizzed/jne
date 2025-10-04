@@ -1,0 +1,21 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+    ComSpec    REG_EXPAND_SZ    %SystemRoot%\system32\cmd.exe
+    DriverData    REG_SZ    C:\Windows\System32\Drivers\DriverData
+    OS    REG_SZ    Windows_NT
+    Path    REG_SZ    C:\Program Files\Zulu\zulu-21\bin\;C:\Program Files\Zulu\zulu-17\bin\;C:\Program Files\Zulu\zulu-11\bin\;C:\Program Files\Zulu\zulu-8\bin\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Opt\apache-maven-3.9.5\bin;C:\Program Files\RedHat\Podman\;C:\Program Files\Git\cmd;C:\Program Files\Go\bin;C:\Program Files\Go\bin;C:\Program Files\dotnet\;C:\Program Files\PowerShell\7\
+    PATHEXT    REG_SZ    .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+    PROCESSOR_ARCHITECTURE    REG_SZ    AMD64
+    PSModulePath    REG_EXPAND_SZ    %ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules
+    TEMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    TMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    USERNAME    REG_SZ    SYSTEM
+    windir    REG_EXPAND_SZ    %SystemRoot%
+    NUMBER_OF_PROCESSORS    REG_SZ    8
+    PROCESSOR_LEVEL    REG_SZ    6
+    PROCESSOR_IDENTIFIER    REG_SZ    Intel64 Family 6 Model 183 Stepping 1, GenuineIntel
+    PROCESSOR_REVISION    REG_SZ    b701
+    JAVA_HOME    REG_SZ    C:\Program Files\Zulu\zulu-21
+    POWERSHELL_DISTRIBUTION_CHANNEL    REG_SZ    MSI:Windows 10 Pro
+    TEST    REG_SZ    Hello
+

@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.13</version>
+            <version>1.7.36</version>
         </dependency>
         
         <!-- provided -->
@@ -56,28 +56,28 @@
         <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-exec</artifactId>
-            <version>1.9</version>
+            <version>1.12</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.10.0</version>
+            <version>4.11.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.12</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.fizzed</groupId>
             <artifactId>crux-util</artifactId>
-            <version>1.0.43</version>
+            <version>1.0.48</version>
             <scope>test</scope>
         </dependency>
 
