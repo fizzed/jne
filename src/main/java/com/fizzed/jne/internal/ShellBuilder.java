@@ -24,12 +24,36 @@ import com.fizzed.jne.EnvPath;
 import com.fizzed.jne.EnvVar;
 import com.fizzed.jne.ShellType;
 
+import java.util.List;
+
+import static java.util.Arrays.asList;
+
 public class ShellBuilder {
 
     private final ShellType shellType;
 
     public ShellBuilder(ShellType shellType) {
         this.shellType = shellType;
+    }
+
+    public List<String> sectionBegin(String unitName) {
+        return asList(
+            this.comment("begin " + unitName + " environment"),
+            this.comment("do not edit any text from begin to end comments"),
+            ""
+        );
+    }
+
+    public List<String> sectionEnd(String unitName) {
+        return asList(
+            "",
+            this.comment("end " + unitName + " environment")
+        );
+    }
+
+    public String comment(String message) {
+        // it seems like every shell supports comments this way
+        return "# " + message;
     }
 
     public String exportEnvVar(EnvVar var) {

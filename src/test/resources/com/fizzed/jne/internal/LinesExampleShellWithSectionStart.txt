@@ -1,0 +1,6 @@
+# begin test env
+Dude
+This is cool
+Yo
+# end test env
+export PATH="$PATH:/test/bin"
