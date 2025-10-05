@@ -212,6 +212,18 @@ class UtilsTest {
         range = Utils.findLineByteRange(linesExampleShellFile, "not present", 0);
 
         assertThat(range, is(nullValue()));
+
+        final Path linesExampleShelWithSectionlFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShellWithSection.txt");
+
+        range = Utils.findLineByteRange(linesExampleShelWithSectionlFile, "# begin test env", 0);
+
+        assertThat(range.getIndex(), is(13L));
+        assertThat(range.getLength(), is(17L));
+
+        range = Utils.findLineByteRange(linesExampleShelWithSectionlFile, "# end test env", range.getIndex() + range.getLength());
+
+        assertThat(range.getIndex(), is(51L));
+        assertThat(range.getLength(), is(15L));
     }
 
     @Test
