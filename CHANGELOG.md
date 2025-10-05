@@ -1,5 +1,10 @@
 # Java Native Extractor by Fizzed
 
+## 4.5.1 - 2025-10-05
+
+ - Use a new begin/end comment strategy for detecting what sections of an environment config file
+   should be fully replaced. More resilient against future changes needed to install vars/paths.
+
 ## 4.5.0 - 2025-10-03
 
  - Added UserEnvironment, InstallEnvironment, Chmod, and many other utility classes for installing and
