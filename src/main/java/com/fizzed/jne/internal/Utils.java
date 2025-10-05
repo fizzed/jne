@@ -20,14 +20,19 @@ package com.fizzed.jne.internal;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+    static private final Logger log = LoggerFactory.getLogger(Utils.class);
 
     static public String readFileToString(Path file) throws IOException {
         if (file == null) {
@@ -271,11 +276,12 @@ public class Utils {
         // Use a temporary file for atomic update
         final Path tempFile = Files.createTempFile(file.getFileName().toString(), ".tmp");
 
+        // We need to retain the permissions of the original file when we move this back
+        replicateFilePermissions(file, tempFile);
+
         // We use RandomAccessFile for precise control over reading the original file
         // and standard streams for writing to the temporary file.
-        try (RandomAccessFile raf = new RandomAccessFile(file.toFile(), "r");
-             OutputStream os = Files.newOutputStream(tempFile, StandardOpenOption.WRITE))
-        {
+        try (RandomAccessFile raf = new RandomAccessFile(file.toFile(), "r"); OutputStream os = Files.newOutputStream(tempFile, StandardOpenOption.WRITE)) {
             byte[] buffer = new byte[8192];
             int bytesRead;
 
@@ -309,7 +315,12 @@ public class Utils {
 
         // --- Final Step: Atomic Replacement ---
         // ATOMIC_MOVE ensures the file is either fully replaced or the original remains untouched.
-        Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING);
+        try {
+            Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            // fallback is atomic move is not supported
+            Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     /**
@@ -493,6 +504,67 @@ public class Utils {
         } catch (IOException e) {
             // Re-throw the exception, providing context about the file that failed
             throw new IOException("Error accessing file to check newline status: " + path, e);
+        }
+    }
+
+    /**
+     * Replicates the permissions from a source file to a target file,
+     * attempting the best possible method for the current operating system.
+     *
+     * @param sourceFile the file to read permissions from.
+     * @param targetFile the file to write permissions to.
+     * @throws IOException if an I/O error occurs.
+     */
+    static public void replicateFilePermissions(Path sourceFile, Path targetFile) throws IOException {
+        // Get the FileSystem's supported attribute views
+        Set<String> supportedViews = sourceFile.getFileSystem().supportedFileAttributeViews();
+
+        if (supportedViews.contains("posix")) {
+            // Priority 1: POSIX systems (Linux, macOS)
+//            System.out.println("Using POSIX file permissions.");
+            try {
+                Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(sourceFile);
+                Files.setPosixFilePermissions(targetFile, permissions);
+                // Optionally copy owner/group as well, if you have the necessary privileges
+                // FileOwnerAttributeView ownerView = Files.getFileAttributeView(source, FileOwnerAttributeView.class);
+                // Files.setOwner(target, ownerView.getOwner());
+            } catch (IOException e) {
+                log.error("Failed to apply POSIX permissions: " + e.getMessage());
+            }
+            return;
+        }
+
+        if (supportedViews.contains("acl")) {
+            // Priority 2: Windows NTFS systems
+//            System.out.println("Using ACL file permissions.");
+            try {
+                AclFileAttributeView aclView = Files.getFileAttributeView(sourceFile, AclFileAttributeView.class);
+                List<AclEntry> aclEntries = aclView.getAcl();
+
+                AclFileAttributeView targetAclView = Files.getFileAttributeView(targetFile, AclFileAttributeView.class);
+                targetAclView.setAcl(aclEntries);
+            } catch (IOException e) {
+                log.error("Failed to apply ACL permissions: " + e.getMessage());
+            }
+            return;
+        }
+
+        if (supportedViews.contains("dos")) {
+            // Priority 3: Basic fallback for older/simpler file systems
+//            System.out.println("Using basic DOS file attributes.");
+            try {
+                DosFileAttributeView sourceDos = Files.getFileAttributeView(sourceFile, DosFileAttributeView.class);
+                DosFileAttributes sourceAttrs = sourceDos.readAttributes();
+
+                DosFileAttributeView targetDos = Files.getFileAttributeView(targetFile, DosFileAttributeView.class);
+                targetDos.setReadOnly(sourceAttrs.isReadOnly());
+                targetDos.setHidden(sourceAttrs.isHidden());
+                targetDos.setSystem(sourceAttrs.isSystem());
+                targetDos.setArchive(sourceAttrs.isArchive());
+            } catch (IOException e) {
+                log.error("Failed to apply DOS attributes: " + e.getMessage());
+            }
+            return;
         }
     }
 

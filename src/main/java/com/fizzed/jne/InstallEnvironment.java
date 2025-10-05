@@ -302,13 +302,14 @@ public class InstallEnvironment {
 
             final List<String> shellLines = new ArrayList<>();
             for (EnvPath path : filteredPaths) {
-                // thre is no prepend/append support for macos
+                // there is no prepend/append support for macos
                 shellLines.add(path.getValue().toString());
             }
 
             final Path targetFile = Paths.get("/etc/paths.d").resolve(this.unitName);
 
             writeLinesToFile(targetFile, shellLines, false);
+
             this.logEnvWritten(targetFile, shellLines, false);
 
             // now we will proceed and allow ZSH, etc. to be setup, but no need to do any env paths, so we'll clear those out
@@ -345,13 +346,8 @@ public class InstallEnvironment {
             // even though we're BASH, the global profile using BOURNE shell syntax
             final List<String> shellLines = this.buildShellLines(ShellType.SH, vars, filteredPaths);
 
-            // if we're appending we need to filter the lines
-            List<String> filteredShellLines = shellLines;
-            if (append) {
-                filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
-            }
+            writeLinesToFileWithSectionBeginAndEndLines(targetFile, shellLines, append);
 
-            writeLinesToFile(targetFile, filteredShellLines, append);
             this.logEnvWritten(targetFile, shellLines, append);
 
             return;     // we are done with bash setup
@@ -364,9 +360,8 @@ public class InstallEnvironment {
 
             final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
-            final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
+            writeLinesToFileWithSectionBeginAndEndLines(targetFile, shellLines, true);
 
-            writeLinesToFile(targetFile, filteredShellLines, true);
             this.logEnvWritten(targetFile, shellLines, true);
 
             return;     // we are done with zsh setup
@@ -384,9 +379,8 @@ public class InstallEnvironment {
 
             final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
-            final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
+            writeLinesToFileWithSectionBeginAndEndLines(targetFile, shellLines, true);
 
-            writeLinesToFile(targetFile, filteredShellLines, true);
             this.logEnvWritten(targetFile, shellLines, true);
 
             return;     // we are done with csh setup
@@ -414,12 +408,8 @@ public class InstallEnvironment {
 
             final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
-            List<String> filteredShellLines = shellLines;
-            if (append) {
-                filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
-            }
+            writeLinesToFileWithSectionBeginAndEndLines(targetFile, shellLines, append);
 
-            writeLinesToFile(targetFile, filteredShellLines, append);
             this.logEnvWritten(targetFile, shellLines, append);
 
             return;     // we are done with ksh setup
@@ -428,15 +418,17 @@ public class InstallEnvironment {
         // hmm... we don't actually know how to handle this shell type
         log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         log.warn("");
-        log.warn("Unable to install environment for shell type {} (we don't have support for it yet)", this.userEnvironment.getShellType());
+        log.warn("Unable to install environment for shell type {} (we don't have support for it yet)", shellType);
         log.warn("");
-        log.warn("You will need to install the following environment variables and paths yourself:");
+        log.warn("You will need to install the following environment variables and paths yourself.");
+        log.warn("Here is some POSIX-compliant example code:");
         log.warn("");
+        final ShellBuilder shellBuilder = new ShellBuilder(ShellType.SH);
         for (EnvVar var : vars) {
-            log.warn("  set var: {}={}", var.getName(), var.getValue());
+            log.warn("  {}", shellBuilder.exportEnvVar(var));
         }
         for (EnvPath path : paths) {
-            log.warn("  add path: {}", path.getValue());
+            log.warn("  {}", shellBuilder.addEnvPath(path));
         }
         log.warn("");
         log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
