@@ -188,4 +188,116 @@ class UtilsTest {
         assertThat(endsWithNewline, is(true));
     }
 
+    @Test
+    public void findLineBytePosition() throws Exception {
+        final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShell.txt");
+
+        long pos;
+
+        pos = Utils.findLineBytePosition(linesExampleShellFile, "Hello World");
+
+        assertThat(pos, is(0L));
+
+        pos = Utils.findLineBytePosition(linesExampleShellFile, "This is cool");
+
+        assertThat(pos, is(13L));
+
+        pos = Utils.findLineBytePosition(linesExampleShellFile, "export PATH=\"$PATH:/test/bin\"");
+
+        assertThat(pos, is(27L));
+
+        pos = Utils.findLineBytePosition(linesExampleShellFile, "not present");
+
+        assertThat(pos, is(-1L));
+    }
+
+    @Test
+    public void writeLinesToFileWithSectionBeginAndEndLinesAppendCase() throws Exception {
+        final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShell.txt");
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.copy(linesExampleShellFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            List<String> lines = asList(
+                "# begin test env",
+                "test case baby!",
+                "# end test env");
+
+            // these should not be found in file, so simply appended
+            Utils.writeLinesToFileWithSectionBeginAndEndLines(tp.getPath(), lines, true);
+
+            assertThat(readFileToString(tp.getPath()).replace("\r", ""), endsWith("# end test env\n"));
+        }
+    }
+
+    @Test
+    public void writeLinesToFileWithSectionBeginAndEndLinesReplaceInMiddleCase() throws Exception {
+        final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShellWithSection.txt");
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.copy(linesExampleShellFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            List<String> lines = asList(
+                "# begin test env",
+                "test case baby!",
+                "# end test env");
+
+            // these should not be found in file, so simply appended
+            Utils.writeLinesToFileWithSectionBeginAndEndLines(tp.getPath(), lines, true);
+
+            String content = readFileToString(tp.getPath()).replace("\r", "");
+            assertThat(content, is("Hello World\n" +
+                "\n" +
+                "# begin test env\n" +
+                "test case baby!\n" +
+                "# end test env\n" +
+                "\n" +
+                "export PATH=\"$PATH:/test/bin\""));
+        }
+    }
+
+    @Test
+    public void writeLinesToFileWithSectionBeginAndEndLinesReplaceInStartCase() throws Exception {
+        final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShellWithSectionStart.txt");
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.copy(linesExampleShellFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            List<String> lines = asList(
+                "# begin test env",
+                "test case baby!",
+                "# end test env");
+
+            // these should not be found in file, so simply appended
+            Utils.writeLinesToFileWithSectionBeginAndEndLines(tp.getPath(), lines, true);
+
+            String content = readFileToString(tp.getPath()).replace("\r", "");
+            assertThat(content, is(
+                "# begin test env\n" +
+                "test case baby!\n" +
+                "# end test env\n" +
+                "export PATH=\"$PATH:/test/bin\""));
+        }
+    }
+
+    @Test
+    public void writeLinesToFileWithSectionBeginAndEndLinesReplaceInEndCase() throws Exception {
+        final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShellWithSectionEnd.txt");
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.copy(linesExampleShellFile, tp.getPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            List<String> lines = asList(
+                "# begin test env",
+                "test case baby!",
+                "# end test env");
+
+            // these should not be found in file, so simply appended
+            Utils.writeLinesToFileWithSectionBeginAndEndLines(tp.getPath(), lines, true);
+
+            String content = readFileToString(tp.getPath()).replace("\r", "");
+            assertThat(content, is(
+                "export PATH=\"$PATH:/test/bin\"\n" +
+                "# begin test env\n" +
+                "test case baby!\n" +
+                "# end test env\n"));
+        }
+    }
+
 }

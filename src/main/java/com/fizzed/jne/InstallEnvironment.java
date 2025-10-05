@@ -342,15 +342,8 @@ public class InstallEnvironment {
                 }
             }
 
-            final List<String> shellLines = new ArrayList<>();
-            for (EnvVar var : vars) {
-                // even though we're BASH, the global profile using BOURNE shell syntax
-                shellLines.add(new ShellBuilder(ShellType.SH).exportEnvVar(var));
-            }
-            for (EnvPath path : filteredPaths) {
-                // even though we're BASH, the global profile using BOURNE shell syntax
-                shellLines.add(new ShellBuilder(ShellType.SH).addEnvPath(path));
-            }
+            // even though we're BASH, the global profile using BOURNE shell syntax
+            final List<String> shellLines = this.buildShellLines(ShellType.SH, vars, filteredPaths);
 
             // if we're appending we need to filter the lines
             List<String> filteredShellLines = shellLines;
@@ -369,13 +362,7 @@ public class InstallEnvironment {
             // since system-wide paths were already installed above, everything nicely now goes into the same file
             final Path targetFile = this.userEnvironment.getHomeDir().resolve(".zprofile");
 
-            final List<String> shellLines = new ArrayList<>();
-            for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
-            }
-            for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
-            }
+            final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
 
@@ -395,13 +382,7 @@ public class InstallEnvironment {
                 }
             }
 
-            final List<String> shellLines = new ArrayList<>();
-            for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
-            }
-            for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
-            }
+            final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
             final List<String> filteredShellLines = filterLinesIfPresentInFile(targetFile, shellLines);
 
@@ -431,13 +412,7 @@ public class InstallEnvironment {
                 }
             }
 
-            final List<String> shellLines = new ArrayList<>();
-            for (EnvVar var : vars) {
-                shellLines.add(new ShellBuilder(shellType).exportEnvVar(var));
-            }
-            for (EnvPath path : filteredPaths) {
-                shellLines.add(new ShellBuilder(shellType).addEnvPath(path));
-            }
+            final List<String> shellLines = this.buildShellLines(shellType, vars, filteredPaths);
 
             List<String> filteredShellLines = shellLines;
             if (append) {
@@ -465,7 +440,29 @@ public class InstallEnvironment {
         }
         log.warn("");
         log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
 
+    private List<String> buildShellLines(ShellType shellType, List<EnvVar> vars, List<EnvPath> paths) {
+        final List<String> shellLines = new ArrayList<>();
+        final ShellBuilder shellBuilder = new ShellBuilder(shellType);
+
+        shellLines.add(shellBuilder.sectionBegin(this.unitName));
+
+        if (vars != null) {
+            for (EnvVar var : vars) {
+                shellLines.add(shellBuilder.exportEnvVar(var));
+            }
+        }
+
+        if (paths != null) {
+            for (EnvPath path : paths) {
+                shellLines.add(shellBuilder.addEnvPath(path));
+            }
+        }
+
+        shellLines.add(shellBuilder.sectionEnd(this.unitName));
+
+        return shellLines;
     }
 
     private void logEnvWritten(Path file, List<String> shellLines, boolean append) {

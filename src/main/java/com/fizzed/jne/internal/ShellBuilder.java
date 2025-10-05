@@ -32,6 +32,19 @@ public class ShellBuilder {
         this.shellType = shellType;
     }
 
+    public String sectionBegin(String unitName) {
+        return this.comment("begin " + unitName + " env (do not edit to end marker)");
+    }
+
+    public String sectionEnd(String unitName) {
+        return this.comment("end " + unitName + " env");
+    }
+
+    public String comment(String message) {
+        // it seems like every shell supports comments this way
+        return "# " + message;
+    }
+
     public String exportEnvVar(EnvVar var) {
         switch (shellType) {
             case SH:

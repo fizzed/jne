@@ -22,10 +22,7 @@ package com.fizzed.jne.internal;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -192,6 +189,202 @@ public class Utils {
         return lines.stream()
             .filter(line -> !linesToRemove.contains(line))
             .collect(Collectors.toList());
+    }
+
+    static public void writeLinesToFileWithSectionBeginAndEndLines(Path file, List<String> lines, boolean appendOrReplace) throws IOException {
+        final StringBuilder sb = new StringBuilder();
+
+        // if we're not appending or replacing, we can simply write the lines and be done
+        if (!appendOrReplace) {
+            for (String line : lines) {
+                sb.append(line).append("\n");
+            }
+
+            Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } else {
+            if (lines == null || lines.size() <= 0) {
+                throw new IllegalArgumentException("Lines cannot be null or empty.");
+            }
+
+            // the first and last lines should be section begin and end lines, let's confirm that
+            final String firstLine = lines.get(0);
+            final String lastLine = lines.get(lines.size() - 1);
+
+            if (!firstLine.contains(" begin ")) {
+                throw new IllegalArgumentException("First line must be a section begin line (was " + firstLine + ")");
+            }
+
+            if (!lastLine.contains(" end ")) {
+                throw new IllegalArgumentException("Last line must be a section end line (was " + lastLine + ")");
+            }
+
+            // search the target file for the section begin line starting byte position
+            final long firstLineBytePos = findLineBytePosition(file, firstLine);
+            final long lastLineBytePos = findLineBytePosition(file, lastLine);
+
+            if (firstLineBytePos >= 0 && lastLineBytePos >= 0) {
+                // we are going to REPLACE the text between the section begin and end lines
+                // no need to calcualte newlines needed, we just build the content and go
+                for (String line : lines) {
+                    sb.append(line).append("\n");
+                }
+                // we need to calculate the end position of the section, which is the last line byte pos + the length of the last line + 1 (for the newline)
+                long replaceEndPos = lastLineBytePos + lastLine.getBytes(StandardCharsets.UTF_8).length + 1;
+                replaceOrAppendBytes(file, sb.toString(), firstLineBytePos, replaceEndPos);
+            } else {
+                // we are going to APPEND the section begin and end lines to the file
+                // we need to calculate the number of newlines needed before the first line
+                int newlinesNeededCount = newlinesNeededForAppending(file);
+                for (int i = 0; i < newlinesNeededCount; i++) {
+                    sb.append("\n");
+                }
+                for (String line : lines) {
+                    sb.append(line).append("\n");
+                }
+                Files.write(file, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+        }
+    }
+
+
+    /**
+     * Atomically replaces a byte range in a file with a new message, or appends
+     * the message if the positions are invalid (-1).
+     *
+     * @param filePath The file to modify.
+     * @param content The message to insert or append.
+     * @param replaceStartPos The starting byte offset (inclusive) for replacement, or -1 for append.
+     * @param replaceEndPos The ending byte offset (exclusive) for replacement.
+     * @throws IOException If an I/O error occurs during processing.
+     * @throws IllegalArgumentException If replacement positions are invalid (e.g., start > end).
+     */
+    static public void replaceOrAppendBytes(Path filePath, String content, long replaceStartPos, long replaceEndPos) throws IOException {
+        final byte[] messageBytes = content.getBytes(StandardCharsets.UTF_8);
+
+        // 1. Handle the simple append case
+        if (replaceStartPos == -1) {
+            // Note: If startPos is -1, we assume append is desired regardless of endPos value.
+            Files.write(filePath, messageBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return;
+        }
+
+        // 2. Validate replacement case positions
+        long fileSize = Files.size(filePath);
+        if (replaceStartPos < 0 || replaceEndPos < 0 || replaceStartPos > replaceEndPos || replaceStartPos > fileSize || replaceEndPos > fileSize) {
+            throw new IllegalArgumentException(
+                String.format("Invalid startPos (%d) or endPos (%d) for file size (%d).", replaceStartPos, replaceEndPos, fileSize)
+            );
+        }
+
+        // Use a temporary file for atomic update
+        final Path tempFile = Files.createTempFile(filePath.getFileName().toString(), ".tmp");
+
+        // We use RandomAccessFile for precise control over reading the original file
+        // and standard streams for writing to the temporary file.
+        try (RandomAccessFile raf = new RandomAccessFile(filePath.toFile(), "r");
+             OutputStream os = Files.newOutputStream(tempFile, StandardOpenOption.WRITE))
+        {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+
+            // --- Part 1: Copy bytes from start (0) up to startPos ---
+            long bytesRemaining = replaceStartPos;
+            while (bytesRemaining > 0) {
+                int bytesToRead = (int) Math.min(buffer.length, bytesRemaining);
+                bytesRead = raf.read(buffer, 0, bytesToRead);
+
+                if (bytesRead < 0) { break; } // Should not happen
+
+                os.write(buffer, 0, bytesRead);
+                bytesRemaining -= bytesRead;
+            }
+
+            // --- Part 2: Write the replacement message ---
+            os.write(messageBytes);
+
+            // --- Part 3: Skip bytes in the original file up to endPos ---
+            raf.seek(replaceEndPos);
+
+            // --- Part 4: Copy remaining bytes from endPos to EOF ---
+            while ((bytesRead = raf.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+        } catch (Exception e) {
+            // If anything fails during processing, ensure the temporary file is deleted
+            Files.deleteIfExists(tempFile);
+            throw e;
+        }
+
+        // --- Final Step: Atomic Replacement ---
+        // ATOMIC_MOVE ensures the file is either fully replaced or the original remains untouched.
+        Files.move(tempFile, filePath, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * Reads a file byte-by-byte, treating the newline character ('\n', byte 10)
+     * as the line separator, and returns the byte offset where the target line starts.
+     * * Note: This method assumes a standard Unix-style line ending ('\n') for separation.
+     * The line content is decoded using UTF-8 for comparison.
+     * * @param filePath The path to the file to search.
+     * @param targetLine The exact string content of the line to find.
+     * @return The starting byte position (0-based offset) of the line, or -1 if not found.
+     * @throws IOException If an I/O error occurs reading the file.
+     */
+    static public long findLineBytePosition(Path filePath, String targetLine) throws IOException {
+
+        // Use try-with-resources to ensure the streams are closed automatically
+        try (InputStream is = Files.newInputStream(filePath, StandardOpenOption.READ);
+             // BufferedInputStream improves read performance
+             BufferedInputStream bis = new BufferedInputStream(is))
+        {
+            ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+            long lineStartOffset = 0;
+            long totalBytesRead = 0;
+            int byteRead;
+
+            // Read the file byte by byte until EOF (-1) is reached
+            while ((byteRead = bis.read()) != -1) {
+                // Increment the absolute byte position counter after processing the byte
+                totalBytesRead++;
+
+                // If the byte is a newline character (ASCII LF = 10)
+                if (byteRead == '\n') {
+                    // Convert the accumulated bytes to a String using UTF-8
+                    String currentLine = lineBuffer.toString(StandardCharsets.UTF_8.name());
+
+                    // Compare the extracted line with the target line
+                    if (currentLine.equals(targetLine)) {
+                        // Match found! Return the offset where the line started.
+                        return lineStartOffset;
+                    }
+
+                    // Prepare for the next line
+                    lineBuffer.reset();
+
+                    // The start of the next line is the current total bytes read position.
+                    // Since we just processed the '\n' byte, the next read will be the start.
+                    // We must calculate the offset *before* incrementing totalBytesRead,
+                    // or after reading the byte, depending on the loop structure.
+                    // In this logic: totalBytesRead is incremented AFTER the read, so
+                    // totalBytesRead is the count of bytes read *up to and including* the newline.
+                    lineStartOffset = totalBytesRead;
+
+                } else {
+                    // Accumulate bytes for the current line
+                    lineBuffer.write(byteRead);
+                }
+            }
+
+            // --- Handle the final line (if file doesn't end with a newline) ---
+            if (lineBuffer.size() > 0) {
+                String finalLine = lineBuffer.toString(StandardCharsets.UTF_8.name());
+                if (finalLine.equals(targetLine)) {
+                    return lineStartOffset;
+                }
+            }
+
+            return -1; // Line not found
+        }
     }
 
     static public void writeLinesToFile(Path file, List<String> lines, boolean append) throws IOException {
