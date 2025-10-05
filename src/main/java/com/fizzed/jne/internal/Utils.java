@@ -340,10 +340,8 @@ public class Utils {
     static public ByteRange findLineByteRange(Path filePath, String targetLine, long startPosition) throws IOException {
 
         // Use try-with-resources to ensure the streams are closed automatically
-        try (InputStream is = Files.newInputStream(filePath, StandardOpenOption.READ);
-             // BufferedInputStream improves read performance
-             BufferedInputStream bis = new BufferedInputStream(is))
-        {
+        try (InputStream is = Files.newInputStream(filePath, StandardOpenOption.READ); BufferedInputStream bis = new BufferedInputStream(is)) {
+
             final long totalBytesSkipped = bis.skip(startPosition);
             final ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
             long lineStartOffset = totalBytesSkipped;
