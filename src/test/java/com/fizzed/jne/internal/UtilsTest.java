@@ -197,14 +197,17 @@ class UtilsTest {
         range = Utils.findLineByteRange(linesExampleShellFile, "Hello World", 0);
 
         assertThat(range.getIndex(), is(0L));
+        assertThat(range.getLength(), is(12L));  // includes newline char
 
         range = Utils.findLineByteRange(linesExampleShellFile, "This is cool", 5);
 
         assertThat(range.getIndex(), is(13L));
+        assertThat(range.getLength(), is(13L));  // includes newline char
 
         range = Utils.findLineByteRange(linesExampleShellFile, "export PATH=\"$PATH:/test/bin\"", 2);
 
         assertThat(range.getIndex(), is(27L));
+        assertThat(range.getLength(), is(29L));  // does NOT include newline char because its the last line in file
 
         range = Utils.findLineByteRange(linesExampleShellFile, "not present", 0);
 
