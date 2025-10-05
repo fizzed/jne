@@ -339,6 +339,8 @@ public class Utils {
      */
     static public ByteRange findLineByteRange(Path filePath, String targetLine, long startPosition) throws IOException {
 
+        final String targetLineTrimmed = targetLine.trim();
+
         // Use try-with-resources to ensure the streams are closed automatically
         try (InputStream is = Files.newInputStream(filePath, StandardOpenOption.READ); BufferedInputStream bis = new BufferedInputStream(is)) {
 
@@ -358,8 +360,8 @@ public class Utils {
                     // Convert the accumulated bytes to a String using UTF-8
                     String currentLine = lineBuffer.toString(StandardCharsets.UTF_8.name());
 
-                    // Compare the extracted line with the target line
-                    if (currentLine.equals(targetLine)) {
+                    // Compare the extracted line with the target line, ignoring any extra whitespace
+                    if (currentLine.trim().equals(targetLineTrimmed)) {
                         // Match found! Return the offset where the line started.
                         return new ByteRange(lineStartOffset, lineBuffer.size() + 1);
                     }
@@ -384,7 +386,7 @@ public class Utils {
             // --- Handle the final line (if file doesn't end with a newline) ---
             if (lineBuffer.size() > 0) {
                 String finalLine = lineBuffer.toString(StandardCharsets.UTF_8.name());
-                if (finalLine.equals(targetLine)) {
+                if (finalLine.trim().equals(targetLineTrimmed)) {
                     return new ByteRange(lineStartOffset, lineBuffer.size());
                 }
             }
