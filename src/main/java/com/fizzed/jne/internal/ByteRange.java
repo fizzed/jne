@@ -37,4 +37,9 @@ public class ByteRange {
         return length;
     }
 
+    @Override
+    public String toString() {
+        return "ByteRange [index=" + index + ", length=" + length + "]";
+    }
+
 }

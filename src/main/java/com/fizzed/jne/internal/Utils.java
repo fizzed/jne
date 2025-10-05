@@ -225,8 +225,12 @@ public class Utils {
 
             // search the target file for the section begin line starting byte position
             final ByteRange firstLineByteRange = findLineByteRange(file, firstLine, 0);
-            final ByteRange lastLineByteRange = findLineByteRange(file, lastLine,
-                firstLineByteRange != null ? firstLineByteRange.getIndex() + firstLineByteRange.getLength() : 0);
+            final long nextLineSearchIndex = firstLineByteRange != null ? firstLineByteRange.getIndex() + firstLineByteRange.getLength() : 0;
+            final ByteRange lastLineByteRange = findLineByteRange(file, lastLine, nextLineSearchIndex);
+
+            log.debug("firstLine: {}", firstLineByteRange);
+            log.debug("nextLineSearchIndex: {}", nextLineSearchIndex);
+            log.debug("lastLine: {}", lastLineByteRange);
 
             if (firstLineByteRange != null && lastLineByteRange != null) {
                 // we are going to REPLACE the text between the section begin and end lines
