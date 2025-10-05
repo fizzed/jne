@@ -39,12 +39,14 @@ public class ShellBuilder {
     public List<String> sectionBegin(String unitName) {
         return asList(
             this.comment("begin " + unitName + " environment"),
-            this.comment("Do not edit any text from begin to end markers")
+            this.comment("do not edit any text from begin to end markers"),
+            this.comment("")
         );
     }
 
     public List<String> sectionEnd(String unitName) {
         return asList(
+            this.comment(""),
             this.comment("end " + unitName + " environment")
         );
     }
