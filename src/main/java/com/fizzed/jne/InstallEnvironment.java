@@ -446,7 +446,7 @@ public class InstallEnvironment {
         final List<String> shellLines = new ArrayList<>();
         final ShellBuilder shellBuilder = new ShellBuilder(shellType);
 
-        shellLines.add(shellBuilder.sectionBegin(this.unitName));
+        shellLines.addAll(shellBuilder.sectionBegin(this.unitName));
 
         if (vars != null) {
             for (EnvVar var : vars) {
@@ -460,7 +460,7 @@ public class InstallEnvironment {
             }
         }
 
-        shellLines.add(shellBuilder.sectionEnd(this.unitName));
+        shellLines.addAll(shellBuilder.sectionEnd(this.unitName));
 
         return shellLines;
     }

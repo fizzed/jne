@@ -219,18 +219,17 @@ public class Utils {
             }
 
             // search the target file for the section begin line starting byte position
-            final long firstLineBytePos = findLineBytePosition(file, firstLine);
-            final long lastLineBytePos = findLineBytePosition(file, lastLine);
+            final ByteRange firstLineByteRange = findLineByteRange(file, firstLine, 0);
+            final ByteRange lastLineByteRange = findLineByteRange(file, lastLine,
+                firstLineByteRange != null ? firstLineByteRange.getIndex() + firstLineByteRange.getLength() : 0);
 
-            if (firstLineBytePos >= 0 && lastLineBytePos >= 0) {
+            if (firstLineByteRange != null && lastLineByteRange != null) {
                 // we are going to REPLACE the text between the section begin and end lines
-                // no need to calcualte newlines needed, we just build the content and go
+                // no need to calc newlines needed, we just build the content and go
                 for (String line : lines) {
                     sb.append(line).append("\n");
                 }
-                // we need to calculate the end position of the section, which is the last line byte pos + the length of the last line + 1 (for the newline)
-                long replaceEndPos = lastLineBytePos + lastLine.getBytes(StandardCharsets.UTF_8).length + 1;
-                replaceOrAppendBytes(file, sb.toString(), firstLineBytePos, replaceEndPos);
+                replaceByteRange(file, sb.toString(), firstLineByteRange.getIndex(), lastLineByteRange.getIndex()+ lastLineByteRange.getLength());
             } else {
                 // we are going to APPEND the section begin and end lines to the file
                 // we need to calculate the number of newlines needed before the first line
@@ -251,25 +250,18 @@ public class Utils {
      * Atomically replaces a byte range in a file with a new message, or appends
      * the message if the positions are invalid (-1).
      *
-     * @param filePath The file to modify.
+     * @param file The file to modify.
      * @param content The message to insert or append.
      * @param replaceStartPos The starting byte offset (inclusive) for replacement, or -1 for append.
      * @param replaceEndPos The ending byte offset (exclusive) for replacement.
      * @throws IOException If an I/O error occurs during processing.
      * @throws IllegalArgumentException If replacement positions are invalid (e.g., start > end).
      */
-    static public void replaceOrAppendBytes(Path filePath, String content, long replaceStartPos, long replaceEndPos) throws IOException {
+    static public void replaceByteRange(Path file, String content, long replaceStartPos, long replaceEndPos) throws IOException {
         final byte[] messageBytes = content.getBytes(StandardCharsets.UTF_8);
 
-        // 1. Handle the simple append case
-        if (replaceStartPos == -1) {
-            // Note: If startPos is -1, we assume append is desired regardless of endPos value.
-            Files.write(filePath, messageBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            return;
-        }
-
         // 2. Validate replacement case positions
-        long fileSize = Files.size(filePath);
+        long fileSize = Files.size(file);
         if (replaceStartPos < 0 || replaceEndPos < 0 || replaceStartPos > replaceEndPos || replaceStartPos > fileSize || replaceEndPos > fileSize) {
             throw new IllegalArgumentException(
                 String.format("Invalid startPos (%d) or endPos (%d) for file size (%d).", replaceStartPos, replaceEndPos, fileSize)
@@ -277,11 +269,11 @@ public class Utils {
         }
 
         // Use a temporary file for atomic update
-        final Path tempFile = Files.createTempFile(filePath.getFileName().toString(), ".tmp");
+        final Path tempFile = Files.createTempFile(file.getFileName().toString(), ".tmp");
 
         // We use RandomAccessFile for precise control over reading the original file
         // and standard streams for writing to the temporary file.
-        try (RandomAccessFile raf = new RandomAccessFile(filePath.toFile(), "r");
+        try (RandomAccessFile raf = new RandomAccessFile(file.toFile(), "r");
              OutputStream os = Files.newOutputStream(tempFile, StandardOpenOption.WRITE))
         {
             byte[] buffer = new byte[8192];
@@ -317,7 +309,7 @@ public class Utils {
 
         // --- Final Step: Atomic Replacement ---
         // ATOMIC_MOVE ensures the file is either fully replaced or the original remains untouched.
-        Files.move(tempFile, filePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -330,16 +322,17 @@ public class Utils {
      * @return The starting byte position (0-based offset) of the line, or -1 if not found.
      * @throws IOException If an I/O error occurs reading the file.
      */
-    static public long findLineBytePosition(Path filePath, String targetLine) throws IOException {
+    static public ByteRange findLineByteRange(Path filePath, String targetLine, long startPosition) throws IOException {
 
         // Use try-with-resources to ensure the streams are closed automatically
         try (InputStream is = Files.newInputStream(filePath, StandardOpenOption.READ);
              // BufferedInputStream improves read performance
              BufferedInputStream bis = new BufferedInputStream(is))
         {
-            ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
-            long lineStartOffset = 0;
-            long totalBytesRead = 0;
+            final long totalBytesSkipped = bis.skip(startPosition);
+            final ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+            long lineStartOffset = totalBytesSkipped;
+            long totalBytesRead = totalBytesSkipped;
             int byteRead;
 
             // Read the file byte by byte until EOF (-1) is reached
@@ -355,7 +348,7 @@ public class Utils {
                     // Compare the extracted line with the target line
                     if (currentLine.equals(targetLine)) {
                         // Match found! Return the offset where the line started.
-                        return lineStartOffset;
+                        return new ByteRange(lineStartOffset, lineBuffer.size() + 1);
                     }
 
                     // Prepare for the next line
@@ -379,11 +372,11 @@ public class Utils {
             if (lineBuffer.size() > 0) {
                 String finalLine = lineBuffer.toString(StandardCharsets.UTF_8.name());
                 if (finalLine.equals(targetLine)) {
-                    return lineStartOffset;
+                    return new ByteRange(lineStartOffset, lineBuffer.size());
                 }
             }
 
-            return -1; // Line not found
+            return null;    // Line not found
         }
     }
 

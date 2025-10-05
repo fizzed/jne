@@ -189,26 +189,26 @@ class UtilsTest {
     }
 
     @Test
-    public void findLineBytePosition() throws Exception {
+    public void findLineByteRange() throws Exception {
         final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShell.txt");
 
-        long pos;
+        ByteRange range;
 
-        pos = Utils.findLineBytePosition(linesExampleShellFile, "Hello World");
+        range = Utils.findLineByteRange(linesExampleShellFile, "Hello World", 0);
 
-        assertThat(pos, is(0L));
+        assertThat(range.getIndex(), is(0L));
 
-        pos = Utils.findLineBytePosition(linesExampleShellFile, "This is cool");
+        range = Utils.findLineByteRange(linesExampleShellFile, "This is cool", 5);
 
-        assertThat(pos, is(13L));
+        assertThat(range.getIndex(), is(13L));
 
-        pos = Utils.findLineBytePosition(linesExampleShellFile, "export PATH=\"$PATH:/test/bin\"");
+        range = Utils.findLineByteRange(linesExampleShellFile, "export PATH=\"$PATH:/test/bin\"", 2);
 
-        assertThat(pos, is(27L));
+        assertThat(range.getIndex(), is(27L));
 
-        pos = Utils.findLineBytePosition(linesExampleShellFile, "not present");
+        range = Utils.findLineByteRange(linesExampleShellFile, "not present", 0);
 
-        assertThat(pos, is(-1L));
+        assertThat(range, is(nullValue()));
     }
 
     @Test

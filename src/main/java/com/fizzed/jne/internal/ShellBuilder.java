@@ -24,6 +24,10 @@ import com.fizzed.jne.EnvPath;
 import com.fizzed.jne.EnvVar;
 import com.fizzed.jne.ShellType;
 
+import java.util.List;
+
+import static java.util.Arrays.asList;
+
 public class ShellBuilder {
 
     private final ShellType shellType;
@@ -32,12 +36,17 @@ public class ShellBuilder {
         this.shellType = shellType;
     }
 
-    public String sectionBegin(String unitName) {
-        return this.comment("begin " + unitName + " env (do not edit to end marker)");
+    public List<String> sectionBegin(String unitName) {
+        return asList(
+            this.comment("begin " + unitName + " environment"),
+            this.comment("Do not edit any text from begin to end markers")
+        );
     }
 
-    public String sectionEnd(String unitName) {
-        return this.comment("end " + unitName + " env");
+    public List<String> sectionEnd(String unitName) {
+        return asList(
+            this.comment("end " + unitName + " environment")
+        );
     }
 
     public String comment(String message) {
