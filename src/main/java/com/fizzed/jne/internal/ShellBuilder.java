@@ -63,6 +63,7 @@ public class ShellBuilder {
             case ZSH:
             case KSH:
                 return "export " + var.getName() + "=\"" + var.getValue() + "\"";
+            case TCSH:
             case CSH:
                 return "setenv " + var.getName() + " \"" + var.getValue() + "\"";
             default:
@@ -86,6 +87,7 @@ public class ShellBuilder {
                 } else {
                     return "[[ ! \"$PATH\" =~ (^|:)" + path.getValue() + "(:|$) ]] && export PATH=\"$PATH:" + path.getValue() + "\"";
                 }
+            case TCSH:
             case CSH:
                 // Since csh/tcsh doesn't support the case statement trick for environment variables like PATH, you must rely on the shell's string matching capabilities (!~).
                 // set newpath = "/path/to/prepend"; if ("$PATH" !~ *${newpath}*) setenv PATH "${newpath}:${PATH}"

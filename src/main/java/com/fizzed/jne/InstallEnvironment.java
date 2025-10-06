@@ -367,9 +367,14 @@ public class InstallEnvironment {
             return;     // we are done with zsh setup
         }
 
-        if (shellType == ShellType.CSH) {
+        if (shellType == ShellType.CSH || shellType == ShellType.TCSH) {
 
+            // if we're a CSH then you'd want your stuff in .cshrc, but if using TCSH, it generally will only load
+            // your stuff from .tcshrc -- however both shells look for global stuff in /etc/csh.cshrc
             Path targetFile = this.userEnvironment.getHomeDir().resolve(".cshrc");
+            if (shellType == ShellType.TCSH) {
+                targetFile = this.userEnvironment.getHomeDir().resolve(".tcshrc");
+            }
             if (this.scope == EnvScope.SYSTEM) {
                 final Path etcCshrcFile = Paths.get("/etc/csh.cshrc");
                 if (Files.exists(etcCshrcFile)) {

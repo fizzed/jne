@@ -28,6 +28,7 @@ public enum ShellType {
     SH,
     BASH,
     ZSH,
+    TCSH,
     CSH,
     KSH,
     CMD,
@@ -39,6 +40,8 @@ public enum ShellType {
                 return ShellType.BASH;
             } else if (text.endsWith("/zsh")) {
                 return ShellType.ZSH;
+            } else if (text.endsWith("/tcsh")) {
+                return ShellType.TCSH;
             } else if (text.endsWith("/csh")) {
                 return ShellType.CSH;
             } else if (text.endsWith("/ksh")) {
