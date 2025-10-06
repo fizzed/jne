@@ -1,5 +1,9 @@
 # Java Native Extractor by Fizzed
 
+## 4.5.2 - 2025-10-06
+
+ - Support for TCSH in shell and install environment
+
 ## 4.5.1 - 2025-10-05
 
  - Use a new begin/end comment strategy for detecting what sections of an environment config file
