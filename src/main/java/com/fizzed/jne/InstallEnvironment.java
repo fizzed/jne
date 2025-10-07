@@ -232,9 +232,6 @@ public class InstallEnvironment {
             throw new IOException("The following environment variables are prohibited from installation: " + blacklistedVars);
         }
 
-        // an empty line for logging what we install
-        log.info("");
-
         if (this.operatingSystem == OperatingSystem.WINDOWS) {
             log.info("Installing the {} environment by modifying the windows registry with the following:", this.scope.toString().toLowerCase());
             log.info("");
@@ -258,9 +255,9 @@ public class InstallEnvironment {
                         envVarCmd.add("/M");
                     }
                     Utils.execAndGetOutput(envVarCmd);
-                    log.info(" set {}={}", var.getName(), var.getValue());
+                    log.info("  set {}={}", var.getName(), var.getValue());
                 } else {
-                    log.info(" set {}={} (skipped as this already was present)", var.getName(), var.getValue());
+                    log.info("  set {}={} (skipped as this already was present)", var.getName(), var.getValue());
                 }
             }
 
@@ -283,9 +280,9 @@ public class InstallEnvironment {
                         envVarCmd.add("/M");
                     }
                     Utils.execAndGetOutput(envVarCmd);
-                    log.info(" added to path {}", path.getValue());
+                    log.info("  {} PATH {}", path.isPrepend() ? "prepend" : "append", path.getValue());
                 } else {
-                    log.info(" added to path {} (skipped as this was already present)", path.getValue());
+                    log.info("  {} PATH {} (skipped as this was already present)", path.isPrepend() ? "prepend" : "append", path.getValue());
                 }
             }
 
@@ -463,8 +460,8 @@ public class InstallEnvironment {
     }
 
     private void logEnvWritten(Path file, List<String> shellLines, boolean append) {
-        final String appendStr = append ? "appending (or confirming already present)" : "writing";
-        log.info("Installed the {} {} environment by {} the following lines to {}:", this.scope.toString().toLowerCase(), this.userEnvironment.getShellType().toString().toLowerCase(), appendStr, file);
+        final String appendStr = append ? "appending/replacing" : "writing";
+        log.info("Installed the {} {} environment by {} the following to {}:", this.scope.toString().toLowerCase(), this.userEnvironment.getShellType().toString().toLowerCase(), appendStr, file);
         log.info("");
         for (String line : shellLines) {
             log.info("  {}", line);

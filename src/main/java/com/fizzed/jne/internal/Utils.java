@@ -338,6 +338,10 @@ public class Utils {
      * @throws IOException If an I/O error occurs reading the file.
      */
     static public ByteRange findLineByteRange(Path filePath, String targetLine, long startPosition) throws IOException {
+        if (!Files.exists(filePath)) {
+            // easy case, file doesn't exist'
+            return null;
+        }
 
         final String targetLineTrimmed = targetLine.trim();
 
@@ -419,6 +423,11 @@ public class Utils {
     }
 
     static public int newlinesNeededForAppending(Path file) throws IOException {
+        if (!Files.exists(file)) {
+            // no file exists, so no newlines needed
+            return 0;
+        }
+
         final StringBuilder currentLine = new StringBuilder();
         int lineCount = 0;
         boolean wasLastLine2Empty = false;

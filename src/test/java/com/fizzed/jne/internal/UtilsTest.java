@@ -190,6 +190,18 @@ class UtilsTest {
     }
 
     @Test
+    public void newlinesNeededForAppendingFileNotExist() throws Exception {
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            // make sure file does not exist
+            Files.deleteIfExists(tp.getPath());
+
+            int newlinesNeeded = Utils.newlinesNeededForAppending(tp.getPath());
+
+            assertThat(newlinesNeeded, is(0));
+        }
+    }
+
+    @Test
     public void findLineByteRange() throws Exception {
         final Path linesExampleShellFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShell.txt");
         // on windows GH, they add '\r' to all newlines, which throws our positioning off
@@ -217,18 +229,36 @@ class UtilsTest {
             range = Utils.findLineByteRange(tp.getPath(), "not present", 0);
 
             assertThat(range, is(nullValue()));
+        }
+    }
 
-            /*final Path linesExampleShelWithSectionlFile = Resources.file("/com/fizzed/jne/internal/LinesExampleShellWithSection.txt");
+    @Test
+    public void findLineByteRangeFileNotExist() throws Exception {
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            Files.deleteIfExists(tp.getPath());
 
-            range = Utils.findLineByteRange(linesExampleShelWithSectionlFile, "# begin test env", 0);
+            ByteRange range;
 
-            assertThat(range.getIndex(), is(13L));
-            assertThat(range.getLength(), is(17L));
+            range = Utils.findLineByteRange(tp.getPath(), "Hello World", 0);
+            assertThat(range, is(nullValue()));
+        }
+    }
 
-            range = Utils.findLineByteRange(linesExampleShelWithSectionlFile, "# end test env", range.getIndex() + range.getLength());
+    @Test
+    public void writeLinesToFileWithSectionBeginAndEndLinesCreateCase() throws Exception {
+        try (TemporaryPath tp = TemporaryPath.tempFile()) {
+            // make sure file does not exist
+            Files.deleteIfExists(tp.getPath());
 
-            assertThat(range.getIndex(), is(51L));
-            assertThat(range.getLength(), is(15L));*/
+            List<String> lines = asList(
+                "# begin test env",
+                "test case baby!",
+                "# end test env");
+
+            // these should not be found in file, so simply appended
+            Utils.writeLinesToFileWithSectionBeginAndEndLines(tp.getPath(), lines, true);
+
+            assertThat(readFileToString(tp.getPath()).replace("\r", ""), is("# begin test env\ntest case baby!\n# end test env\n"));
         }
     }
 
