@@ -1,5 +1,10 @@
 # Java Native Extractor by Fizzed
 
+## 4.5.3 - 2025-10-07
+
+ - If env file does not exist, it will now be created vs. throwing an exception
+ - Small tweaks to logging for env install
+
 ## 4.5.2 - 2025-10-06
 
  - Support for TCSH in shell and install environment
