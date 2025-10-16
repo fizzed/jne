@@ -428,6 +428,84 @@ public class NativeTarget {
         return new NativeTarget(os, arch, abi);
     }
 
+    static public NativeTarget detectFromText(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("JNE target was null or empty");
+        }
+
+        // normalize text to lowercase to make it easier to check
+        String lowerText = text.toLowerCase();
+
+        OperatingSystem detectedOs = null;
+        for (OperatingSystem os : OperatingSystem.values()) {
+            if (lowerText.contains(os.name().toLowerCase())) {
+                detectedOs = os;
+                break;
+            }
+            if (os.getAliases() != null) {
+                for (String alias : os.getAliases()) {
+                    if (lowerText.contains(alias.toLowerCase())) {
+                        detectedOs = os;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if no os detected yet, try the extra aliases now
+        if (detectedOs == null) {
+            for (OperatingSystem os : OperatingSystem.values()) {
+                if (os.getExtraAliases() != null) {
+                    for (String extraAlias : os.getExtraAliases()) {
+                        if (lowerText.contains(extraAlias.toLowerCase())) {
+                            detectedOs = os;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        HardwareArchitecture detectedArch = null;
+        for (HardwareArchitecture arch : HardwareArchitecture.values()) {
+            if (lowerText.contains(arch.name().toLowerCase())) {
+                detectedArch = arch;
+                break;
+            }
+            if (arch.getAliases() != null) {
+                for (String alias : arch.getAliases()) {
+                    if (lowerText.contains(alias.toLowerCase())) {
+                        detectedArch = arch;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (detectedArch == null) {
+            for (HardwareArchitecture arch : HardwareArchitecture.values()) {
+                if (arch.getExtraAliases() != null) {
+                    for (String extraAlias : arch.getExtraAliases()) {
+                        if (lowerText.contains(extraAlias.toLowerCase())) {
+                            detectedArch = arch;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        ABI detectedABI = null;
+        for (ABI abi : ABI.values()) {
+            if (lowerText.contains(abi.name().toLowerCase())) {
+                detectedABI = abi;
+                break;
+            }
+        }
+
+        return NativeTarget.of(detectedOs, detectedArch, detectedABI);
+    }
+
     static public NativeTarget fromJneTarget(String jneTarget) {
         if (jneTarget == null || jneTarget.trim().isEmpty()) {
             throw new IllegalArgumentException("JNE target was null or empty");

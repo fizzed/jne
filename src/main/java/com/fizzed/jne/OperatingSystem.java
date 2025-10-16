@@ -25,9 +25,9 @@ package com.fizzed.jne;
  */
 public enum OperatingSystem {
 
-    WINDOWS("Windows", null),
-    MACOS("MacOS", new String[] { "osx" }, new String[] { "darwin" }),
-    LINUX("Linux", null),
+    WINDOWS("Windows", null, new String[] { "win" }),
+    MACOS("MacOS", new String[] { "osx", "darwin" }, new String[] { "mac" }),
+    LINUX("Linux", null, null),
     FREEBSD("FreeBSD", null),
     OPENBSD("OpenBSD", null),
     NETBSD("NetBSD", null),

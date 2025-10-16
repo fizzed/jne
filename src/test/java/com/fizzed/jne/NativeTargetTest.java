@@ -502,11 +502,11 @@ class NativeTargetTest {
 
         nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.X64, null);
         assertThat(nt.resolveResourcePaths("/jne", "test"),
-            Matchers.is(asList("/jne/macos/x64/test", "/jne/macos/x86_64/test", "/jne/macos/amd64/test", "/jne/osx/x64/test", "/jne/osx/x86_64/test", "/jne/osx/amd64/test")));
+            Matchers.is(asList("/jne/macos/x64/test", "/jne/macos/x86_64/test", "/jne/macos/amd64/test", "/jne/osx/x64/test", "/jne/osx/x86_64/test", "/jne/osx/amd64/test", "/jne/darwin/x64/test", "/jne/darwin/x86_64/test", "/jne/darwin/amd64/test")));
 
         nt = NativeTarget.of(OperatingSystem.MACOS, HardwareArchitecture.ARM64, null);
         assertThat(nt.resolveResourcePaths("/jne", "test"),
-            Matchers.is(asList("/jne/macos/arm64/test", "/jne/macos/aarch64/test", "/jne/osx/arm64/test", "/jne/osx/aarch64/test")));
+            Matchers.is(asList("/jne/macos/arm64/test", "/jne/macos/aarch64/test", "/jne/osx/arm64/test", "/jne/osx/aarch64/test", "/jne/darwin/arm64/test", "/jne/darwin/aarch64/test")));
 
 
 
@@ -560,6 +560,102 @@ class NativeTargetTest {
         nt = NativeTarget.of(OperatingSystem.LINUX, HardwareArchitecture.ARM64, ABI.MUSL);
         assertThat(nt.resolveResourcePaths("/jne", "test"),
             Matchers.is(asList("/jne/linux_musl/arm64/test", "/jne/linux_musl/aarch64/test")));
+    }
+
+    @Test
+    public void detectFromText() {
+        NativeTarget nativeTarget;
+
+        nativeTarget = NativeTarget.detectFromText("https://download.freebsd.org/snapshots/ISO-IMAGES/15.0/FreeBSD-15.0-ALPHA5-arm64-aarch64-20251004-1c0898edf28f-280541-disc1.iso.xz");
+
+        assertThat(nativeTarget.getOperatingSystem(), is(OperatingSystem.FREEBSD));
+        assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(nativeTarget.getAbi(), is(nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("https://cdn.openbsd.org/pub/OpenBSD/7.7/amd64/install77.img");
+
+        assertThat(nativeTarget.getOperatingSystem(), is(OperatingSystem.OPENBSD));
+        assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(nativeTarget.getAbi(), is(nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("https://cdn.openbsd.org/pub/OpenBSD/7.7/riscv64/install77.img");
+
+        assertThat(nativeTarget.getOperatingSystem(), is(OperatingSystem.OPENBSD));
+        assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.RISCV64));
+        assertThat(nativeTarget.getAbi(), is(nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img");
+
+        assertThat(nativeTarget.getOperatingSystem(), is(nullValue()));
+        assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(nativeTarget.getAbi(), is(nullValue()));
+
+        // zulu java examples
+        nativeTarget = NativeTarget.detectFromText("zulu7.56.0.11-ca-jre7.0.352-win_x64.msi");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.WINDOWS));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.X64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("zulu17.54.21-ca-jre17.0.13-c2-linux_aarch32hf.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.ARMHF));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("zulu11.76.21-ca-jdk11.0.25-linux_aarch32sf.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.ARMEL));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("zulu11.76.21-ca-jre11.0.25-solaris_sparcv9.zip");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.SOLARIS));
+        //assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.ARMEL));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("zulu11.76.21-ca-jre11.0.25-solaris_sparcv9.zip");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.SOLARIS));
+        //assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.ARMEL));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("zulu8.82.0.23-ca-hl-jdk8.0.432-linux_ppc64.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        //assertThat(nativeTarget.getHardwareArchitecture(), is(HardwareArchitecture.ARMEL));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        // liberica java examples
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-windows-i586.zip");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.WINDOWS));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.X32));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-macos-amd64.zip");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.MACOS));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.X64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-macos-aarch64.zip");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.MACOS));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.ARM64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-linux-x64-musl.apk");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.X64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(ABI.MUSL));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-linux-riscv64.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.RISCV64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-linux-arm32-vfp-hflt.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.ARMHF));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
+
+        nativeTarget = NativeTarget.detectFromText("bellsoft-jre21.0.2+14-linux-amd64.tar.gz");
+        assertThat(nativeTarget.getOperatingSystem(), Matchers.is(OperatingSystem.LINUX));
+        assertThat(nativeTarget.getHardwareArchitecture(), Matchers.is(HardwareArchitecture.X64));
+        assertThat(nativeTarget.getAbi(), Matchers.is(Matchers.nullValue()));
     }
 
 }
