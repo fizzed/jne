@@ -1,5 +1,10 @@
 # Java Native Extractor by Fizzed
 
+## 4.6.0 - 2025-10-21
+
+ - NativeTarget.detectFromText method available to guess the target from an arbitrary string of text
+ - Bump maven parent to v3.2.0
+
 ## 4.5.3 - 2025-10-07
 
  - If env file does not exist, it will now be created vs. throwing an exception
