@@ -129,6 +129,15 @@ public class InstallEnvironment {
 
     // these are dynamic based on the roots
 
+    /**
+     * Retrieves the application directory based on the operating system and application-specific properties.
+     *
+     * On Windows, this method resolves the directory by appending the application name to the root directory.
+     * On macOS, it appends the application name with a ".app" extension to the root directory.
+     * On other operating systems, it resolves the directory by appending a unit name to the root directory.
+     *
+     * @return the resolved application directory as a {@code Path}, based on the current operating system.
+     */
     public Path getApplicationDir() {
         if (operatingSystem == OperatingSystem.WINDOWS) {
             return applicationRootDir.resolve(this.applicationName);
@@ -139,6 +148,16 @@ public class InstallEnvironment {
         }
     }
 
+    /**
+     * Retrieves the system's binary directory path based on the operating system.
+     * On Windows, it returns the root system directory. On other operating systems,
+     * it appends "bin" to the root system directory.
+     *
+     * @return the path to the system's binary directory. For example:
+     *         - On Windows: it may return something like "C:\Windows\System32"".
+     *         - On Linux/Unix-based systems: it may return something like "/usr/bin",
+     *           assuming the root directory is "/usr".
+     */
     public Path getSystemBinDir() {
         if (operatingSystem == OperatingSystem.WINDOWS) {
             return this.systemRootDir;
@@ -147,6 +166,14 @@ public class InstallEnvironment {
         }
     }
 
+    /**
+     * Retrieves the system share directory path based on the operating system.
+     * On Windows, it returns the root system directory. For other operating systems,
+     * it appends "share" to the root system directory path.
+     *
+     * @return the path to the system's shared directory. On Windows, this is the root system directory;
+     *         on other operating systems, this is the root system directory followed by "share".
+     */
     public Path getSystemShareDir() {
         if (operatingSystem == OperatingSystem.WINDOWS) {
             return this.systemRootDir;
@@ -155,6 +182,16 @@ public class InstallEnvironment {
         }
     }
 
+    /**
+     * Retrieves the local application directory path by resolving the unit name
+     * against the local root directory.
+     *
+     * This method combines the local root directory path with the unit name to return
+     * a specific application directory path.
+     *
+     * @return a {@code Path} object representing the resolved local application directory
+     * based on the root directory and the unit name.
+     */
     public Path getLocalApplicationDir() {
         return this.localRootDir.resolve(this.unitName);
     }
@@ -207,10 +244,46 @@ public class InstallEnvironment {
         return dir;
     }
 
+    /**
+     * Installs the environment using the specified list of environment paths.
+     * This method initializes or installs required resources associated with the
+     * given environment paths. It delegates to another method to handle further
+     * installation configuration with additional parameters if necessary.
+     *
+     * Example usage:
+     *   installEnv(paths);
+     *
+     * @param paths the list of environment paths to be installed. Each path in the
+     *              list represents a specific resource or configuration required
+     *              for the environment setup.
+     * @throws IOException if an I/O error occurs during the installation process.
+     * @throws InterruptedException if the thread executing the process is interrupted.
+     */
     public void installEnv(List<EnvPath> paths) throws IOException, InterruptedException {
         this.installEnv(paths, Collections.emptyList());
     }
 
+    /**
+     * Installs environment paths (e.g., system `PATH`) and variables into the user's
+     * or system's environment configuration depending on the specified scope. The method
+     * adapts to different operating systems (e.g., Windows, macOS, Linux) and shells
+     * (e.g., BASH, ZSH, CSH).
+     *
+     * Changes may include updating the Windows registry, modifying shell profile files
+     * (e.g., .bashrc, .zshrc), or writing to system-wide configuration paths.
+     *
+     * Throws an exception if certain restricted environment variables are attempted to be installed.
+     *
+     * Example usage: Installing a custom PATH or environment variable for a user on a UNIX-like system.
+     *
+     * @param paths A list of {@code EnvPath} objects representing paths to be added to the environment variable PATH.
+     *              Each path can specify whether it should be prepended or appended.
+     * @param vars  A list of {@code EnvVar} objects representing the environment variables to be added to the environment.
+     *              Each variable includes a name and value.
+     * @throws IOException If there is an error modifying files (e.g., shell profiles), accessing the registry,
+     *                     or attempting to install prohibited variables.
+     * @throws InterruptedException If any required processes (e.g., executing external commands) are interrupted.
+     */
     public void installEnv(List<EnvPath> paths, List<EnvVar> vars) throws IOException, InterruptedException {
         // to simplify method, null values swapped with empty lists
         paths = ofNullable(paths).orElseGet(Collections::emptyList);
@@ -519,14 +592,84 @@ public class InstallEnvironment {
         return blacklistedVars;
     }
 
+    /**
+     * Detects and returns an {@code InstallEnvironment} object based on the provided application name
+     * and unit name. This method uses a default environment scope of {@code EnvScope.SYSTEM}.
+     * It configures the installation environment by identifying the operating system and setting up
+     * application installation paths and properties accordingly.
+     *
+     * @param applicationName the name of the application. This should not be null and is used for
+     *                        determining application-specific installation paths.
+     * @param unitName the unique identifier for the application unit. This should be in lowercase,
+     *                 should not include spaces, and may contain letters, numbers, hyphens, or underscores.
+     * @return an {@code InstallEnvironment} object preconfigured with operating system details,
+     *         application name, unit name, and a default system-wide scope. The object includes paths
+     *         and properties tied to application installation.
+     *
+     * Example Usage:
+     * - If the application name is "MyApp" and the unit name is "my_app", this method might return an
+     *   {@code InstallEnvironment} object configured for a system-wide installation, with directories
+     *   such as {@code /usr/local/MyApp} or equivalent system paths depending on the OS.
+     */
     static public InstallEnvironment detect(String applicationName, String unitName) {
         return detect(applicationName, unitName, EnvScope.SYSTEM);
     }
 
+    /**
+     * Detects and returns an {@code InstallEnvironment} object based on the provided application name,
+     * unit name, and environmental scope. This method utilizes the logical user environment
+     * automatically detected by the system to configure application installation paths and parameters
+     * appropriately for the underlying operating system and scope.
+     *
+     * @param applicationName the name of the application. This should not be null and is used for identifying
+     *                        and setting application-specific installation paths.
+     * @param unitName the unique identifier for the application unit. This should be in lowercase, not include
+     *                 spaces, and may comprise letters, numbers, hyphens, or underscores. It is used for
+     *                 determining the installation directory structure.
+     * @param scope the scope of the environment, specifying whether the installation is user-specific
+     *              ({@code EnvScope.USER}) or system-wide ({@code EnvScope.SYSTEM}). This affects where
+     *              application-specific files and directories are created.
+     * @return an {@code InstallEnvironment} object that is initialized based on the detected operating
+     *         system, application name, unit name, and the provided scope. The returned object contains
+     *         configuration details such as installation directories and environment-specific properties.
+     *
+     * Example Usage:
+     * - For a user-specific environment:
+     *   When {@code scope} is {@code EnvScope.USER}, the returned {@code InstallEnvironment} object may
+     *   include directories like {@code ~/.local} for Linux.
+     *
+     * - For a system-wide installation:
+     *   When {@code scope} is {@code EnvScope.SYSTEM}, the directories in the returned {@code InstallEnvironment}
+     *   object may correspond to paths such as {@code /usr/local} or {@code C:\Program Files}.
+     */
     static public InstallEnvironment detect(String applicationName, String unitName, EnvScope scope) {
         return detect(applicationName, unitName, scope, UserEnvironment.detectLogical());
     }
 
+    /**
+     * Detects the installation environment based on the provided application name, unit name,
+     * scope, and user environment details. This method identifies the operating system
+     * and adjusts the installation paths and configurations accordingly.
+     *
+     * @param applicationName the name of the application. This value must not be null.
+     * @param unitName the unique, lowercase identifier for the application unit.
+     *                 It must not include spaces, and can contain letters, numbers, hyphens, or underscores.
+     * @param scope the scope of the environment, either {@code EnvScope.SYSTEM} or {@code EnvScope.USER}.
+     * @param userEnvironment the user's environment details used for determining user-specific installation paths.
+     * @return an {@code InstallEnvironment} object configured with details specific to the detected
+     *         operating system, the provided scope, and user environment.
+     * @throws IllegalArgumentException if {@code applicationName} or {@code unitName} is null, or
+     *                                  if {@code unitName} does not follow naming rules.
+     *
+     * Example Usage:
+     * - For a user-specific environment:
+     *   Calling this method with scope set to {@code EnvScope.USER} will return an {@code InstallEnvironment}
+     *   object where installation directories may point to user-specific paths such as {@code ~/.local} for Linux.
+     *
+     * - For a system-wide installation on macOS:
+     *   Calling this method with scope set to {@code EnvScope.SYSTEM} may set directories like
+     *   {@code /usr/local} or {@code /Application}.
+     */
     static public InstallEnvironment detect(String applicationName, String unitName, EnvScope scope, UserEnvironment userEnvironment) {
         if (applicationName == null || unitName == null) {
             throw new IllegalArgumentException("applicationName and unitName must not be null");
