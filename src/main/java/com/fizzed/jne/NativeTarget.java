@@ -67,11 +67,39 @@ public class NativeTarget {
         }
     }
 
+    /**
+     * Determines and returns the file extension commonly used for executable files
+     * on the current operating system of the machine.
+     * This method internally checks the operating system to infer the appropriate
+     * file extension, such as ".exe" for Windows or an empty string for Unix-based systems.
+     *
+     * Example usage:
+     * A Windows operating system will return ".exe".
+     * A Linux operating system may return an empty string as executables usually do not have specific extensions.
+     *
+     * @return A string representing the executable file extension specific to the operating system.
+     *         Returns ".exe" for Windows, an empty string for Unix-based systems, or other extensions
+     *         specific to different operating systems.
+     */
     public String getExecutableFileExtension() {
         this.checkOperatingSystem();
         return getExecutableFileExtension(this.operatingSystem);
     }
 
+    /**
+     * Determines the executable file extension for a given operating system.
+     * The method currently supports returning the extension for the Windows operating system.
+     *
+     * Example usage:
+     *
+     * OperatingSystem os = OperatingSystem.WINDOWS;
+     * String extension = getExecutableFileExtension(os);
+     * // extension would be ".exe"
+     *
+     * @param os the operating system for which the executable file extension is to be retrieved
+     * @return the executable file extension as a string for the given operating system,
+     *         or null if the operating system is not supported
+     */
     static public String getExecutableFileExtension(OperatingSystem os) {
         if (os == OperatingSystem.WINDOWS) {
             return ".exe";
@@ -79,11 +107,32 @@ public class NativeTarget {
         return null;
     }
 
+    /**
+     * Resolves the full executable file name based on the provided name and the operating system in use.
+     * This method first ensures the operating system is checked or set, then resolves the full path
+     * or any necessary extension for the given name of the executable. Commonly used to handle
+     * platform-specific variations in executable names (e.g., appending ".exe" on Windows).
+     *
+     * @param name the base name of the executable file without any platform-specific modifications
+     *             or extensions (e.g., "program").
+     * @return the resolved executable file name, potentially including a file extension or path
+     *         specific to the detected operating system (e.g., "program.exe" on Windows, "program" on Unix).
+     */
     public String resolveExecutableFileName(String name) {
         this.checkOperatingSystem();
         return resolveExecutableFileName(this.operatingSystem, name);
     }
 
+    /**
+     * Resolves the executable file name for the specified operating system by appending
+     * the appropriate executable file extension if one exists. If the operating system
+     * does not have a specific executable file extension, the provided name is returned as is.
+     *
+     * @param os the operating system for which the executable file name needs to be resolved.
+     * @param name the base name of the executable file, which should not be null.
+     * @return the resolved executable file name, which may include an operating system-specific
+     *         extension or remain unchanged if no extension is applicable.
+     */
     static public String resolveExecutableFileName(OperatingSystem os, String name) {
         Objects.requireNonNull(name, "name was null");
 
@@ -96,11 +145,32 @@ public class NativeTarget {
         return name;
     }
 
+    /**
+     * Determines and returns the appropriate file extension for library files
+     * based on the operating system of the environment where the application is running.
+     * It first checks the current operating system using {@code checkOperatingSystem()}
+     * and then delegates to {@code getLibraryFileExtension(String operatingSystem)}
+     * to retrieve the corresponding extension.
+     *
+     * @return a {@code String} representing the file extension for the library files
+     *         on the current operating system. For example, it may return ".dll" for Windows,
+     *         ".so" for Linux, or ".dylib" for macOS.
+     */
     public String getLibraryFileExtension() {
         this.checkOperatingSystem();
         return getLibraryFileExtension(this.operatingSystem);
     }
 
+    /**
+     * Determines the appropriate file extension for dynamic library files based on the specified operating system.
+     * The method returns file extensions specific to the operating system, such as ".dll" for Windows,
+     * ".so" for Linux, and ".dylib" for macOS. If the operating system is unrecognized, the method returns null.
+     *
+     * @param os The operating system for which the library file extension is being determined. Must not be null.
+     * @return A string representing the file extension for dynamic library files. This could be:
+     *         ".dll" for Windows, ".so" for Linux-based systems (Linux, FreeBSD, OpenBSD, Solaris), or ".dylib" for macOS.
+     *         Returns null if the operating system is not recognized.
+     */
     static public String getLibraryFileExtension(OperatingSystem os) {
         switch (os) {
             case WINDOWS:
@@ -117,11 +187,34 @@ public class NativeTarget {
         }
     }
 
+    /**
+     * Resolves the complete file name for a dynamic library based on the target operating system
+     * and the provided base library name. This method uses the current instance's operating system
+     * to determine the appropriate file extension and appends it to the given library name.
+     *
+     * @param name The base name of the library without any file extension. Must not be null.
+     * @return A string representing the full library file name with the correct file extension appended.
+     *         The result may vary depending on the operating system, e.g., "name.dll" for Windows,
+     *         "libname.so" for Linux, or "libname.dylib" for macOS. If the operating system is
+     *         unrecognized, the base name is returned unchanged.
+     * @throws NullPointerException If the name parameter is null.
+     */
     public String resolveLibraryFileName(String name) {
         this.checkOperatingSystem();
         return resolveLibraryFileName(this.operatingSystem, name);
     }
 
+    /**
+     * Resolves the appropriate dynamic library file name for a given operating system and library base name.
+     * The method appends the correct file extension to the library's base name based on the specified operating system.
+     *
+     * @param os The operating system for which the library file name is being resolved. Must not be null.
+     * @param name The base name of the library without any file extension. Must not be null.
+     * @return A string representing the complete library file name, including the appropriate file extension
+     *         (e.g., ".dll" for Windows, "lib" + ".so" for Linux, and "lib" + ".dylib" for macOS).
+     *         If the operating system is unrecognized, the base name is returned unchanged.
+     * @throws NullPointerException If the name parameter is null.
+     */
     static public String resolveLibraryFileName(OperatingSystem os, String name) {
         Objects.requireNonNull(name, "name was null");
 
@@ -140,6 +233,21 @@ public class NativeTarget {
         }
     }
 
+    /**
+     * Converts the current hardware architecture, operating system, and ABI (Application Binary Interface)
+     * into a Rust target triple string. The Rust target triple format adheres to the structure:
+     * {@code <arch><sub>-<vendor>-<os>-<abi/env>}.
+     *
+     * This method determines the appropriate architecture prefix and vendor/OS/ABI suffix
+     * based on the specified hardware architecture, operating system, and ABI of the current instance.
+     * If an unsupported hardware architecture or operating system is encountered, an
+     * {@link IllegalArgumentException} is thrown.
+     *
+     * @return The Rust target triple string combining architecture, vendor, operating system, and ABI.
+     *         For example: {@code x86_64-unknown-linux-gnu}.
+     * @throws IllegalArgumentException If the hardware architecture or operating system is unsupported
+     *                                   or if either of them is null.
+     */
     public String toRustTarget() {
         this.checkHardwareArchitecture();
         this.checkOperatingSystem();
@@ -356,6 +464,19 @@ public class NativeTarget {
         }
     }
 
+    /**
+     * Converts a hardware architecture to its JNE (Java Native Execution) compatible
+     * string representation. If a hardware architecture alias is provided, it returns
+     * the alias in lowercase. Otherwise, it returns the name of the
+     * hardware architecture in lowercase.
+     *
+     * @param hardwareArchitecture The hardware architecture to be converted.
+     *                             Must not be null.
+     * @param hardwareArchitectureAlias An alias for the hardware architecture,
+     *                                  which, if provided, takes precedence over
+     *                                  the hardwareArchitecture parameter.
+     * @return A string representing the hardware architecture or its alias in lowercase.
+     */
     static public String toJneArch(HardwareArchitecture hardwareArchitecture, String hardwareArchitectureAlias) {
         if (hardwareArchitectureAlias != null) {
             return hardwareArchitectureAlias.toLowerCase();
@@ -364,6 +485,18 @@ public class NativeTarget {
         }
     }
 
+    /**
+     * Resolves and generates a list of resource paths based on the provided resource prefix
+     * and resource name. The generated paths include combinations of operating system aliases,
+     * architectural aliases, and the specified name, formatted hierarchically.
+     *
+     * @param resourcePrefix The prefix for the resource path. This typically represents the base
+     *                       directory or identifier for the resources.
+     * @param name The name of the resource to be resolved in the paths.
+     *             This value is always appended to the generated paths.
+     * @return A list of strings where each string represents a resolved resource path. The paths
+     *         incorporate combinations of operating system and hardware architecture details.
+     */
     public List<String> resolveResourcePaths(String resourcePrefix, String name) {
         final List<String> jneOsAbis = new ArrayList<>();
 
@@ -417,15 +550,125 @@ public class NativeTarget {
         return resourcePaths;
     }
 
+    /**
+     * Creates and returns a {@link NativeTarget} instance based on the specified operating system,
+     * hardware architecture, and application binary interface (ABI).
+     *
+     * @param os The operating system of the target. Must not be null.
+     * @param arch The hardware architecture of the target. Must not be null.
+     * @param abi The application binary interface (ABI) for the target. Must not be null.
+     * @return A new {@link NativeTarget} object with the specified operating system, hardware architecture,
+     *         and ABI.
+     * @throws IllegalArgumentException If any of the parameters are null.
+     */
     static public NativeTarget of(OperatingSystem os, HardwareArchitecture arch, ABI abi) {
         return new NativeTarget(os, arch, abi);
     }
 
+    /**
+     * Detects and returns a {@link NativeTarget} instance representing the current system's
+     * operating system, hardware architecture, and application binary interface (ABI).
+     * This method gathers system information by utilizing the {@link PlatformInfo} utility
+     * to identify the underlying components of the environment.
+     *
+     * @return A {@link NativeTarget} object containing the detected operating system,
+     *         hardware architecture, and ABI based on the current platform.
+     */
     static public NativeTarget detect() {
         final OperatingSystem os = PlatformInfo.detectOperatingSystem();
         final HardwareArchitecture arch = PlatformInfo.detectHardwareArchitecture();
         final ABI abi = PlatformInfo.detectAbi(os);
         return new NativeTarget(os, arch, abi);
+    }
+
+    /**
+     * Detects a {@link NativeTarget} by parsing the provided text. This method attempts to identify
+     * the operating system, hardware architecture, and ABI (Application Binary Interface) from the
+     * given input text by matching it against known names, aliases, and additional identifiers.
+     *
+     * @param text The input text to analyze for operating system, architecture, and ABI information.
+     *             Must not be null or empty.
+     * @return A {@link NativeTarget} object containing the detected operating system, hardware
+     *         architecture, and ABI. If the input text does not match any known values for these
+     *         attributes, the corresponding components in the {@link NativeTarget} may be null.
+     * @throws IllegalArgumentException If the input text is null or empty.
+     */
+    static public NativeTarget detectFromText(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("JNE target was null or empty");
+        }
+
+        // normalize text to lowercase to make it easier to check
+        String lowerText = text.toLowerCase();
+
+        OperatingSystem detectedOs = null;
+        for (OperatingSystem os : OperatingSystem.values()) {
+            if (lowerText.contains(os.name().toLowerCase())) {
+                detectedOs = os;
+                break;
+            }
+            if (os.getAliases() != null) {
+                for (String alias : os.getAliases()) {
+                    if (lowerText.contains(alias.toLowerCase())) {
+                        detectedOs = os;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if no os detected yet, try the extra aliases now
+        if (detectedOs == null) {
+            for (OperatingSystem os : OperatingSystem.values()) {
+                if (os.getExtraAliases() != null) {
+                    for (String extraAlias : os.getExtraAliases()) {
+                        if (lowerText.contains(extraAlias.toLowerCase())) {
+                            detectedOs = os;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        HardwareArchitecture detectedArch = null;
+        for (HardwareArchitecture arch : HardwareArchitecture.values()) {
+            if (lowerText.contains(arch.name().toLowerCase())) {
+                detectedArch = arch;
+                break;
+            }
+            if (arch.getAliases() != null) {
+                for (String alias : arch.getAliases()) {
+                    if (lowerText.contains(alias.toLowerCase())) {
+                        detectedArch = arch;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (detectedArch == null) {
+            for (HardwareArchitecture arch : HardwareArchitecture.values()) {
+                if (arch.getExtraAliases() != null) {
+                    for (String extraAlias : arch.getExtraAliases()) {
+                        if (lowerText.contains(extraAlias.toLowerCase())) {
+                            detectedArch = arch;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        ABI detectedABI = null;
+        for (ABI abi : ABI.values()) {
+            if (lowerText.contains(abi.name().toLowerCase())) {
+                detectedABI = abi;
+                break;
+            }
+        }
+
+        return NativeTarget.of(detectedOs, detectedArch, detectedABI);
     }
 
     static public NativeTarget fromJneTarget(String jneTarget) {

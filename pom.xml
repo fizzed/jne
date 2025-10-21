@@ -3,14 +3,14 @@
 
     <artifactId>jne</artifactId>
     <packaging>jar</packaging>
-    <version>4.5.4-SNAPSHOT</version>
+    <version>4.5.5-SNAPSHOT</version>
     <name>jne</name>
     <description>Utility library for extracting native resources embedded in jars such as executables, dynamic libraries, or other files on Windows, Linux, and Mac.</description>
   
     <parent>
         <groupId>com.fizzed</groupId>
         <artifactId>maven-parent</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
     </parent>
     
     <scm>

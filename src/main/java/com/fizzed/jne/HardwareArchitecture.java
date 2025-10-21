@@ -27,8 +27,8 @@ public enum HardwareArchitecture {
 
     X32("x32", new String[] { "i386", "i586", "i686" }, new String[] { "x86" }),
     X64("x64", new String[] { "x86_64", "amd64" }),   // also known as amd64 or x86_64
-    ARMEL("armel", null, new String[] { "arm32v5", "arm32v6" }),                        // ARMEL, ARM 32-bit SF v6, v7, v5
-    ARMHF("armhf", null, new String[] { "arm32v7", "armv7l" }),                        // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
+    ARMEL("armel", null, new String[] { "arm32v5", "arm32v6", "aarch32sf" }),                        // ARMEL, ARM 32-bit SF v6, v7, v5
+    ARMHF("armhf", null, new String[] { "arm32v7", "armv7l", "arm32-vfp-hflt", "aarch32hf" }),       // ARMHF stands for "ARM hard float", and is the name given to a Debian port for ARM processors (armv7+) that have hardware floating point support, which is found on most modern 32-bit ARM boards
     ARM64("arm64", new String[] { "aarch64" }, new String[] { "arm64v8" }),          // used by docker
     RISCV64("riscv64", null, new String[] { "riscv64gc" }),                    // used by llvm
     MIPS64LE("mips64le", new String[] { "mips64el" }),
