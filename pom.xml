@@ -3,7 +3,7 @@
 
     <artifactId>jne</artifactId>
     <packaging>jar</packaging>
-    <version>4.5.4-SNAPSHOT</version>
+    <version>4.5.4</version>
     <name>jne</name>
     <description>Utility library for extracting native resources embedded in jars such as executables, dynamic libraries, or other files on Windows, Linux, and Mac.</description>
   
@@ -16,7 +16,7 @@
     <scm>
         <url>https://github.com/fizzed/jne</url>
         <connection>scm:git:git@github.com:fizzed/jne.git</connection>
-        <tag>HEAD</tag>
+        <tag>v4.5.4</tag>
     </scm>
     
     <properties>
