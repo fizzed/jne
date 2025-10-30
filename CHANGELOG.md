@@ -1,5 +1,9 @@
 # Java Native Extractor by Fizzed
 
+## 4.6.1 - 2025-10-30
+ 
+ - Add support for installing environment to shell type SH
+
 ## 4.6.0 - 2025-10-21
 
  - NativeTarget.detectFromText method available to guess the target from an arbitrary string of text
