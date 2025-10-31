@@ -1,5 +1,9 @@
 # Java Native Extractor by Fizzed
 
+## 4.6.2 - 2025-10-30
+
+ - Add support for installing environment to shell type ASH
+
 ## 4.6.1 - 2025-10-30
  
  - Add support for installing environment to shell type SH
