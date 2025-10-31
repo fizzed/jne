@@ -461,7 +461,7 @@ public class InstallEnvironment {
             return;     // we are done with csh setup
         }
 
-        if (shellType == ShellType.KSH || shellType == ShellType.SH) {
+        if (shellType == ShellType.KSH || shellType == ShellType.ASH || shellType == ShellType.SH) {
 
             // for ksh, usually its /etc/profile.d/file.sh, then /etc/profile, then ~/.profile -- but on most openbsd
             // systems, /etc/profile.d and /etc/profile do not exist :-( -- so we'll check for them here first

@@ -31,6 +31,7 @@ public enum ShellType {
     TCSH,
     CSH,
     KSH,
+    ASH,
     CMD,
     PS;
 
@@ -46,6 +47,8 @@ public enum ShellType {
                 return ShellType.CSH;
             } else if (text.endsWith("/ksh")) {
                 return ShellType.KSH;
+            } else if (text.endsWith("/ash")) {
+                return ShellType.ASH;
             } else if (text.endsWith("/sh")) {
                 return ShellType.SH;
             }
