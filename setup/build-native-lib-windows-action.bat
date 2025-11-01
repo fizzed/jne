@@ -33,7 +33,8 @@ if "%BUILDARCH%"=="arm64" (
 @call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCVARSALLARCH%
 
 mkdir target
-rsync -avrt --delete ./native/ ./target/
+@REM -a or -t to rsync caused permissions issues on build
+rsync -vr --delete ./native/ ./target/
 
 set
 
