@@ -84,49 +84,26 @@ public class blaze extends PublicBlaze {
     }
 
     private final List<Target> crossBuildTargets = asList(
-        //
         // Linux
-        //
-
         new Target("linux", "x64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-x64"),
         new Target("linux", "arm64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-arm64"),
         new Target("linux", "riscv64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux-riscv64"),
         new Target("linux", "armhf").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armhf"),
         new Target("linux", "armel").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armel"),
-
-        //
         // Linux (w/ MUSL)
-        //
-
         new Target("linux_musl", "x64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-x64"),
         new Target("linux_musl", "arm64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-arm64"),
         new Target("linux_musl", "riscv64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux_musl-riscv64"),
-
-        //
         // FreeBSD
-        //
-
         new Target("freebsd", "x64").setTags("build").setHost("bmh-build-x64-freebsd-baseline"),
         new Target("freebsd", "arm64").setTags("build").setHost("bmh-build-arm64-freebsd-baseline"),
-
-        //
-        // OpenBSD
-        //
-
-        new Target("openbsd", "x64").setTags("build").setHost("bmh-build-x64-openbsd-latest"),
-        new Target("openbsd", "arm64").setTags("build").setHost("bmh-build-arm64-openbsd-latest"),
-
-        //
         // MacOS
-        //
-
         new Target("macos", "x64").setTags("build").setHost("bmh-build-x64-macos-baseline"),
         new Target("macos", "arm64").setTags("build").setHost("bmh-build-arm64-macos-baseline"),
-
-        //
+        // OpenBSD
+        new Target("openbsd", "x64").setTags("build").setHost("bmh-build-x64-openbsd-latest"),
+        new Target("openbsd", "arm64").setTags("build").setHost("bmh-build-arm64-openbsd-latest"),
         // Windows
-        //
-
         new Target("windows", "x64").setTags("build").setHost("bmh-build-x64-windows-latest"),
         new Target("windows", "arm64").setTags("build").setHost("bmh-build-x64-windows-latest")
     );
@@ -147,21 +124,15 @@ public class blaze extends PublicBlaze {
     public void cross_build_natives() throws Exception {
         new Buildx(crossBuildTargets)
             .tags("build")
+            .parallel()
             .execute((target, project) -> {
-                /*String buildScript = "setup/build-native-lib-linux-action.sh";
-                if (target.getOs().equals("macos")) {
-                    buildScript = "setup/build-native-lib-macos-action.sh";
-                } else if (target.getOs().equals("windows")) {
-                    buildScript = "setup/build-native-lib-windows-action.bat";
-                }
-
-                project.action(buildScript, target.getOs(), target.getArch()).run();*/
-
-                project.action("java", "-jar", "blaze.jar", "build_natives", "--target", target.getOsArch()).run();
+                project.action("java", "-jar", "blaze.jar", "build_natives", "--target", target.getOsArch())
+                    .run();
 
                 // we know that the only modified file will be in the artifact dir
                 final String artifactRelPath = "src/test/resources/jne/" + target.getOs() + "/" + target.getArch() + "/";
-                project.rsync(artifactRelPath, artifactRelPath).run();
+                project.rsync(artifactRelPath, artifactRelPath)
+                    .run();
             });
     }
 
@@ -171,6 +142,18 @@ public class blaze extends PublicBlaze {
         return super.crossTestTargets().stream()
             //.filter(v -> !v.getOs().contains("openbsd"))
             .collect(Collectors.toList());
+    }
+
+    public void cross_tests_parallel() throws Exception {
+        new Buildx(this.crossTestTargets())
+            .tags("test")
+            .parallel()
+            .execute((target, project) -> {
+                project.action("echo", "hello world").run();
+                /*project.action("mvn", "clean", "test")
+                    .verbose()
+                    .run();*/
+            });
     }
 
 }

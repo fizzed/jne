@@ -4,3 +4,4 @@
 native/libhelloj/helloj/HelloLib.class
 .buildx
 .buildx-cache
+.buildx-logs
