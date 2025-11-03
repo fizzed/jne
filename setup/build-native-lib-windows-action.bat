@@ -35,6 +35,7 @@ if "%BUILDARCH%"=="arm64" (
 mkdir target
 @REM -a or -t to rsync caused permissions issues on build
 rsync -vr --delete ./native/ ./target/
+@REMI xcopy ".\native\" ".\target\" /S /E /Y
 
 set
 

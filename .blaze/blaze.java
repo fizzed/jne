@@ -122,9 +122,11 @@ public class blaze extends PublicBlaze {
 
     @Task(order = 51)
     public void cross_build_natives() throws Exception {
+        final boolean parallel = this.config.flag("parallel").orElse(false);
+
         new Buildx(crossBuildTargets)
             .tags("build")
-            .parallel()
+            .parallel(parallel)
             .execute((target, project) -> {
                 project.action("java", "-jar", "blaze.jar", "build_natives", "--target", target.getOsArch())
                     .run();
@@ -144,15 +146,16 @@ public class blaze extends PublicBlaze {
             .collect(Collectors.toList());
     }
 
-    public void cross_tests_parallel() throws Exception {
+    public void cross_tests_v2() throws Exception {
+        final boolean parallel = this.config.flag("parallel").orElse(false);
+
         new Buildx(this.crossTestTargets())
             .tags("test")
-            .parallel()
+            .parallel(parallel)
             .execute((target, project) -> {
-                project.action("echo", "hello world").run();
-                /*project.action("mvn", "clean", "test")
+                project.action("mvn", "clean", "test")
                     .verbose()
-                    .run();*/
+                    .run();
             });
     }
 
