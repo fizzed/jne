@@ -5,23 +5,16 @@ import com.fizzed.blaze.project.PublicBlaze;
 import com.fizzed.buildx.Buildx;
 import com.fizzed.buildx.ContainerBuilder;
 import com.fizzed.buildx.Target;
-import com.fizzed.jne.JavaHome;
-import com.fizzed.jne.JavaHomeFinder;
 import com.fizzed.jne.NativeTarget;
 import com.fizzed.jne.OperatingSystem;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.fizzed.blaze.Contexts.fail;
 import static com.fizzed.blaze.Contexts.withBaseDir;
 import static com.fizzed.blaze.Systems.*;
 import static com.fizzed.blaze.util.Globber.globber;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 
 @TaskGroup(value="project", name="Project", order=1)
 @TaskGroup(value="maintainers", name="Maintainers Only", order=2)
