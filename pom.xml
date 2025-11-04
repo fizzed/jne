@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.fizzed</groupId>
         <artifactId>maven-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
     </parent>
     
     <scm>
@@ -24,7 +24,7 @@
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <!-- workaround travis ci maven version requirement -->
         <maven.enforce.version>3.2.5</maven.enforce.version>
-        <license.skip>false</license.skip>
+        <license.skip>true</license.skip>
         <main.java.package>com.fizzed.jne</main.java.package>
     </properties>
 
