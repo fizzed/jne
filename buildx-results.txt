@@ -3,12 +3,30 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: 51a1203a4e5472948b72baaa5f4dabae3f9e540a
-Date: 2025-11-04T12:35:25.158007765Z[UTC]
+Commit: 6c2a5cc5a1372143fcc16ac8c638e21d3bc0d701
+Date: 2025-11-04T20:02:16.373576515Z[UTC]
 
-jdk-21 (JDK 21.0.8 (/usr/local/openjdk21))                                 success
-jdk-17 (JDK 17.0.16 (/usr/local/openjdk17))                                success
-jdk-11 (JDK 11.0.27 (/usr/local/openjdk11))                                success
-jdk-8 (JDK 8.0.462 (/usr/local/openjdk8))                                  success
+linux-x64 (Ubuntu 24.04)................................................... success
+linux-x64 (Ubuntu 20.04)................................................... success
+
+Details =>
+
+linux-x64 (Ubuntu 24.04)
+  status: success
+  tags: [latest]
+  host:
+    name: bmh-build-x64-linux-latest
+    os: LINUX
+    arch: X64
+    uname: Linux bmh-build-x64-ubuntu24-1 6.8.0-87-generic #88-Ubuntu SMP PREEMPT_DYNAMIC Sat Oct 11 09:28:41 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+linux-x64 (Ubuntu 20.04)
+  status: success
+  tags: [baseline]
+  host:
+    name: bmh-build-x64-linux-baseline
+    os: LINUX
+    arch: X64
+    uname: Linux bmh-build-x64-ubuntu20-1 5.4.0-216-generic #236-Ubuntu SMP Fri Apr 11 19:53:21 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
 
 ====================================================================================================

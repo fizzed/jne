@@ -1,5 +1,6 @@
 import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
+import com.fizzed.blaze.TaskGroup;
 import com.fizzed.blaze.project.PublicBlaze;
 import com.fizzed.buildx.Buildx;
 import com.fizzed.buildx.ContainerBuilder;
@@ -22,20 +23,22 @@ import static com.fizzed.blaze.util.Globber.globber;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
+@TaskGroup(value="project", name="Project", order=1)
+@TaskGroup(value="maintainers", name="Maintainers Only", order=2)
 public class blaze extends PublicBlaze {
 
     private final NativeTarget localNativeTarget = NativeTarget.detect();
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
 
-    @Task(order = 0)
+    @Task(group="project", order = 0)
     public void demo_detect_javas() throws Exception {
         // mvn process-test-classes exec:exec -Dexec.classpathScope=test -Dexec.executable=java -Dexec.args="-cp %classpath com.fizzed.jne.JavaHomesDemo"
         exec("mvn", "process-test-classes", "exec:exec",
             "-Dexec.classpathScope=test", "-Dexec.executable=java", "-Dexec.args=-cp %classpath com.fizzed.jne.JavaHomesDemo").run();
     }
 
-    @Task(order = 1)
+    @Task(group="project", order = 1)
     public void build_natives() throws Exception {
         final String targetStr = Contexts.config().value("target").orNull();
         final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
@@ -76,17 +79,12 @@ public class blaze extends PublicBlaze {
         cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
     }
 
-    @Task(order = 2)
-    public void test() throws Exception {
-        exec("mvn", "test")
-            .workingDir(this.projectDir)
-            .verbose()
-            .run();
-    }
-
-    @Task(order = 3)
-    public void clean() throws Exception {
+    @Task(group="project", order = 3)
+    public void nuke() throws Exception {
         rm(this.targetDir).recursive().force().verbose().run();
+        rm(this.projectDir.resolve(".buildx")).recursive().force().verbose().run();
+        rm(this.projectDir.resolve(".buildx-cache")).recursive().force().verbose().run();
+        rm(this.projectDir.resolve(".buildx-logs")).recursive().force().verbose().run();
     }
 
     private final List<Target> crossBuildTargets = asList(
@@ -114,10 +112,11 @@ public class blaze extends PublicBlaze {
         new Target("windows", "arm64").setTags("build").setHost("bmh-build-x64-windows-latest")
     );
 
-    @Task(order = 50)
+    @Task(group="maintainers", order = 50)
     public void cross_build_containers() throws Exception {
-        new Buildx(crossBuildTargets)
+        new Buildx(this.crossBuildTargets)
             .containersOnly()
+            .resultsFile(null)              // do not write results file out
             .execute((target, project) -> {
                 // no customization needed
                 project.buildContainer(new ContainerBuilder()
@@ -126,14 +125,16 @@ public class blaze extends PublicBlaze {
             });
     }
 
-    @Task(order = 51)
+    @Task(group="maintainers", order = 51)
     public void cross_build_natives() throws Exception {
         final boolean serial = this.config.flag("serial").orElse(false);
 
-        new Buildx(crossBuildTargets)
+        new Buildx(this.crossBuildTargets)
             .tags("build")
             .parallel(!serial)
+            .resultsFile(null)              // do not write results file out
             .execute((target, project) -> {
+                // target name is like "linux-x64" which represents the os-arch we want to build a native for
                 final String os = target.getName().split("-")[0];
                 final String arch = target.getName().split("-")[1];
 
@@ -143,80 +144,6 @@ public class blaze extends PublicBlaze {
                 // we know that the only modified file will be in the artifact dir
                 final String artifactRelPath = "src/test/resources/jne/" + os + "/" + arch + "/";
                 project.rsync(artifactRelPath, artifactRelPath)
-                    .run();
-            });
-    }
-
-    @Override
-    protected List<Target> crossTestTargets() {
-        // everything but openbsd
-        return super.crossTestTargets().stream()
-            //.filter(v -> !v.getOs().contains("openbsd"))
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public void cross_tests() throws Exception {
-        final boolean serial = this.config.flag("serial").orElse(false);
-
-        new Buildx(this.crossTestTargets())
-            .tags("test")
-            .parallel(!serial)
-            .execute((target, project) -> {
-                project.exec("mvn", "clean", "test")
-                    .run();
-            });
-    }
-
-    public void cross_jdk_tests() throws Exception {
-        final boolean serial = this.config.flag("serial").orElse(false);
-
-        // dynamically build the target list
-        final int[] javaVersions = this.supportedJavaVersions();
-        final String jdkVersionStr = Arrays.stream(javaVersions).mapToObj(Integer::toString).collect(joining(", "));
-        final long start = System.currentTimeMillis();
-        final List<JavaHome> javaHomes = new ArrayList<>();
-        for (final int javaVersion : javaVersions) {
-            final JavaHome jdkHome = new JavaHomeFinder()
-                .jdk()
-                .version(javaVersion)
-                .preferredDistributions()
-                .sorted()
-                .tryFind()
-                .orElse(null);
-
-            if (jdkHome != null) {
-                javaHomes.add(jdkHome);
-            }
-        }
-
-        log.info("");
-        log.info("Detected JDKs for {} (in {} ms)", jdkVersionStr, (System.currentTimeMillis()-start));
-        for (JavaHome javaHome : javaHomes) {
-            log.info("  {}", javaHome);
-        }
-        log.info("");
-
-        if (javaHomes.isEmpty()) {
-            fail("No JDKs found matching versions " + jdkVersionStr);
-        }
-
-        final List<Target> crossJdkTargets = new ArrayList<>();
-        for (JavaHome javaHome : javaHomes) {
-            final Target target = new Target("jdk-" + javaHome.getVersion().getMajor())
-                .setDescription(javaHome.toString())
-                .putData("java_home", javaHome.getDirectory());
-
-            crossJdkTargets.add(target);
-        }
-
-        new Buildx(crossJdkTargets)
-            .parallel(!serial)
-            .execute((target, project) -> {
-                // leverage the "java_home" data key to pass the java home to the test
-                project.exec("mvn", "clean", "test")
-                    .workingDir(this.projectDir)
-                    .env("JAVA_HOME", target.getData().get("java_home").toString())
                     .run();
             });
     }
