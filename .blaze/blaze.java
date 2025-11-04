@@ -201,18 +201,19 @@ public class blaze extends PublicBlaze {
             fail("No JDKs found matching versions " + jdkVersionStr);
         }
 
-        final List<Target> crossJdkTargets = javaHomes.stream()
-            .map(v -> {
-                return new Target("jdk-" + v.getVersion().getMajor())
-                    .setDescription(v.getDistribution().getDescriptor() + " " + v.getVersion().toString())
-                    .putData("java_home", v.getDirectory())
-                    .putData("java", v.toString());
-            })
-            .collect(Collectors.toList());
+        final List<Target> crossJdkTargets = new ArrayList<>();
+        for (JavaHome javaHome : javaHomes) {
+            final Target target = new Target("jdk-" + javaHome.getVersion().getMajor())
+                .setDescription(javaHome.toString())
+                .putData("java_home", javaHome.getDirectory());
+
+            crossJdkTargets.add(target);
+        }
 
         new Buildx(crossJdkTargets)
             .parallel(!serial)
             .execute((target, project) -> {
+                // leverage the "java_home" data key to pass the java home to the test
                 project.exec("mvn", "clean", "test")
                     .workingDir(this.projectDir)
                     .env("JAVA_HOME", target.getData().get("java_home").toString())
