@@ -3,13 +3,12 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: 3695425d5f3276ec0d16052fda13a65705bd8f71
-Date: 2025-11-04T11:45:05.738126766Z[UTC]
+Commit: 51a1203a4e5472948b72baaa5f4dabae3f9e540a
+Date: 2025-11-04T12:35:25.158007765Z[UTC]
 
-jdk-25 (Zulu 25.0.1)                                                       success
-jdk-21 (Zulu 21.0.8)                                                       success
-jdk-17 (Zulu 17.0.16)                                                      success
-jdk-11 (Zulu 11.0.28)                                                      success
-jdk-8 (Zulu 8.0.462)                                                       success
+jdk-21 (JDK 21.0.8 (/usr/local/openjdk21))                                 success
+jdk-17 (JDK 17.0.16 (/usr/local/openjdk17))                                success
+jdk-11 (JDK 11.0.27 (/usr/local/openjdk11))                                success
+jdk-8 (JDK 8.0.462 (/usr/local/openjdk8))                                  success
 
 ====================================================================================================
