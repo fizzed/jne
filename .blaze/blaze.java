@@ -3,7 +3,6 @@ import com.fizzed.blaze.Task;
 import com.fizzed.blaze.TaskGroup;
 import com.fizzed.blaze.project.PublicBlaze;
 import com.fizzed.buildx.Buildx;
-import com.fizzed.buildx.ContainerBuilder;
 import com.fizzed.buildx.Target;
 import com.fizzed.jne.NativeTarget;
 import com.fizzed.jne.OperatingSystem;
@@ -24,14 +23,14 @@ public class blaze extends PublicBlaze {
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
 
-    @Task(group="project", order = 0)
+    @Task(group="project", order = 0, value="Runs a demo of detecting all JDKs on this host")
     public void demo_detect_javas() throws Exception {
         // mvn process-test-classes exec:exec -Dexec.classpathScope=test -Dexec.executable=java -Dexec.args="-cp %classpath com.fizzed.jne.JavaHomesDemo"
         exec("mvn", "process-test-classes", "exec:exec",
             "-Dexec.classpathScope=test", "-Dexec.executable=java", "-Dexec.args=-cp %classpath com.fizzed.jne.JavaHomesDemo").run();
     }
 
-    @Task(group="project", order = 1)
+    @Task(group="project", order = 1, value="Builds native libraries and executables for the local os/arch")
     public void build_natives() throws Exception {
         final String targetStr = Contexts.config().value("target").orNull();
         final NativeTarget nativeTarget = targetStr != null ? NativeTarget.fromJneTarget(targetStr) : NativeTarget.detect();
@@ -72,7 +71,7 @@ public class blaze extends PublicBlaze {
         cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
     }
 
-    @Task(group="project", order = 3)
+    @Task(group="project", order = 3, value="Cleans up project target and cache dirs")
     public void nuke() throws Exception {
         rm(this.targetDir).recursive().force().verbose().run();
         rm(this.projectDir.resolve(".buildx")).recursive().force().verbose().run();
@@ -82,50 +81,35 @@ public class blaze extends PublicBlaze {
 
     private final List<Target> crossBuildTargets = asList(
         // Linux
-        new Target("linux", "x64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-x64"),
-        new Target("linux", "arm64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-arm64"),
-        new Target("linux", "riscv64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux-riscv64"),
-        new Target("linux", "armhf").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armhf"),
-        new Target("linux", "armel").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armel"),
+        new Target("linux", "x64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-x64"),
+        new Target("linux", "arm64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-arm64"),
+        new Target("linux", "riscv64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux-riscv64"),
+        new Target("linux", "armhf").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armhf"),
+        new Target("linux", "armel").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux-armel"),
         // Linux (w/ MUSL)
-        new Target("linux_musl", "x64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-x64"),
-        new Target("linux_musl", "arm64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-arm64"),
-        new Target("linux_musl", "riscv64").setTags("build").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux_musl-riscv64"),
+        new Target("linux_musl", "x64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-x64"),
+        new Target("linux_musl", "arm64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu16-jdk11-buildx-linux_musl-arm64"),
+        new Target("linux_musl", "riscv64").setTags("container").setContainerImage("docker.io/fizzed/buildx:x64-ubuntu18-jdk11-buildx-linux_musl-riscv64"),
         // FreeBSD
-        new Target("freebsd", "x64").setTags("build").setHost("bmh-build-x64-freebsd-baseline"),
-        new Target("freebsd", "arm64").setTags("build").setHost("bmh-build-arm64-freebsd-baseline"),
+        new Target("freebsd", "x64").setTags("host").setHost("bmh-build-x64-freebsd-baseline"),
+        new Target("freebsd", "arm64").setTags("host").setHost("bmh-build-arm64-freebsd-baseline"),
         // MacOS
-        new Target("macos", "x64").setTags("build").setHost("bmh-build-x64-macos-baseline"),
-        new Target("macos", "arm64").setTags("build").setHost("bmh-build-arm64-macos-baseline"),
+        new Target("macos", "x64").setTags("host").setHost("bmh-build-x64-macos-baseline"),
+        new Target("macos", "arm64").setTags("host").setHost("bmh-build-arm64-macos-baseline"),
         // OpenBSD
-        new Target("openbsd", "x64").setTags("build").setHost("bmh-build-x64-openbsd-latest"),
-        new Target("openbsd", "arm64").setTags("build").setHost("bmh-build-arm64-openbsd-latest"),
+        new Target("openbsd", "x64").setTags("host").setHost("bmh-build-x64-openbsd-latest"),
+        new Target("openbsd", "arm64").setTags("host").setHost("bmh-build-arm64-openbsd-latest"),
         // Windows
-        new Target("windows", "x64").setTags("build").setHost("bmh-build-x64-windows-latest"),
-        new Target("windows", "arm64").setTags("build").setHost("bmh-build-x64-windows-latest")
+        new Target("windows", "x64").setTags("host").setHost("bmh-build-x64-windows-latest"),
+        new Target("windows", "arm64").setTags("host").setHost("bmh-build-x64-windows-latest")
     );
 
-    @Task(group="maintainers", order = 50)
-    public void cross_build_containers() throws Exception {
-        new Buildx(this.crossBuildTargets)
-            .containersOnly()
-            .resultsFile(null)              // do not write results file out
-            .execute((target, project) -> {
-                // no customization needed
-                project.buildContainer(new ContainerBuilder()
-                    //.setCache(false)
-                );
-            });
-    }
-
-    @Task(group="maintainers", order = 51)
+    @Task(group="maintainers", order = 51, value="Builds native libraries and executables for various os/arch combos")
     public void cross_build_natives() throws Exception {
         final boolean serial = this.config.flag("serial").orElse(false);
 
         new Buildx(this.crossBuildTargets)
-            .tags("build")
             .parallel(!serial)
-            .resultsFile(null)              // do not write results file out
             .execute((target, project) -> {
                 // target name is like "linux-x64" which represents the os-arch we want to build a native for
                 final String os = target.getName().split("-")[0];
