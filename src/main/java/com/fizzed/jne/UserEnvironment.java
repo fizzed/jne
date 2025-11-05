@@ -145,6 +145,8 @@ public class UserEnvironment {
                     if ("0".equals(output)) {
                         userEnvironment.elevated = true;
                     }
+                    // we also should set this to the uid
+                    userEnvironment.userId = Integer.valueOf(output);
                 } catch (Exception e) {
                     // we will just ignore the output
                 }
@@ -162,7 +164,16 @@ public class UserEnvironment {
         // first, if we're on a linux/unix/bsd environment, /etc/passwd will have what we want
         final EtcPasswd etcPasswd = EtcPasswd.detect();
         if (etcPasswd != null) {
-            final EtcPasswd.Entry entry = etcPasswd.findEntryByUserName(userEnvironment.user);
+            EtcPasswd.Entry entry = null;
+
+            // try to find by user first
+            entry = etcPasswd.findEntryByUserName(userEnvironment.user);
+
+            // if not found, do we have a user id to lookup by instead?
+            if (entry == null && userEnvironment.userId != null) {
+                entry = etcPasswd.findEntryByUserId(userEnvironment.userId);
+            }
+
             if (entry != null) {
                 log.debug("Using /etc/passwd for detecting user environment for {}", userEnvironment.user);
                 userEnvironment.homeDir = Paths.get(entry.getHome());

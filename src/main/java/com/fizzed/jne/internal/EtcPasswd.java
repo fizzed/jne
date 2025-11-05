@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class EtcPasswd {
@@ -46,8 +47,23 @@ public class EtcPasswd {
     }
 
     public Entry findEntryByUserName(String userName) {
+        if (userName == null) {
+            return null;
+        }
         for (Entry entry : entries) {
-            if (entry.getUsername().equals(userName)) {
+            if (Objects.equals(entry.getUsername(), userName)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public Entry findEntryByUserId(Integer userId) {
+        if (userId == null) {
+            return null;
+        }
+        for (Entry entry : entries) {
+            if (Objects.equals(entry.getUserId(), userId)) {
                 return entry;
             }
         }
