@@ -3,9 +3,10 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: 58271cff479f5763f11f7705a234b3525c9a56c5
-Date: 2025-11-04T21:55:30.861942948Z[UTC]
+Commit: fbec036968cdef12fe4bf904907ed4201bdb45bd
+Date: 2025-11-05T14:54:49.930346058Z[UTC]
 
+linux-x64 (Ubuntu 22.04)................................................... success
 linux-x64 (Ubuntu 24.04)................................................... success
 linux-x64 (Ubuntu 20.04)................................................... success
 linux-arm64 (Ubuntu 24.04)................................................. success
@@ -31,6 +32,16 @@ openbsd-x64 (OpenBSD 7.8).................................................. succ
 openbsd-arm64 (OpenBSD 7.8)................................................ success
 
 Details =>
+
+linux-x64 (Ubuntu 22.04)
+  status: success
+  tags: [container]
+  containerImage: docker.io/fizzed/buildx:x64-ubuntu22-jdk21
+  host:
+    name: null
+    os: LINUX
+    arch: X64
+    uname: Linux bmh-jjlauer-4 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux
 
 linux-x64 (Ubuntu 24.04)
   status: success
@@ -223,7 +234,7 @@ freebsd-arm64 (FreeBSD 14)
 
 openbsd-x64 (OpenBSD 7.8)
   status: success
-  tags: [latest, test]
+  tags: [latest]
   host:
     name: bmh-build-x64-openbsd-latest
     os: OPENBSD
@@ -232,7 +243,7 @@ openbsd-x64 (OpenBSD 7.8)
 
 openbsd-arm64 (OpenBSD 7.8)
   status: success
-  tags: [latest, test]
+  tags: [latest]
   host:
     name: bmh-build-arm64-openbsd-latest
     os: OPENBSD
