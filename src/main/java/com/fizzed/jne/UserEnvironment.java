@@ -175,6 +175,11 @@ public class UserEnvironment {
             }
 
             if (entry != null) {
+                // do we need to set the user too?
+                if (userEnvironment.user == null) {
+                    userEnvironment.user = entry.getUsername();
+                }
+
                 log.debug("Using /etc/passwd for detecting user environment for {}", userEnvironment.user);
                 userEnvironment.homeDir = Paths.get(entry.getHome());
                 userEnvironment.userId = entry.getUserId();
