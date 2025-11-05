@@ -109,6 +109,8 @@ public class blaze extends PublicBlaze {
             final Map<String,String> preEnv = parseEnvVars(preEnvOutput);
 
             // now call vcvarsall.bat, grab the adjusted env vars
+            log.info("Loading visual studio variables for {} from {}", vcVarsArch, vcVarsAllBatFile);
+
             final String postEnvOutput = exec("cmd", "/c", "\"call \"" + vcVarsAllBatFile + "\" " + vcVarsArch + " & set\"")
                 .runCaptureOutput(false)
                 .toString();
