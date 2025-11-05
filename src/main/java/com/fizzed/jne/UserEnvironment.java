@@ -141,7 +141,7 @@ public class UserEnvironment {
             } else {
                 // e.g. id -u is zero
                 try {
-                    String output = Utils.execAndGetOutput(asList("id", "-u"));
+                    String output = Utils.execAndGetOutput(asList("id", "-u")).trim();
                     if ("0".equals(output)) {
                         userEnvironment.elevated = true;
                     }
