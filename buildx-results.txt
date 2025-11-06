@@ -3,8 +3,8 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: f34dc4cf6c3a93267a80093413e8ed37122219c5
-Date: 2025-11-05T15:07:54.827383687Z[UTC]
+Commit: 369328e98296758e707745d02238e6b500a5ddea
+Date: 2025-11-05T22:19:20.051604143Z[UTC]
 
 jdk-25 (Zulu JDK 25.0.1 (Linux, x64, /usr/lib/jvm/zulu-jdk-25.0.1.8))...... success
 jdk-21 (Zulu JDK 21.0.8 (Linux, x64, /usr/lib/jvm/zulu-jdk-21.0.8.9))...... success

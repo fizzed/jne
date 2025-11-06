@@ -1,6 +1,10 @@
 import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
 import com.fizzed.blaze.TaskGroup;
+import com.fizzed.blaze.incubating.VcVars;
+import com.fizzed.blaze.maven.MavenClasspath;
+import com.fizzed.blaze.maven.MavenProject;
+import com.fizzed.blaze.maven.MavenProjects;
 import com.fizzed.blaze.project.PublicBlaze;
 import com.fizzed.buildx.Buildx;
 import com.fizzed.buildx.Target;
@@ -8,10 +12,14 @@ import com.fizzed.jne.NativeTarget;
 import com.fizzed.jne.OperatingSystem;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
 import static com.fizzed.blaze.Contexts.withBaseDir;
 import static com.fizzed.blaze.Systems.*;
+import static com.fizzed.blaze.Systems.exec;
+import static com.fizzed.blaze.incubating.VisualStudios.vcVars;
+import static com.fizzed.blaze.incubating.VisualStudios.vcVarsExec;
+import static com.fizzed.blaze.maven.MavenProjects.mavenClasspath;
 import static com.fizzed.blaze.util.Globber.globber;
 import static java.util.Arrays.asList;
 
@@ -24,10 +32,14 @@ public class blaze extends PublicBlaze {
     private final Path targetDir = projectDir.resolve("target");
 
     @Task(group="project", order = 0, value="Runs a demo of detecting all JDKs on this host")
-    public void demo_detect_javas() throws Exception {
-        // mvn process-test-classes exec:exec -Dexec.classpathScope=test -Dexec.executable=java -Dexec.args="-cp %classpath com.fizzed.jne.JavaHomesDemo"
-        exec("mvn", "process-test-classes", "exec:exec",
-            "-Dexec.classpathScope=test", "-Dexec.executable=java", "-Dexec.args=-cp %classpath com.fizzed.jne.JavaHomesDemo").run();
+    public void demo_java_homes() throws Exception {
+        final MavenProject maven = MavenProjects.mavenProject(withBaseDir("../pom.xml")).run();
+
+        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile")
+            .run();
+
+        exec("java", "-cp", classpath, "com.fizzed.jne.JavaHomesDemo")
+            .run();
     }
 
     @Task(group="project", order = 1, value="Builds native libraries and executables for the local os/arch")
@@ -48,11 +60,18 @@ public class blaze extends PublicBlaze {
         final String libname = nativeTarget.resolveLibraryFileName("helloj");
 
         if (nativeTarget.getOperatingSystem() == OperatingSystem.WINDOWS) {
-            // unfortunately its easiest to delegate this to helper script
-            exec("setup/build-native-lib-windows-action.bat", nativeTarget.toJneOsAbi(), nativeTarget.toJneArch())
-                .workingDir(this.projectDir)
-                .verbose()
-                .run();
+            // we may be cross-compiling so we pass the arch we want
+            try (VcVars vcVars = vcVars().arch(nativeTarget.getHardwareArchitecture().name()).verbose().run()) {
+                log.info("Building jcat executable...");
+                vcVarsExec(vcVars, "nmake", "-f", "VCMakefile")
+                    .workingDir(targetJcatDir)
+                    .run();
+
+                log.info("Building helloj library...");
+                vcVarsExec(vcVars, "nmake", "-f", "VCMakefile")
+                    .workingDir(targetLibHelloJDir)
+                    .run();
+            }
         } else {
             String cmd = "make";
             // freebsd and openbsd, we need to use gmake
