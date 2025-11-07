@@ -27,16 +27,27 @@ public class blaze extends PublicBlaze {
 
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
+    private final MavenProject maven = MavenProjects.mavenProject(withBaseDir("../pom.xml")).run();
 
     @Task(group="project", order=0, value="Runs a demo of detecting all JDKs on this host")
     public void demo_java_homes() throws Exception {
-        final MavenProject maven = MavenProjects.mavenProject(withBaseDir("../pom.xml")).run();
+        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile").run();
 
-        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile")
-            .run();
+        exec("java", "-cp", classpath, "com.fizzed.jne.JavaHomesDemo").run();
+    }
 
-        exec("java", "-cp", classpath, "com.fizzed.jne.JavaHomesDemo")
-            .run();
+    @Task(group="project", order=0)
+    public void demo_user_environment() throws Exception {
+        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile").run();
+
+        exec("java","-cp", classpath, "com.fizzed.jne.UserEnvironmentDemo").run();
+    }
+
+    @Task(group="project", order=0)
+    public void demo_platform_info() throws Exception {
+        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile").run();
+
+        exec("java","-cp", classpath, "com.fizzed.jne.PlatformInfoDemo").run();
     }
 
     @Task(group="project", order = 1, value="Builds native libraries and executables for the local os/arch")
