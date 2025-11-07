@@ -1,6 +1,5 @@
 import com.fizzed.blaze.Contexts;
 import com.fizzed.blaze.Task;
-import com.fizzed.blaze.TaskGroup;
 import com.fizzed.blaze.incubating.VcVars;
 import com.fizzed.blaze.maven.MavenClasspath;
 import com.fizzed.blaze.maven.MavenProject;
@@ -23,15 +22,13 @@ import static com.fizzed.blaze.maven.MavenProjects.mavenClasspath;
 import static com.fizzed.blaze.util.Globber.globber;
 import static java.util.Arrays.asList;
 
-@TaskGroup(value="project", name="Project", order=1)
-@TaskGroup(value="maintainers", name="Maintainers Only", order=2)
+
 public class blaze extends PublicBlaze {
 
-    private final NativeTarget localNativeTarget = NativeTarget.detect();
     private final Path nativeDir = projectDir.resolve("native");
     private final Path targetDir = projectDir.resolve("target");
 
-    @Task(group="project", order = 0, value="Runs a demo of detecting all JDKs on this host")
+    @Task(group="project", order=0, value="Runs a demo of detecting all JDKs on this host")
     public void demo_java_homes() throws Exception {
         final MavenProject maven = MavenProjects.mavenProject(withBaseDir("../pom.xml")).run();
 
@@ -88,14 +85,6 @@ public class blaze extends PublicBlaze {
 
         cp(targetJcatDir.resolve(exename)).target(javaOutputDir).force().verbose().run();
         cp(targetLibHelloJDir.resolve(libname)).target(javaOutputDir).force().verbose().run();
-    }
-
-    @Task(group="project", order = 3, value="Cleans up project target and cache dirs")
-    public void nuke() throws Exception {
-        rm(this.targetDir).recursive().force().verbose().run();
-        rm(this.projectDir.resolve(".buildx")).recursive().force().verbose().run();
-        rm(this.projectDir.resolve(".buildx-cache")).recursive().force().verbose().run();
-        rm(this.projectDir.resolve(".buildx-logs")).recursive().force().verbose().run();
     }
 
     private final List<Target> crossBuildTargets = asList(
