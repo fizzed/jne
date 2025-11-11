@@ -51,6 +51,19 @@ public class SemanticVersionTest {
     }
 
     @Test
+    void freeBsdVersionWithRevision() {
+        String s = "13.5-RELEASE-p6";
+        SemanticVersion v = SemanticVersion.parse(s);
+
+        assertThat(v.getMajor(), is(equalTo(13)));
+        assertThat(v.getMinor(), is(equalTo(5)));
+        assertThat(v.getPatch(), is(equalTo(0)));
+        assertThat(v.getRevision(), is(equalTo(0)));
+        assertThat(v.getFlavor(), is(equalTo("RELEASE-p6")));
+        assertThat(v.getBuildMetadata(), is(nullValue()));
+    }
+
+    @Test
     void openBsdVersion() {
         String s = "7.4";
         SemanticVersion v = SemanticVersion.parse(s);

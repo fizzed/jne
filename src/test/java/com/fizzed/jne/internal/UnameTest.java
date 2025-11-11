@@ -73,6 +73,42 @@ public class UnameTest {
     }
 
     @Test
+    public void parseFreeBSD13() {
+        String freebsdOutput = "FreeBSD bmh-build-x64-freebsd13-1 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64";
+        Uname u = Uname.parse(freebsdOutput);
+
+        assertNotNull(u);
+        assertEquals("FreeBSD", u.getSysname());
+        assertEquals("bmh-build-x64-freebsd13-1", u.getNodename());
+        assertEquals("13.5-RELEASE-p6", u.getVersion());
+        assertEquals("FreeBSD 13.5-RELEASE-p6 GENERIC", u.getFlavor());
+        assertEquals("amd64", u.getMachine());
+
+        // GNU-specific fields should be null
+        assertNull(u.getProcessor());
+        assertNull(u.getHardwarePlatform());
+        assertNull(u.getOperatingSystem());
+    }
+
+    @Test
+    public void parseFreeBSD15() {
+        String freebsdOutput = "FreeBSD bmh-build-x64-freebsd15-1 15.0-ALPHA1 FreeBSD 15.0-ALPHA1 #0 stable/15-n280099-0b3d82579a01: Sat Sep  6 19:04:24 -00 2025     root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC aarch64";
+        Uname u = Uname.parse(freebsdOutput);
+
+        assertNotNull(u);
+        assertEquals("FreeBSD", u.getSysname());
+        assertEquals("bmh-build-x64-freebsd15-1", u.getNodename());
+        assertEquals("15.0-ALPHA1", u.getVersion());
+        assertEquals("FreeBSD 15.0-ALPHA1 #0 stable/15-n280099-0b3d82579a01: Sat Sep 6 19:04:24 -00 2025 root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC", u.getFlavor());
+        assertEquals("aarch64", u.getMachine());
+
+        // GNU-specific fields should be null
+        assertNull(u.getProcessor());
+        assertNull(u.getHardwarePlatform());
+        assertNull(u.getOperatingSystem());
+    }
+
+    @Test
     public void parseOpenBSD() {
         String openbsdOutput = "OpenBSD my-openbsd.local 7.4 GENERIC.MP#6 amd64";
         Uname u = Uname.parse(openbsdOutput);
