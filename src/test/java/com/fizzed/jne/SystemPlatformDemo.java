@@ -37,6 +37,7 @@ public class SystemPlatformDemo {
         log.info("prettyName: {}", systemPlatform.getPrettyName());
         log.info("version: {}", systemPlatform.getVersion());
         log.info("kernelVersion: {}", systemPlatform.getKernelVersion());
+        log.info("uname: {}", systemPlatform.getUname());
     }
 
 }

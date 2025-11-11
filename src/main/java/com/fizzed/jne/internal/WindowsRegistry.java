@@ -47,22 +47,25 @@ public class WindowsRegistry {
     // helper methods
 
     static public WindowsRegistry queryUserEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
-        // reg query HKEY_CURRENT_USER\Environment
         final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_CURRENT_USER\\Environment");
 
         return parse(output);
     }
 
     static public WindowsRegistry querySystemEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
-        // reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
         final String output = systemExecutor.execProcess("reg.exe", "query", "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
 
         return parse(output);
     }
 
     static public WindowsRegistry queryCurrentVersion(SystemExecutor systemExecutor) throws Exception {
-        // reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
         final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+
+        return parse(output);
+    }
+
+    static public WindowsRegistry queryComputerName(SystemExecutor systemExecutor) throws Exception {
+        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName");
 
         return parse(output);
     }
@@ -88,9 +91,14 @@ public class WindowsRegistry {
             } else if (line.contains("REG_")) {
                 // this is a line with a value we will want to process
                 // e.g. Path    REG_EXPAND_SZ    C:\Opt\bin;%PATH%
-                final String[] parts = line.split("\\s+(REG_\\w+)\\s+");
+                final String[] parts = line.split("\\s+(REG_[_\\w]+)\\s+");
                 if (parts.length == 2) {
-                    values.put(parts[0], parts[1]);
+                    final String name =  parts[0].trim();
+                    final String type = line.substring(parts[0].length(), line.length() - parts[1].length()).trim();
+                    final String value = parseType(type, parts[1]);
+                    values.put(name, value);
+                } else if (parts.length == 1) {
+                    values.put(parts[0], null);     // empty value
                 } else {
                     log.warn("Unable to parse reg query output line: {}", line);
                 }
@@ -106,6 +114,22 @@ public class WindowsRegistry {
         }
 
         return new WindowsRegistry(values);
+    }
+
+    static public String parseType(String type, String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+
+        if ("REG_DWORD".equalsIgnoreCase(type)) {
+            String hex = value.substring(2);
+            // 2. Parse the hex string into an integer
+            int dwordValue = Integer.parseInt(hex, 16); // 16 = Radix 16 (hex)
+            // 3. Convert the integer to a final decimal string
+            return Integer.toString(dwordValue);
+        }
+
+        return value;
     }
 
 }
