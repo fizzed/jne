@@ -95,7 +95,7 @@ public class SystemPlatform {
                     log.warn("Unable to parse 'uname -a' VERSION: {}", ex.getMessage());
                 }
                 // we can default name and build a pretty name from the uname output
-                name = uname.getOperatingSystem();
+                name = uname.getSysname();
                 if (version != null) {
                     prettyName = name + " " + version;
                 }
