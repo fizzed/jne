@@ -38,7 +38,7 @@ class WindowsRegistryTest {
 
     @Test @EnabledOnOs(OS.WINDOWS)
     public void queryUserEnvironmentVariables() throws Exception {
-        final Map<String,String> env = WindowsRegistry.queryUserEnvironmentVariables();
+        final WindowsRegistry wr = WindowsRegistry.queryUserEnvironmentVariables(new LocalSystemExecutor());
 
         //env.forEach((k,v) -> System.out.println(k + "=" + v));
 
@@ -47,45 +47,45 @@ class WindowsRegistryTest {
 
     @Test @EnabledOnOs(OS.WINDOWS)
     public void querySystemEnvironmentVariables() throws Exception {
-        final Map<String,String> env = WindowsRegistry.querySystemEnvironmentVariables();
+        final WindowsRegistry wr = WindowsRegistry.querySystemEnvironmentVariables(new LocalSystemExecutor());
 
         //env.forEach((k,v) -> System.out.println(k + "=" + v));
 
-        assertThat(env.size(), greaterThan(1));
+        assertThat(wr.getValues().size(), greaterThan(1));
     }
 
     @Test
     public void parseUserQuery() throws IOException {
         String output = Resources.stringUTF8("/com/fizzed/jne/internal/WindowsEnvUserRegQuery.txt");
 
-        final Map<String,String> env = WindowsRegistry.parseEnvironmentVariableRegQueryOutput(output);
+        final WindowsRegistry wr = WindowsRegistry.parse(output);
 
-        assertThat(env, aMapWithSize(6));
-        assertThat(env, hasEntry("Path", "C:\\Opt\\bin;%PATH%"));
-        assertThat(env, hasEntry("TEMP", "%USERPROFILE%\\AppData\\Local\\Temp"));
-        assertThat(env, hasEntry("TMP", "%USERPROFILE%\\AppData\\Local\\Temp"));
-        assertThat(env, hasEntry("OneDrive", "C:\\Users\\jjlauer\\OneDrive"));
-        assertThat(env, hasEntry("TEST", "Hello"));
+        assertThat(wr.getValues(), aMapWithSize(6));
+        assertThat(wr.getValues(), hasEntry("Path", "C:\\Opt\\bin;%PATH%"));
+        assertThat(wr.getValues(), hasEntry("TEMP", "%USERPROFILE%\\AppData\\Local\\Temp"));
+        assertThat(wr.getValues(), hasEntry("TMP", "%USERPROFILE%\\AppData\\Local\\Temp"));
+        assertThat(wr.getValues(), hasEntry("OneDrive", "C:\\Users\\jjlauer\\OneDrive"));
+        assertThat(wr.getValues(), hasEntry("TEST", "Hello"));
 
         // should also be case insensitive too
-        assertThat(env.get("Test"), is("Hello"));
+        assertThat(wr.getValues().get("Test"), is("Hello"));
     }
 
     @Test
     public void parseSystemQuery() throws IOException {
         String output = Resources.stringUTF8("/com/fizzed/jne/internal/WindowsEnvSystemRegQuery.txt");
 
-        final Map<String,String> env = WindowsRegistry.parseEnvironmentVariableRegQueryOutput(output);
+        final WindowsRegistry wr = WindowsRegistry.parse(output);
 
-        assertThat(env, aMapWithSize(18));
-        assertThat(env, hasEntry("Path", "C:\\Program Files\\Zulu\\zulu-21\\bin\\;C:\\Program Files\\Zulu\\zulu-17\\bin\\;C:\\Program Files\\Zulu\\zulu-11\\bin\\;C:\\Program Files\\Zulu\\zulu-8\\bin\\;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Opt\\apache-maven-3.9.5\\bin;C:\\Program Files\\RedHat\\Podman\\;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Go\\bin;C:\\Program Files\\Go\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\PowerShell\\7\\"));
-        assertThat(env, hasEntry("TEMP", "%SystemRoot%\\TEMP"));
-        assertThat(env, hasEntry("TMP", "%SystemRoot%\\TEMP"));
-        assertThat(env, hasEntry("PROCESSOR_IDENTIFIER", "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"));
-        assertThat(env, hasEntry("TEST", "Hello"));
+        assertThat(wr.getValues(), aMapWithSize(18));
+        assertThat(wr.getValues(), hasEntry("Path", "C:\\Program Files\\Zulu\\zulu-21\\bin\\;C:\\Program Files\\Zulu\\zulu-17\\bin\\;C:\\Program Files\\Zulu\\zulu-11\\bin\\;C:\\Program Files\\Zulu\\zulu-8\\bin\\;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Opt\\apache-maven-3.9.5\\bin;C:\\Program Files\\RedHat\\Podman\\;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Go\\bin;C:\\Program Files\\Go\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\PowerShell\\7\\"));
+        assertThat(wr.getValues(), hasEntry("TEMP", "%SystemRoot%\\TEMP"));
+        assertThat(wr.getValues(), hasEntry("TMP", "%SystemRoot%\\TEMP"));
+        assertThat(wr.getValues(), hasEntry("PROCESSOR_IDENTIFIER", "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"));
+        assertThat(wr.getValues(), hasEntry("TEST", "Hello"));
 
         // should also be case insensitive too
-        assertThat(env.get("Test"), is("Hello"));
+        assertThat(wr.getValues().get("Test"), is("Hello"));
     }
 
 }

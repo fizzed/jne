@@ -27,27 +27,48 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static java.util.Arrays.asList;
-
 public class WindowsRegistry {
     static private final Logger log = LoggerFactory.getLogger(WindowsRegistry.class);
 
-    static public Map<String,String> queryUserEnvironmentVariables() throws IOException, InterruptedException {
+    private final Map<String,String> values;
+
+    public WindowsRegistry(Map<String,String> values) {
+        this.values = values;
+    }
+
+    public Map<String,String> getValues() {
+        return this.values;
+    }
+
+    public String get(String key) {
+        return this.values.get(key);
+    }
+
+    // helper methods
+
+    static public WindowsRegistry queryUserEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
         // reg query HKEY_CURRENT_USER\Environment
-        final String output = Utils.execAndGetOutput(asList("reg.exe", "query", "HKEY_CURRENT_USER\\Environment"));
+        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_CURRENT_USER\\Environment");
 
-        return parseEnvironmentVariableRegQueryOutput(output);
+        return parse(output);
     }
 
-    static public Map<String,String> querySystemEnvironmentVariables() throws IOException, InterruptedException {
+    static public WindowsRegistry querySystemEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
         // reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
-        final String output = Utils.execAndGetOutput(asList("reg.exe", "query", "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"));
+        final String output = systemExecutor.execProcess("reg.exe", "query", "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
 
-        return parseEnvironmentVariableRegQueryOutput(output);
+        return parse(output);
     }
 
-    static public Map<String,String> parseEnvironmentVariableRegQueryOutput(String output) throws IOException {
-        final Map<String,String> env = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public WindowsRegistry queryCurrentVersion(SystemExecutor systemExecutor) throws Exception {
+        // reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+
+        return parse(output);
+    }
+
+    static public WindowsRegistry parse(String output) throws IOException {
+        final Map<String,String> values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         // process output line by line
         int pos = 0;
@@ -69,7 +90,7 @@ public class WindowsRegistry {
                 // e.g. Path    REG_EXPAND_SZ    C:\Opt\bin;%PATH%
                 final String[] parts = line.split("\\s+(REG_\\w+)\\s+");
                 if (parts.length == 2) {
-                    env.put(parts[0], parts[1]);
+                    values.put(parts[0], parts[1]);
                 } else {
                     log.warn("Unable to parse reg query output line: {}", line);
                 }
@@ -84,7 +105,7 @@ public class WindowsRegistry {
             nextNewlinePos = output.indexOf('\n', pos);
         }
 
-        return env;
+        return new WindowsRegistry(values);
     }
 
 }

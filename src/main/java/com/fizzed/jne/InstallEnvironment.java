@@ -20,6 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.jne.internal.LocalSystemExecutor;
 import com.fizzed.jne.internal.ShellBuilder;
 import com.fizzed.jne.internal.Utils;
 import com.fizzed.jne.internal.WindowsRegistry;
@@ -310,17 +311,21 @@ public class InstallEnvironment {
             log.info("");
 
             // we are going to query the user OR system env vars via registry
-            final Map<String,String> currentEnvInRegistry;
-            if (this.scope == EnvScope.USER) {
-                currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables();
-            } else {
-                currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables();
+            final WindowsRegistry currentEnvInRegistry;
+            try {
+                if (this.scope == EnvScope.USER) {
+                    currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables(new LocalSystemExecutor());
+                } else {
+                    currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables(new LocalSystemExecutor());
+                }
+            } catch (Exception e) {
+                throw new IOException("Unable to query environment variables for " + this.scope.toString().toLowerCase() + " scope", e);
             }
 
             // shell is irrelevant on windows, env vars and PATH are setup in the registry
             // e.g. setx MY_VARIABLE "MyValue" OR setx MY_VARIABLE "MyValue" /M
             for (EnvVar var : vars) {
-                final boolean exists = Utils.searchEnvVar(currentEnvInRegistry, var.getName(), var.getValue());
+                final boolean exists = Utils.searchEnvVar(currentEnvInRegistry.getValues(), var.getName(), var.getValue());
                 if (!exists) {
                     final List<String> envVarCmd = new ArrayList<>(asList("setx", var.getName(), var.getValue()));
                     if (this.scope == EnvScope.SYSTEM) {
