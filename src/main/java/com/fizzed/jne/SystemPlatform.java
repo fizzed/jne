@@ -1,6 +1,6 @@
 package com.fizzed.jne;
 
-import com.fizzed.jne.internal.MacSwVer;
+import com.fizzed.jne.internal.MacSwVers;
 import com.fizzed.jne.internal.OsReleaseFile;
 import com.fizzed.jne.internal.SystemExecutor;
 import com.fizzed.jne.internal.Uname;
@@ -132,14 +132,13 @@ public class SystemPlatform {
 
         // on macos, we can grab a better version
         if (operatingSystem == OperatingSystem.MACOS) {
-            MacSwVer swVer = null;
+            MacSwVers swVers = null;
             try {
-                String swVerOutput = systemExecutor.execProcess("sw_ver");
-                swVer = MacSwVer.parse(swVerOutput);
-                if (swVer != null) {
-                    prettyName = swVer.getProductName() + " " + swVer.getProductVersion();
-                    version = SemanticVersion.parse(swVer.getProductVersion());
-                }
+                String swVersOutput = systemExecutor.execProcess("sw_vers");
+                swVers = MacSwVers.parse(swVersOutput);
+                name = swVers.getProductName();
+                prettyName = swVers.getProductName() + " " + swVers.getProductVersion();
+                version = SemanticVersion.parse(swVers.getProductVersion());
             } catch (Exception e) {
                 log.trace("Unable to execute 'sw_ver' to detect system platform: {}", e.getMessage());
             }

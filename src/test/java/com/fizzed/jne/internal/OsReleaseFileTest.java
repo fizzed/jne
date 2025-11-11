@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class OsReleaseFileTest {
+public class OsReleaseFileTest {
 
     @Test
     void parseUbuntu2510() throws Exception {

@@ -10,7 +10,7 @@ import java.util.Map;
  * This class is instantiated using the static `parse()` method,
  * which parses the key-value string output from the command.
  */
-public class MacSwVer {
+public class MacSwVers {
 
     private final String productName;
     private final String productVersion;
@@ -19,7 +19,7 @@ public class MacSwVer {
     /**
      * Private constructor. Use the static `parse()` method.
      */
-    private MacSwVer(String productName, String productVersion, String buildVersion) {
+    private MacSwVers(String productName, String productVersion, String buildVersion) {
         this.productName = productName;
         this.productVersion = productVersion;
         this.buildVersion = buildVersion;
@@ -32,7 +32,7 @@ public class MacSwVer {
      * @return A populated SwVer object.
      * @throws IllegalArgumentException if the input is null or empty.
      */
-    public static MacSwVer parse(String swVersOutput) {
+    public static MacSwVers parse(String swVersOutput) {
         if (swVersOutput == null || swVersOutput.trim().isEmpty()) {
             throw new IllegalArgumentException("sw_vers output cannot be null or empty.");
         }
@@ -60,7 +60,7 @@ public class MacSwVer {
             });
 
         // Create the object from the parsed values
-        return new MacSwVer(
+        return new MacSwVers(
             values.get("ProductName"),
             values.get("ProductVersion"),
             values.get("BuildVersion")
