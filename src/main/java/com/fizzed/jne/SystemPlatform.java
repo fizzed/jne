@@ -86,7 +86,7 @@ public class SystemPlatform {
         // with uname, we can detect os & arch
         if (uname != null) {
             try {
-                NativeTarget nativeTarget = NativeTarget.detectFromText(uname.getOperatingSystem() + " " + uname.getMachine() + " " + uname.getHardwarePlatform());
+                NativeTarget nativeTarget = NativeTarget.detectFromText(uname.getSysname() + " " + uname.getOperatingSystem() + " " + uname.getMachine() + " " + uname.getHardwarePlatform());
                 operatingSystem = nativeTarget.getOperatingSystem();
                 hardwareArchitecture = nativeTarget.getHardwareArchitecture();
                 try {
