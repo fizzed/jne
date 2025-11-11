@@ -1,5 +1,6 @@
 package com.fizzed.jne;
 
+import com.fizzed.jne.internal.MacSwVer;
 import com.fizzed.jne.internal.OsReleaseFile;
 import com.fizzed.jne.internal.SystemExecutor;
 import com.fizzed.jne.internal.Uname;
@@ -112,18 +113,36 @@ public class SystemPlatform {
 
         // if there is an /etc/os-release file, we can get a lot of what we need out of it
         OsReleaseFile osReleaseFile = null;
-        try {
-            String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
-            osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
-            name = osReleaseFile.getName();
-            prettyName = osReleaseFile.getPrettyName();
+        // only try this on platforms we know have it
+        if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.FREEBSD) {
             try {
-                version = SemanticVersion.parse(osReleaseFile.getVersionId());
-            } catch (Exception ex) {
-                log.warn("Unable to parse /etc/os-release VERSION_ID: {}", ex.getMessage());
+                String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
+                osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
+                name = osReleaseFile.getName();
+                prettyName = osReleaseFile.getPrettyName();
+                try {
+                    version = SemanticVersion.parse(osReleaseFile.getVersionId());
+                } catch (Exception ex) {
+                    log.warn("Unable to parse /etc/os-release VERSION_ID: {}", ex.getMessage());
+                }
+            } catch (Exception e) {
+                log.trace("Unable to read /etc/os-release file: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.trace("Unable to read /etc/os-release file: {}", e.getMessage());
+        }
+
+        // on macos, we can grab a better version
+        if (operatingSystem == OperatingSystem.MACOS) {
+            MacSwVer swVer = null;
+            try {
+                String swVerOutput = systemExecutor.execProcess("sw_ver");
+                swVer = MacSwVer.parse(swVerOutput);
+                if (swVer != null) {
+                    prettyName = swVer.getProductName() + " " + swVer.getProductVersion();
+                    version = SemanticVersion.parse(swVer.getProductVersion());
+                }
+            } catch (Exception e) {
+                log.trace("Unable to execute 'sw_ver' to detect system platform: {}", e.getMessage());
+            }
         }
 
         return new SystemPlatform(operatingSystem, hardwareArchitecture, abi, name, prettyName, version, kernelVersion);
