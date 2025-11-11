@@ -87,8 +87,9 @@ public class SystemPlatform {
             uname = null;
         }
 
-        // if uname fails, we should try to see if we're on windows
-        if (uname == null) {
+        // if uname fails, we should try to see if we're on windows, or someone may have installed "cygwin" or "msys"
+        // on windows, and we may actually want to try the registry as well
+        if (uname == null || (uname.getSource().toLowerCase().contains("cygwin") || uname.getSource().toLowerCase().contains("msys"))) {
             // on windows, we can grab a better version via the registry via 2 queries
             try {
                 log.debug("Trying windows registry to detect system platform...");
