@@ -12,6 +12,9 @@ import static java.util.Arrays.asList;
  */
 public interface SystemExecutor {
 
+    static public final SystemExecutor LOCAL = new LocalSystemExecutor();
+
+
     default String catFile(Path file) throws Exception {
         return catFile(file.toString());
     }

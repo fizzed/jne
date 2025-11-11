@@ -20,6 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.jne.internal.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +31,318 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Optional.ofNullable;
+
 public class PlatformInfo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfo.class);
+
+    final private OperatingSystem operatingSystem;
+    final private HardwareArchitecture hardwareArchitecture;
+    final private String name;
+    final private String displayName;
+    final private SemanticVersion version;
+    final private SemanticVersion kernelVersion;
+    final private String uname;
+
+    private PlatformInfo(OperatingSystem operatingSystem, HardwareArchitecture hardwareArchitecture, String name, String displayName, SemanticVersion version, SemanticVersion kernelVersion, String uname) {
+        this.operatingSystem = operatingSystem;
+        this.hardwareArchitecture = hardwareArchitecture;
+        this.name = name;
+        this.displayName = displayName;
+        this.version = version;
+        this.kernelVersion = kernelVersion;
+        this.uname = uname;
+    }
+
+    public OperatingSystem getOperatingSystem() {
+        return this.operatingSystem;
+    }
+
+    public HardwareArchitecture getHardwareArchitecture() {
+        return this.hardwareArchitecture;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    public SemanticVersion getVersion() {
+        return this.version;
+    }
+
+    public SemanticVersion getKernelVersion() {
+        return this.kernelVersion;
+    }
+
+    public String getUname() {
+        return this.uname;
+    }
+
+    //
+    // Static Detection Methods
+    //
+
+    static private final MemoizedInitializer<PlatformInfo> platformInfoRef = new MemoizedInitializer<>();
+
+    /**
+     * Detects all platform-specific information related to the operating system
+     * and hardware architecture of the host system. This method internally uses
+     * a memoized initialization mechanism to ensure that detection is performed
+     * only once, providing cached results for subsequent calls. It is an
+     * efficient way to retrieve platform details by leveraging the memoization
+     * framework to avoid redundant computations.
+     *
+     * @return a {@link PlatformInfo} object containing detailed information about the
+     *         platform, including the operating system, hardware architecture,
+     *         kernel version, and other related properties. If the platform details
+     *         cannot be detected, the method may return an object with null or
+     *         default values for its attributes.
+     */
+    static public PlatformInfo detectAll() {
+        return platformInfoRef.once(new MemoizedInitializer.Initializer<PlatformInfo>() {
+            @Override
+            public PlatformInfo init() {
+                return detectAll(SystemExecutor.LOCAL);
+            }
+        });
+    }
+
+    /**
+     * IMPORTANT: This method does a fresh "detect" every time it's called, which is somewhat expensive. For faster
+     * local-only detection, you may find other static methods in this class faster and will return cached results.
+     *
+     * Detects the platform details of the operating system and hardware architecture of the host system
+     * by utilizing the provided {@link SystemExecutor} for executing system-level commands. The method
+     * tries to determine the platform by executing standard commands (like 'uname') and by querying
+     * platform-specific information such as the Windows Registry if necessary.
+     *
+     * @param systemExecutor the instance of {@link SystemExecutor} used to execute commands on the host system.
+     *                        It is essential for gathering system information to deduce the operating system
+     *                        and hardware details.
+     * @return a {@link PlatformInfo} object containing detailed information about the platform,
+     *         including the operating system, hardware architecture, kernel version, and other properties.
+     *         If the platform cannot be determined, the returned object may contain null values or default configurations.
+     */
+    static public PlatformInfo detectAll(SystemExecutor systemExecutor) {
+        // we should now be able to detect the operating system and architecture
+        OperatingSystem operatingSystem = null;
+        HardwareArchitecture hardwareArchitecture = null;
+        ABI abi = null;
+        String name = null;
+        String displayName = null;
+        SemanticVersion version = null;
+        SemanticVersion kernelVersion = null;
+        Uname uname = null;
+
+        // try uname first (if that fails, we are likely on windows)
+        try {
+            log.trace("Trying 'uname -a' to detect system platform...");
+            final String unameOutput = systemExecutor.execProcess("uname", "-a");
+            try {
+                uname = Uname.parse(unameOutput);
+            } catch (Exception ex) {
+                log.warn("Unable to parse 'uname -a' output: {}", ex.getMessage());
+                uname = null;
+            }
+        } catch (Exception e) {
+            log.trace("Unable to execute 'uname -a' to detect system platform: {}", e.getMessage());
+            uname = null;
+        }
+
+        // if uname fails, we should try to see if we're on windows, or someone may have installed "cygwin" or "msys"
+        // on windows, and we may actually want to try the registry as well
+        if (uname == null || (uname.getSource().toLowerCase().contains("cygwin") || uname.getSource().toLowerCase().contains("msys"))) {
+            // on windows, we can grab a better version via the registry via 2 queries
+            try {
+                log.trace("Trying windows registry to detect system platform...");
+                WindowsRegistry windowsRegistryCurrentVersion = WindowsRegistry.queryCurrentVersion(systemExecutor);
+                WindowsRegistry windowsRegistrySystemEnvironment = WindowsRegistry.querySystemEnvironmentVariables(systemExecutor);
+                WindowsRegistry windowsRegistryComputerName = WindowsRegistry.queryComputerName(systemExecutor);
+
+                // we are going to mimic 'uname -a' by combining the keys together
+                // [Sysname] [Nodename] [Release] [Version] [Machine]
+                // Linux bmh-jjlauer-4 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux
+                // FreeBSD bmh-build-x64-freebsd15-1 15.0-ALPHA1 FreeBSD 15.0-ALPHA1 #0 stable/15-n280099-0b3d82579a01 amd64
+                // windows version numbers are pretty complicated, we'll safely try to get the values we need
+                // This key was introduced in Windows 10
+                int majorVersion = ofNullable(windowsRegistryCurrentVersion.get("CurrentMajorVersionNumber"))
+                    .map(Integer::parseInt)
+                    .orElse(-1);
+                // This key was introduced in Windows 10
+                int minorVersion = ofNullable(windowsRegistryCurrentVersion.get("CurrentMinorVersionNumber"))
+                    .map(Integer::parseInt)
+                    .orElse(-1);
+                // Windows 7 has this, and it's the most important value. For Windows 7 with Service Pack 1, this value is 7601
+                int buildVersion = ofNullable(windowsRegistryCurrentVersion.get("CurrentBuildNumber"))
+                    .map(Integer::parseInt)
+                    .orElse(-1);
+                // Windows 7, 8, and 8.1 all reported their version as 6.x (e.g., Windows 7 was 6.1, Windows 8.1 was 6.3) to maintain application compatibility.
+                final String currentVersion = windowsRegistryCurrentVersion.get("CurrentVersion");
+
+                // While ProductName is almost always correct, there was a known issue during the initial release of Windows 11
+                // where systems that were upgraded from Windows 10 sometimes retained the ProductName value of Windows 10 Pro
+                String productName =  windowsRegistryCurrentVersion.get("ProductName");           // e.g. Windows 10 Pro, Windows Server 2022 Standard, Windows Server 2019 Datacenter
+
+                // Windows 10 and 11: Yes. This key is present and provides the user-friendly "feature update" version, like 23H2 (for Windows 11) or 22H2 (for Windows 10).
+                String displayVersion =  windowsRegistryCurrentVersion.get("DisplayVersion");     // e.g. 25H2
+
+                final String computerName = windowsRegistryComputerName.get("ComputerName");
+                final String processorArchitecture =  windowsRegistrySystemEnvironment.get("PROCESSOR_ARCHITECTURE");
+
+                // any build number >= 22000 is windows 11, we can fix the product name "bug"
+                if (buildVersion >= 22000) {
+                    productName = productName.replace(" 10 ", " 11 ");
+                }
+
+                // append the feature pack if that key exists
+                if (displayVersion != null) {
+                    productName += " (" + displayVersion + ")";
+                }
+
+                // let's build out a "kernel version" we can actually use
+                final String kernelVersionString;
+                if (majorVersion > 0) {
+                    kernelVersionString = majorVersion + "." + minorVersion + "." + buildVersion;
+                } else {
+                    kernelVersionString = currentVersion + "." + buildVersion;
+                }
+
+                // to build out an "os version" string, we need to fix the major versions
+                final String osVersionString;
+                if (buildVersion >= 22000 && majorVersion == 10) {
+                    osVersionString = "11" + "." + minorVersion + "." + buildVersion;
+                } else if (majorVersion > 0) {
+                    // majorVersion was only introduced in windows 10, but this could also handle a windows 12?
+                    osVersionString = majorVersion + "." + minorVersion + "." + buildVersion;
+                } else if (majorVersion < 0) {
+                    // this indicates we are on something other than windows 10, like 7, 8.1, etc.
+                    // Windows 7 was 6.1, Windows 8.1 was 6.3
+                    if ("6.3".equals(currentVersion)) {
+                        osVersionString =  "8.1." + buildVersion;
+                    } else if ("6.2".equals(currentVersion)) {
+                        osVersionString =  "8.0." + buildVersion;
+                    } else {
+                        osVersionString =  "7.0." + buildVersion;
+                    }
+                } else {
+                    // all else fails, we'll default to this value
+                    osVersionString = currentVersion;
+                }
+
+                final String unameString = "Windows " + computerName + " " + osVersionString + " " + productName + " " + processorArchitecture;
+
+                log.debug("Generated windows os version={}, uname-{}", osVersionString, unameString);
+
+                uname = Uname.parse(unameString);
+                kernelVersion = SemanticVersion.parse(kernelVersionString);
+                name = "Windows";
+                displayName = productName;
+            } catch (Exception e) {
+                log.trace("Unable to query windows registry to detect system platform: {}", e.getMessage());
+            }
+        }
+
+        // with uname, we can detect os & arch
+        if (uname != null) {
+            try {
+                log.trace("Detecting os & arch from 'uname -a' output...");
+                NativeTarget nativeTarget = NativeTarget.detectFromText(uname.getSysname() + " " + uname.getOperatingSystem() + " " + uname.getMachine() + " " + uname.getHardwarePlatform());
+                operatingSystem = nativeTarget.getOperatingSystem();
+                hardwareArchitecture = nativeTarget.getHardwareArchitecture();
+                try {
+                    version = SemanticVersion.parse(uname.getVersion());
+                } catch (Exception ex) {
+                    log.warn("Unable to parse 'uname -a' VERSION: {}", ex.getMessage());
+                }
+                if (name == null) {
+                    name = uname.getSysname();
+                }
+                if (version != null && displayName == null) {
+                    displayName = name + " " + version;
+                }
+            } catch (Exception e) {
+                log.warn("Unable to detect operating system from 'uname -a' output: {}", e.getMessage());
+            }
+        }
+
+        // if we have a version, on these platforms it's really the kernel version
+        if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.MACOS) {
+            kernelVersion = version;
+            version = null;
+        }
+
+        // if there is an /etc/os-release file, we can get a lot of what we need out of it
+        OsReleaseFile osReleaseFile = null;
+        // only try this on platforms we know have it
+        if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.FREEBSD) {
+            log.trace("Trying /etc/os-release to detect platform info...");
+            try {
+                String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
+                osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
+                name = osReleaseFile.getName();
+                displayName = osReleaseFile.getPrettyName();
+                try {
+                    version = SemanticVersion.parse(osReleaseFile.getVersionId());
+                } catch (Exception ex) {
+                    log.warn("Unable to parse /etc/os-release VERSION_ID: {}", ex.getMessage());
+                }
+            } catch (Exception e) {
+                log.trace("Unable to read /etc/os-release file: {}", e.getMessage());
+            }
+        }
+
+        // on macos, we can grab a better version
+        if (operatingSystem == OperatingSystem.MACOS) {
+            log.trace("Trying macos 'sw_vers' to detect platform info...");
+            MacSwVers swVers = null;
+            try {
+                String swVersOutput = systemExecutor.execProcess("sw_vers");
+                swVers = MacSwVers.parse(swVersOutput);
+                name = swVers.getProductName();
+                displayName = swVers.getProductName() + " " + swVers.getProductVersion();
+                version = SemanticVersion.parse(swVers.getProductVersion());
+                // see if we can make it even prettier, with its name
+                final String versionName = MacReleases.getVersionName(version.getMajor(), version.getMinor());
+                if (versionName != null) {
+                    displayName += " (" + versionName + ")";
+                }
+            } catch (Exception e) {
+                log.trace("Unable to execute 'sw_ver' to detect system platform: {}", e.getMessage());
+            }
+        }
+
+        return new PlatformInfo(operatingSystem, hardwareArchitecture, name, displayName, version, kernelVersion, ofNullable(uname).map(Uname::getSource).orElse(null));
+    }
+
+    /**
+     * Detects minimal platform-specific information, specifically the operating system
+     * and hardware architecture, of the host system. Unlike more comprehensive detection
+     * methods, this method focuses on essential details by returning a basic {@link PlatformInfo}
+     * object populated only with the operating system and hardware architecture information.
+     *
+     * This method internally delegates tasks to {@link #detectOperatingSystem()} and
+     * {@link #detectHardwareArchitecture()} for retrieving the necessary details.
+     * Other platform properties such as name, version, and kernel details are left
+     * uninitialized or set to null.
+     *
+     * Example usage:
+     * - This method is intended to be used in situations where only basic platform
+     *   information (such as OS and architecture) is required, and a full platform
+     *   detection process is unnecessary.
+     * - For environments where detailed information is needed (e.g., kernel version
+     *   or library details), consider using {@link #detectAll()}.
+     *
+     * @return a {@link PlatformInfo} object containing only the operating system
+     *         and hardware architecture details of the host system. Other properties
+     *         in the returned object are set to null or default values.
+     */
+    static public PlatformInfo detectBasic() {
+        return new PlatformInfo(detectOperatingSystem(), detectHardwareArchitecture(), null, null, null, null, null);
+    }
 
     //
     // Operating System Detection
