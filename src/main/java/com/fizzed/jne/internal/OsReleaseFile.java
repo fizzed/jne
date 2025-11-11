@@ -25,11 +25,11 @@ import java.util.stream.Stream;
  * LOGO=ubuntu-logo
  *
  */
-public class OsRelease {
+public class OsReleaseFile {
 
     private final Map<String,String> values;
 
-    public OsRelease(Map<String,String> values) {
+    public OsReleaseFile(Map<String,String> values) {
         this.values = values;
     }
 
@@ -70,11 +70,11 @@ public class OsRelease {
      * @return An OsRelease object.
      * @throws IOException If the file cannot be read.
      */
-    public static OsRelease parse(Path path) throws IOException {
+    public static OsReleaseFile parse(Path path) throws IOException {
         // Use try-with-resources to ensure the stream is closed
         try (Stream<String> stream = Files.lines(path)) {
             Map<String, String> properties = parseLines(stream);
-            return new OsRelease(properties);
+            return new OsReleaseFile(properties);
         }
     }
 
@@ -84,12 +84,12 @@ public class OsRelease {
      * @param content The full string content of the file.
      * @return An OsRelease object.
      */
-    public static OsRelease parse(String content) {
+    public static OsReleaseFile parse(String content) {
         // Use Java 8 Stream.of() to split the string by newlines
         // This stream does not need to be in a try-with-resources block
         Stream<String> stream = Stream.of(content.split("\\r?\\n"));
         Map<String, String> properties = parseLines(stream);
-        return new OsRelease(properties);
+        return new OsReleaseFile(properties);
     }
 
     /**
