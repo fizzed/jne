@@ -50,6 +50,13 @@ public class blaze extends PublicBlaze {
         exec("java","-cp", classpath, "com.fizzed.jne.PlatformInfoDemo").run();
     }
 
+    @Task(group="project", order=0)
+    public void demo_system_platform() throws Exception {
+        final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile").run();
+
+        exec("java","-cp", classpath, "com.fizzed.jne.SystemPlatformDemo").run();
+    }
+
     @Task(group="project", order = 1, value="Builds native libraries and executables for the local os/arch")
     public void build_natives() throws Exception {
         final String targetStr = Contexts.config().value("target").orNull();
