@@ -22,8 +22,8 @@ public class Uname {
     // Standard POSIX fields
     private final String sysname;          // Kernel name (e.g., "Linux", "Darwin")
     private final String nodename;         // Network node hostname
-    private final String release;          // Kernel release (e.g., "5.15.0-88-generic")
-    private final String version;          // Kernel version (a long, descriptive string)
+    private final String version;          // Kernel release (e.g., "5.15.0-88-generic")
+    private final String flavor;          // Kernel version (a long, descriptive string)
     private final String machine;          // Machine hardware name (e.g., "x86_64")
 
     // GNU-specific fields (will be null on non-GNU systems)
@@ -40,21 +40,21 @@ public class Uname {
      *
      * @param sysname          Kernel name
      * @param nodename         Hostname
-     * @param release          Kernel release
      * @param version          Kernel version
+     * @param flavor          Kernel flavor
      * @param machine          Hardware name
      * @param processor        Processor type (GNU only)
      * @param hardwarePlatform Hardware platform (GNU only)
      * @param operatingSystem  OS name (GNU only)
      * @param source           The original "uname -a" string
      */
-    private Uname(String sysname, String nodename, String release, String version,
+    private Uname(String sysname, String nodename, String version, String flavor,
                   String machine, String processor, String hardwarePlatform,
                   String operatingSystem, String source) {
         this.sysname = sysname;
         this.nodename = nodename;
-        this.release = release;
         this.version = version;
+        this.flavor = flavor;
         this.machine = machine;
         this.processor = processor;
         this.hardwarePlatform = hardwarePlatform;
@@ -174,15 +174,15 @@ public class Uname {
     /**
      * @return The kernel release (e.g., "5.15.0-88-generic").
      */
-    public String getRelease() {
-        return release;
+    public String getVersion() {
+        return version;
     }
 
     /**
      * @return The kernel version (long, descriptive string).
      */
-    public String getVersion() {
-        return version;
+    public String getFlavor() {
+        return flavor;
     }
 
     /**
@@ -225,8 +225,8 @@ public class Uname {
         return "Uname (Parsed):\n" +
             "  sysname          : " + sysname + "\n" +
             "  nodename         : " + nodename + "\n" +
-            "  release          : " + release + "\n" +
-            "  version          : " + version + "\n" +
+            "  release          : " + version + "\n" +
+            "  version          : " + flavor + "\n" +
             "  machine          : " + machine + "\n" +
             "  processor        : " + (processor != null ? processor : "N/A") + "\n" +
             "  hardwarePlatform : " + (hardwarePlatform != null ? hardwarePlatform : "N/A") + "\n" +

@@ -21,8 +21,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("Linux", u.getSysname());
         assertEquals("my-ubuntu-vm", u.getNodename());
-        assertEquals("5.15.0-88-generic", u.getRelease());
-        assertEquals("#98-Ubuntu SMP Mon Oct 2 15:18:56 UTC 2023", u.getVersion());
+        assertEquals("5.15.0-88-generic", u.getVersion());
+        assertEquals("#98-Ubuntu SMP Mon Oct 2 15:18:56 UTC 2023", u.getFlavor());
         assertEquals("x86_64", u.getMachine());
 
         // GNU-specific fields
@@ -44,8 +44,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("Darwin", u.getSysname());
         assertEquals("My-MacBook.local", u.getNodename());
-        assertEquals("23.1.0", u.getRelease());
-        assertEquals("Darwin Kernel Version 23.1.0: Mon Oct 9 21:27:24 PDT 2023; root:xnu-10002.41.9~6/RELEASE_X86_64", u.getVersion());
+        assertEquals("23.1.0", u.getVersion());
+        assertEquals("Darwin Kernel Version 23.1.0: Mon Oct 9 21:27:24 PDT 2023; root:xnu-10002.41.9~6/RELEASE_X86_64", u.getFlavor());
         assertEquals("x86_64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -62,8 +62,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("FreeBSD", u.getSysname());
         assertEquals("my-bsd-host", u.getNodename());
-        assertEquals("13.2-RELEASE", u.getRelease());
-        assertEquals("FreeBSD 13.2-RELEASE #0 releng/13.2-n254617-525ecfd85554: Mon Apr 10 05:54:13 UTC 2023 root@releng1.FreeBSD.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC", u.getVersion());
+        assertEquals("13.2-RELEASE", u.getVersion());
+        assertEquals("FreeBSD 13.2-RELEASE #0 releng/13.2-n254617-525ecfd85554: Mon Apr 10 05:54:13 UTC 2023 root@releng1.FreeBSD.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC", u.getFlavor());
         assertEquals("amd64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -80,8 +80,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("OpenBSD", u.getSysname());
         assertEquals("my-openbsd.local", u.getNodename());
-        assertEquals("7.4", u.getRelease());
-        assertEquals("GENERIC.MP#6", u.getVersion());
+        assertEquals("7.4", u.getVersion());
+        assertEquals("GENERIC.MP#6", u.getFlavor());
         assertEquals("amd64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -98,8 +98,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("NetBSD", u.getSysname());
         assertEquals("my-netbsd.host", u.getNodename());
-        assertEquals("9.2_STABLE", u.getRelease());
-        assertEquals("NetBSD 9.2_STABLE (GENERIC) #0: Wed Apr 15 12:34:56 UTC 2020 root@build.netbsd.org:/usr/obj/sys/arch/amd64/compile/GENERIC", u.getVersion());
+        assertEquals("9.2_STABLE", u.getVersion());
+        assertEquals("NetBSD 9.2_STABLE (GENERIC) #0: Wed Apr 15 12:34:56 UTC 2020 root@build.netbsd.org:/usr/obj/sys/arch/amd64/compile/GENERIC", u.getFlavor());
         assertEquals("amd64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -116,8 +116,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("DragonFly", u.getSysname());
         assertEquals("my-dragonfly.host", u.getNodename());
-        assertEquals("6.2.1-RELEASE", u.getRelease());
-        assertEquals("DragonFly v6.2.1-RELEASE #0: Sun Jul 10 14:48:58 PDT 2022 root@my-dragonfly.host:/usr/obj/kernels/X86_64/GENERIC", u.getVersion());
+        assertEquals("6.2.1-RELEASE", u.getVersion());
+        assertEquals("DragonFly v6.2.1-RELEASE #0: Sun Jul 10 14:48:58 PDT 2022 root@my-dragonfly.host:/usr/obj/kernels/X86_64/GENERIC", u.getFlavor());
         assertEquals("x86_64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -134,8 +134,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("SunOS", u.getSysname());
         assertEquals("my-solaris-host", u.getNodename());
-        assertEquals("5.11", u.getRelease());
-        assertEquals("11.4.0.15.0", u.getVersion());
+        assertEquals("5.11", u.getVersion());
+        assertEquals("11.4.0.15.0", u.getFlavor());
         assertEquals("sun4v", u.getMachine());
 
         // GNU-specific fields should be null
@@ -152,8 +152,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("SunOS", u.getSysname());
         assertEquals("openindiana", u.getNodename());
-        assertEquals("5.11", u.getRelease());
-        assertEquals("illumos-f30752b04c", u.getVersion());
+        assertEquals("5.11", u.getVersion());
+        assertEquals("illumos-f30752b04c", u.getFlavor());
         assertEquals("i86pc", u.getMachine());
 
         // GNU-specific fields should be null
@@ -170,8 +170,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("Linux", u.getSysname());
         assertEquals("localhost", u.getNodename());
-        assertEquals("4.19.113-gbe0c0b1122a2", u.getRelease());
-        assertEquals("#1 SMP PREEMPT Tue Jun 22 17:09:44 UTC 2021", u.getVersion());
+        assertEquals("4.19.113-gbe0c0b1122a2", u.getVersion());
+        assertEquals("#1 SMP PREEMPT Tue Jun 22 17:09:44 UTC 2021", u.getFlavor());
         assertEquals("aarch64", u.getMachine());
 
         // GNU-specific fields should be null
@@ -188,8 +188,8 @@ public class UnameTest {
         assertNotNull(u);
         assertEquals("Linux", u.getSysname());
         assertEquals("my-alpine-host", u.getNodename());
-        assertEquals("5.15.61-0-lts", u.getRelease());
-        assertEquals("#1-Alpine SMP Thu Aug 18 12:53:14 UTC 2022", u.getVersion());
+        assertEquals("5.15.61-0-lts", u.getVersion());
+        assertEquals("#1-Alpine SMP Thu Aug 18 12:53:14 UTC 2022", u.getFlavor());
         assertEquals("x86_64", u.getMachine());
 
         // GNU-specific fields should be null
