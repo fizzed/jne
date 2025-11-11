@@ -199,22 +199,94 @@ public class SemanticVersionTest {
         assertThat(v.getBuildMetadata(), is(equalTo("20")));
     }
 
-    /*@Test
-    void invalidInputs() {
-        // This test uses JUnit 5's assertThrows, which is not AssertJ.
-        // It's perfectly fine to leave as-is.
-        assertThatThrownBy(() -> SemanticVersion.parse(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Version string cannot be null or empty.");
+    // --- /etc/os-release VERSION_ID Tests ---
 
-        assertThatThrownBy(() -> SemanticVersion.parse(""))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Version string cannot be null or empty.");
+    @Test
+    void osReleaseDebianVersionId() {
+        String s = "12";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(12)));
+        assertThat(v.getMinor(), is(equalTo(0)));
+        assertThat(v.getFlavor(), is(nullValue()));
+    }
 
-        assertThatThrownBy(() -> SemanticVersion.parse("   "))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Version string cannot be null or empty.");
-    }*/
+    @Test
+    void osReleaseFedoraVersionId() {
+        String s = "39";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(39)));
+        assertThat(v.getMinor(), is(equalTo(0)));
+    }
+
+    @Test
+    void osReleaseUbuntuVersionId() {
+        String s = "22.04";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(22)));
+        assertThat(v.getMinor(), is(equalTo(4)));
+        assertThat(v.getPatch(), is(equalTo(0)));
+    }
+
+    @Test
+    void osReleaseRhelVersionId() {
+        String s = "9.3";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(9)));
+        assertThat(v.getMinor(), is(equalTo(3)));
+        assertThat(v.getPatch(), is(equalTo(0)));
+    }
+
+    @Test
+    void osReleaseManjaroVersionId() {
+        String s = "23.1.3";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(23)));
+        assertThat(v.getMinor(), is(equalTo(1)));
+        assertThat(v.getPatch(), is(equalTo(3)));
+    }
+
+    @Test
+    void osReleaseAlpineVersionId() {
+        String s = "3.18.4";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(3)));
+        assertThat(v.getMinor(), is(equalTo(18)));
+        assertThat(v.getPatch(), is(equalTo(4)));
+    }
+
+    @Test
+    void osReleaseEndeavourOsVersionId() {
+        String s = "2023.11.17";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(2023)));
+        assertThat(v.getMinor(), is(equalTo(11)));
+        assertThat(v.getPatch(), is(equalTo(17)));
+    }
+
+    @Test
+    void osReleaseOpenSuseTumbleweedVersionId() {
+        String s = "20240118";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(20240118)));
+        assertThat(v.getMinor(), is(equalTo(0)));
+    }
+
+    @Test
+    void osReleaseArchVersionId() {
+        String s = "rolling";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(0)));
+        assertThat(v.getMinor(), is(equalTo(0)));
+        assertThat(v.getFlavor(), is(equalTo("rolling")));
+    }
+
+    @Test
+    void osReleaseKaliVersionId() {
+        String s = "2024.1";
+        SemanticVersion v = SemanticVersion.parse(s);
+        assertThat(v.getMajor(), is(equalTo(2024)));
+        assertThat(v.getMinor(), is(equalTo(1)));
+    }
 
     @Test
     void sortingLogic() {
