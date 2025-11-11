@@ -37,6 +37,29 @@ public class UnameTest {
     }
 
     @Test
+    public void parseUbuntu2510() {
+        String linuxOutput = "Linux bmh-jjlauer-4 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux";
+        Uname u = Uname.parse(linuxOutput);
+
+        assertNotNull(u);
+        assertEquals("Linux", u.getSysname());
+        assertEquals("bmh-jjlauer-4", u.getNodename());
+        assertEquals("6.17.0-6-generic", u.getVersion());
+        assertEquals("#6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct 7 13:34:17 UTC 2025", u.getFlavor());
+        assertEquals("x86_64", u.getMachine());
+
+        // GNU-specific fields
+        assertNotNull(u.getProcessor());
+        assertNotNull(u.getHardwarePlatform());
+        assertNotNull(u.getOperatingSystem());
+
+        assertEquals("unknown", u.getProcessor());
+        assertEquals("unknown", u.getHardwarePlatform());
+        assertEquals("GNU/Linux", u.getOperatingSystem());
+        assertEquals(linuxOutput, u.getSource());
+    }
+
+    @Test
     public void parseMacos() {
         String macosOutput = "Darwin My-MacBook.local 23.1.0 Darwin Kernel Version 23.1.0: Mon Oct 9 21:27:24 PDT 2023; root:xnu-10002.41.9~6/RELEASE_X86_64 x86_64";
         Uname u = Uname.parse(macosOutput);

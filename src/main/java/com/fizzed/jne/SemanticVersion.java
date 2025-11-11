@@ -221,6 +221,20 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
     @Override
     public String toString() {
+        if (this.major > 0 && this.minor > 0 && this.patch > 0 && this.revision > 0) {
+            return String.format("%d.%d.%d.%d", this.major, this.minor, this.patch, this.revision);
+        } else if (this.major > 0 && this.minor > 0 && this.patch > 0) {
+            return String.format("%d.%d.%d", this.major, this.minor, this.patch);
+        } else if (this.major > 0 && this.minor > 0) {
+            return String.format("%d.%d", this.major, this.minor);
+        } else if (this.major > 0) {
+            return String.format("%d", this.major);
+        } else {
+            return this.source;
+        }
+    }
+
+    public String dumpAll() {
         return "SemanticVersion {" +
             "major=" + major +
             ", minor=" + minor +

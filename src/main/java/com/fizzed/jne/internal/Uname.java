@@ -69,7 +69,7 @@ public class Uname {
      * @return A populated Uname object.
      * @throws IllegalArgumentException if the input string is invalid.
      */
-    static public Uname parse(String output) {
+    public static Uname parse(String output) {
         if (output == null || output.trim().isEmpty()) {
             throw new IllegalArgumentException("Input string cannot be null or empty.");
         }
@@ -101,19 +101,56 @@ public class Uname {
 
         if ("Linux".equals(sysname) && lastField.startsWith("GNU")) {
             // GNU/Linux: s n r [greedy v] m [p] [i] o
-            if (parts.length > 8) {
-                operatingSystem = parts[parts.length - 1];
-                hardwarePlatform = parts[parts.length - 2];
-                processor = parts[parts.length - 3];
-                machine = parts[parts.length - 4];
-                version = joinParts(parts, 3, parts.length - 5);
-            } else {
-                // Fallback for minimal Linux (e.g., s n r v m o)
-                operatingSystem = parts[parts.length - 1];
+            operatingSystem = parts[parts.length - 1];
+
+            // The 'v' string ends with a timestamp, which ends with a year.
+            // We search backwards from the end to find the year (e.g., "2025").
+            // This marks the end of 'v' and the start of 'm'.
+            int yearIndex = -1;
+            for (int i = parts.length - 2; i >= 3; i--) {
+                if (parts[i].length() == 4 && isNumeric(parts[i])) {
+                    // Found a 4-digit year. Assume this is the end of 'v'.
+                    yearIndex = i;
+                    break;
+                }
+            }
+
+            if (yearIndex == -1) {
+                // Can't find year, fall back to old minimal logic
                 machine = parts[parts.length - 2];
                 version = joinParts(parts, 3, parts.length - 3);
                 processor = "unknown";
                 hardwarePlatform = "unknown";
+            } else {
+                // Found the year. 'v' is everything up to and including it.
+                version = joinParts(parts, 3, yearIndex);
+
+                // The fields after the year are m, p, i
+                // (parts.length - 2) is the index of the field before 'o'
+                int fieldsAfterYear = (parts.length - 2) - yearIndex;
+
+                if (fieldsAfterYear == 3) {
+                    // m p i
+                    machine = parts[yearIndex + 1];
+                    processor = parts[yearIndex + 2];
+                    hardwarePlatform = parts[yearIndex + 3];
+                } else if (fieldsAfterYear == 2) {
+                    // m p (or m i)
+                    machine = parts[yearIndex + 1];
+                    processor = parts[yearIndex + 2];
+                    hardwarePlatform = "unknown"; // Assume 'i' is missing
+                } else if (fieldsAfterYear == 1) {
+                    // m
+                    machine = parts[yearIndex + 1];
+                    processor = "unknown";
+                    hardwarePlatform = "unknown";
+                } else {
+                    // No fields after year? Fallback.
+                    machine = parts[parts.length - 2];
+                    version = joinParts(parts, 3, parts.length - 3);
+                    processor = "unknown";
+                    hardwarePlatform = "unknown";
+                }
             }
         } else {
             // 5-Field Format (POSIX/BSD/Solaris/Android-Linux)
@@ -130,6 +167,23 @@ public class Uname {
 
         return new Uname(sysname, nodename, release, version, machine,
             processor, hardwarePlatform, operatingSystem, originalInput);
+    }
+
+    /**
+     * Helper to check if a string is purely numeric.
+     * @param s The string to check.
+     * @return true if all characters are digits, false otherwise.
+     */
+    private static boolean isNumeric(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        for (char c : s.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
