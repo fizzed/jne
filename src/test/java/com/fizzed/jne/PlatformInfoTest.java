@@ -21,6 +21,8 @@ package com.fizzed.jne;
  */
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,17 @@ public class PlatformInfoTest {
         // os & arch should be the same
         assertThat(platformInfoBasic.getOperatingSystem(), is(platformInfoAll.getOperatingSystem()));
         assertThat(platformInfoBasic.getHardwareArchitecture(), is(platformInfoAll.getHardwareArchitecture()));
+        assertThat(platformInfoBasic.getLibC(), is(platformInfoAll.getLibC()));
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    public void detectAllLibCVersion() {
+        PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+
+        // libc and libc version should not be null
+        assertThat(platformInfoAll.getLibC(), is(not(nullValue())));
+        assertThat(platformInfoAll.getLibCVersion(), is(not(nullValue())));
     }
 
     @Test
