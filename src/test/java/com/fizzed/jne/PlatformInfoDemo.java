@@ -20,9 +20,16 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.jne.internal.LocalContainerSystemExecutor;
 import com.fizzed.jne.internal.LocalSystemExecutor;
+import com.fizzed.jne.internal.SystemExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class PlatformInfoDemo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfoDemo.class);
@@ -36,7 +43,16 @@ public class PlatformInfoDemo {
         log.info("  hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
         log.info("  libC: {}", platformInfoBasic.getLibC());
 
-        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+//        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+        // detect stuff via a container :-)
+//        final String containerImage = "docker.io/alpine:3.10";                        // musl
+//        final String containerImage = "ghcr.io/void-linux/void-musl:latest";          // musl
+//        final String containerImage = "docker.io/chimeralinux/chimera:latest";          // musl
+//        final String containerImage = "docker.io/ubuntu:16.04";                         // glibc version fails :-(
+//        final String containerImage = "docker.io/ubuntu:18.04";
+        final String containerImage = "docker.io/ubuntu:20.04";
+        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(
+            new LocalContainerSystemExecutor("podman", containerImage));
 
         log.info("");
         log.info("Platform Info (using detectAll):");
