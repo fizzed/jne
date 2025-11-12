@@ -31,6 +31,16 @@ public class PlatformInfoTest {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfoTest.class);
 
     @Test
+    public void detectAll() {
+        PlatformInfo platformInfoBasic = PlatformInfo.detectBasic();
+        PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+
+        // os & arch should be the same
+        assertThat(platformInfoBasic.getOperatingSystem(), is(platformInfoAll.getOperatingSystem()));
+        assertThat(platformInfoBasic.getHardwareArchitecture(), is(platformInfoAll.getHardwareArchitecture()));
+    }
+
+    @Test
     public void doDetectOperatingSystem() {
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
 

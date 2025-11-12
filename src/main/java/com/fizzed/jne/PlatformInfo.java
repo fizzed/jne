@@ -43,8 +43,10 @@ public class PlatformInfo {
     final private SemanticVersion version;
     final private SemanticVersion kernelVersion;
     final private String uname;
+    final private LibC libC;
+    final private SemanticVersion libCVersion;
 
-    private PlatformInfo(OperatingSystem operatingSystem, HardwareArchitecture hardwareArchitecture, String name, String displayName, SemanticVersion version, SemanticVersion kernelVersion, String uname) {
+    private PlatformInfo(OperatingSystem operatingSystem, HardwareArchitecture hardwareArchitecture, String name, String displayName, SemanticVersion version, SemanticVersion kernelVersion, String uname, LibC libC, SemanticVersion libCVersion) {
         this.operatingSystem = operatingSystem;
         this.hardwareArchitecture = hardwareArchitecture;
         this.name = name;
@@ -52,6 +54,8 @@ public class PlatformInfo {
         this.version = version;
         this.kernelVersion = kernelVersion;
         this.uname = uname;
+        this.libC = libC;
+        this.libCVersion = libCVersion;
     }
 
     public OperatingSystem getOperatingSystem() {
@@ -80,6 +84,14 @@ public class PlatformInfo {
 
     public String getUname() {
         return this.uname;
+    }
+
+    public LibC getLibC() {
+        return this.libC;
+    }
+
+    public SemanticVersion getLibCVersion() {
+        return this.libCVersion;
     }
 
     //
@@ -131,12 +143,13 @@ public class PlatformInfo {
         // we should now be able to detect the operating system and architecture
         OperatingSystem operatingSystem = null;
         HardwareArchitecture hardwareArchitecture = null;
-        ABI abi = null;
         String name = null;
         String displayName = null;
         SemanticVersion version = null;
         SemanticVersion kernelVersion = null;
         Uname uname = null;
+        LibC libC = null;
+        SemanticVersion libCVersion = null;
 
         // try uname first (if that fails, we are likely on windows)
         try {
@@ -315,7 +328,50 @@ public class PlatformInfo {
             }
         }
 
-        return new PlatformInfo(operatingSystem, hardwareArchitecture, name, displayName, version, kernelVersion, ofNullable(uname).map(Uname::getSource).orElse(null));
+        if (operatingSystem == OperatingSystem.LINUX) {
+            // let's try to detect the libc version
+            LibCResult libcResult = detectLibC(systemExecutor);
+            if (libcResult != null) {
+                libC = libcResult.getLibC();
+                libCVersion = libcResult.getVersion();
+            }
+        }
+
+        return new PlatformInfo(operatingSystem, hardwareArchitecture, name, displayName, version, kernelVersion, ofNullable(uname).map(Uname::getSource).orElse(null), libC, libCVersion);
+    }
+
+    static private LibCResult detectLibC(SystemExecutor systemExecutor) {
+        LibC libC = null;
+        SemanticVersion version = null;
+
+        // ldd /bin/ls is a technique that apparently works well for GLIBC or MUSL
+        try {
+            log.trace("Trying to detect libc version via 'ldd /bin/ls' output...");
+            final String lddOutput = systemExecutor.execProcess("ldd", "/bin/ls");
+            final String soPath = LibCs.parseLibCPath(lddOutput);
+            libC = LibCs.parseLibC(lddOutput);
+
+            if (libC != null) {
+                // we now literally execute the .so and it'll print out version info that we can parse
+                try {
+                    final String libcOutput = systemExecutor.execProcess(soPath);
+                    final String versionString = LibCs.parseLibCVersion(libcOutput);
+                    if (versionString != null) {
+                        version = SemanticVersion.parse(versionString);
+                    }
+                } catch (Exception ex) {
+                    log.trace("Unable to execute {} to detect libc version: {}", soPath, ex.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.trace("Unable to execute 'ldd' to detect libc version: {}", e.getMessage());
+        }
+
+        if (libC != null) {
+            return new LibCResult(libC, version);
+        }
+
+        return null;
     }
 
     /**
@@ -341,7 +397,7 @@ public class PlatformInfo {
      *         in the returned object are set to null or default values.
      */
     static public PlatformInfo detectBasic() {
-        return new PlatformInfo(detectOperatingSystem(), detectHardwareArchitecture(), null, null, null, null, null);
+        return new PlatformInfo(detectOperatingSystem(), detectHardwareArchitecture(), null, null, null, null, null, detectLinuxLibC(), null);
     }
 
     //

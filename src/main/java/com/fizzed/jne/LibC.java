@@ -26,6 +26,7 @@ package com.fizzed.jne;
 public enum LibC {
 
     GLIBC,
-    MUSL;
+    MUSL,
+    UCLIBC;
 
 }

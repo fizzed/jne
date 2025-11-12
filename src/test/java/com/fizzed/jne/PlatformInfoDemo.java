@@ -34,6 +34,7 @@ public class PlatformInfoDemo {
         log.info("Platform Info (using detectBasic):");
         log.info("  operatingSystem: {}", platformInfoBasic.getOperatingSystem());
         log.info("  hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
+        log.info("  libC: {}", platformInfoBasic.getLibC());
 
         final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
 
@@ -46,6 +47,8 @@ public class PlatformInfoDemo {
         log.info("  version: {}", platformInfoAll.getVersion());
         log.info("  kernelVersion: {}", platformInfoAll.getKernelVersion());
         log.info("  uname: {}", platformInfoAll.getUname());
+        log.info("  libC: {}", platformInfoAll.getLibC());
+        log.info("  libCVersion: {}", platformInfoAll.getLibCVersion());
 
         log.info("");
     }
