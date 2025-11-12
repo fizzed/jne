@@ -1,0 +1,6 @@
+Trying to pull docker.io/library/alpine:3.12...
+Getting image source signatures
+Copying blob sha256:1b7ca6aea1ddfe716f3694edb811ab35114db9e93f3ce38d7dab6b4d9270cb0c
+Copying config sha256:24c8ece58a1aa807c0d8ea121f91cee2efba99624d0a8aed732155fb31f28993
+Writing manifest to image destination
+Linux 3bde2b864371 6.17.0-5-generic #5-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 22 10:00:33 UTC 2025 x86_64 Linux

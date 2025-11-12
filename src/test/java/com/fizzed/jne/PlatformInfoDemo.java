@@ -20,17 +20,9 @@ package com.fizzed.jne;
  * #L%
  */
 
-import com.fizzed.jne.internal.LocalContainerSystemExecutor;
-import com.fizzed.jne.internal.LocalSystemExecutor;
-import com.fizzed.jne.internal.RemoteSshSystemExecutor;
-import com.fizzed.jne.internal.SystemExecutor;
+import com.fizzed.jne.internal.SystemExecutorSsh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class PlatformInfoDemo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfoDemo.class);
@@ -44,7 +36,7 @@ public class PlatformInfoDemo {
         log.info("  hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
         log.info("  libC: {}", platformInfoBasic.getLibC());
 
-        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+//        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
 
         // detect stuff via a container :-)
 //        final String containerImage = "docker.io/alpine:3.10";                        // musl
@@ -56,6 +48,8 @@ public class PlatformInfoDemo {
 //        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(
 //            new LocalContainerSystemExecutor("podman", containerImage));
 
+        final String host = "bmh-build-arm64-windows-latest";
+//        final String host = "bmh-build-x64-win7-1";
 //        final String host = "bmh-build-x64-windows-baseline";
 //        final String host = "bmh-build-x64-windows-latest";
 //        final String host = "bmh-build-x64-freebsd-baseline";
@@ -63,7 +57,7 @@ public class PlatformInfoDemo {
 //        final String host = "bmh-build-x64-openbsd-latest";
 //        final String host = "bmh-build-riscv64-linux-latest";
 //        final String host = "bmh-build-arm64-linux-baseline";
-//        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(new RemoteSshSystemExecutor(host));
+        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(new SystemExecutorSsh(host));
 
         log.info("");
         log.info("Platform Info (using detectAll):");

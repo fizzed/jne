@@ -20,11 +20,16 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.crux.util.Resources;
+import com.fizzed.jne.internal.SystemExecutorFixture;
+import com.fizzed.jne.internal.SystemExecutorSsh;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,6 +112,20 @@ public class PlatformInfoTest {
         } else {
             assertThat(libc, is(nullValue()));
         }
+    }
+
+    @Test
+    public void ubuntu1604() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/ubuntu1604/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is(""));
+        assertThat(platformInfo.getDisplayName(), is(""));
+
     }
 
 }

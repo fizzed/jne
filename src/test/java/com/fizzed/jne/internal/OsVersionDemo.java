@@ -10,7 +10,7 @@ public class OsVersionDemo {
 
     static public void main(String[] args) throws Exception {
         final NativeTarget nativeTarget = NativeTarget.detect();
-        final SystemExecutor systemExecutor = new LocalSystemExecutor();
+        final SystemExecutor systemExecutor = new SystemExecutorLocal();
 
         if (nativeTarget.getOperatingSystem() == OperatingSystem.LINUX || nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD) {
 

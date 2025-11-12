@@ -20,7 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
-import com.fizzed.jne.internal.LocalSystemExecutor;
+import com.fizzed.jne.internal.SystemExecutorLocal;
 import com.fizzed.jne.internal.ShellBuilder;
 import com.fizzed.jne.internal.Utils;
 import com.fizzed.jne.internal.WindowsRegistry;
@@ -314,9 +314,9 @@ public class InstallEnvironment {
             final WindowsRegistry currentEnvInRegistry;
             try {
                 if (this.scope == EnvScope.USER) {
-                    currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables(new LocalSystemExecutor());
+                    currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables(new SystemExecutorLocal());
                 } else {
-                    currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables(new LocalSystemExecutor());
+                    currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables(new SystemExecutorLocal());
                 }
             } catch (Exception e) {
                 throw new IOException("Unable to query environment variables for " + this.scope.toString().toLowerCase() + " scope", e);

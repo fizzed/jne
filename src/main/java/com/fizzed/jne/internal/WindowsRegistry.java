@@ -76,17 +76,15 @@ public class WindowsRegistry {
         // process output line by line
         int pos = 0;
         int nextNewlinePos = output.indexOf('\n', pos);
-        while (nextNewlinePos > 0) {
+        while (nextNewlinePos >= 0) {
             String line = output.substring(pos, nextNewlinePos);
             // trim it to make it easier to parse
             line = line.trim();
 
-//            log.debug("parsing environment variable line: {}", line);
-
             // it may only be whitespace, which we can skip
             if (line.isEmpty()) {
                 // safely skip it
-            } else if (line.startsWith("HKEY_CURRENT_USER\\") || line.startsWith("HKEY_LOCAL_MACHINE\\")) {
+            } else if (line.startsWith("HKEY_")) {
                 // we can skip this line
             } else if (line.contains("REG_")) {
                 // this is a line with a value we will want to process

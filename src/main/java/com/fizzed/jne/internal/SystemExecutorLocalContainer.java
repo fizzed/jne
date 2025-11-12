@@ -1,18 +1,16 @@
 package com.fizzed.jne.internal;
 
-import com.fizzed.jne.PlatformInfo;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 
-public class LocalContainerSystemExecutor extends LocalSystemExecutor {
+public class SystemExecutorLocalContainer extends SystemExecutorLocal {
 
     private final String containerExe;
     private final String containerImage;
 
-    public LocalContainerSystemExecutor(String containerExe, String containerImage) {
+    public SystemExecutorLocalContainer(String containerExe, String containerImage) {
         this.containerExe = containerExe;
         this.containerImage = containerImage;
     }

@@ -4,15 +4,13 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 /**
  * Generic and very simple interface for getting information from a system, so that we can use it locally, mock in tests,
  * or even support it via ssh, containers, etc.
  */
 public interface SystemExecutor {
 
-    static public final SystemExecutor LOCAL = new LocalSystemExecutor();
+    static public final SystemExecutor LOCAL = new SystemExecutorLocal();
 
 
     default String catFile(Path file) throws Exception {

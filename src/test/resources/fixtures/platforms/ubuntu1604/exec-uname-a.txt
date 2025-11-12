@@ -1,0 +1,1 @@
+Linux f599af415e3f 6.17.0-5-generic #5-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 22 10:00:33 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux

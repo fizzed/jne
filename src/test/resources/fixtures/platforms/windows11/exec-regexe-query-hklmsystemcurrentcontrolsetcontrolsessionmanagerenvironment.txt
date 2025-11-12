@@ -1,0 +1,19 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+    ComSpec    REG_EXPAND_SZ    %SystemRoot%\system32\cmd.exe
+    DriverData    REG_SZ    C:\Windows\System32\Drivers\DriverData
+    JAVA_HOME    REG_SZ    C:\Program Files\Java\jdk-current
+    M2_HOME    REG_SZ    C:\Opt\maven
+    NUMBER_OF_PROCESSORS    REG_SZ    8
+    OS    REG_SZ    Windows_NT
+    Path    REG_EXPAND_SZ    C:\Program Files\OpenSSH\;C:\Opt\maven\bin;C:\Program Files\Java\jdk-current\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Opt\cwrsync_6.2.11_x64_free\bin;C:\Opt\apache-maven-3.9.5\bin;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;%SYSTEMROOT%\System32\OpenSSH\;
+    PATHEXT    REG_SZ    .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+    PROCESSOR_ARCHITECTURE    REG_SZ    AMD64
+    PROCESSOR_IDENTIFIER    REG_SZ    Intel64 Family 6 Model 183 Stepping 1, GenuineIntel
+    PROCESSOR_LEVEL    REG_SZ    6
+    PROCESSOR_REVISION    REG_SZ    b701
+    PSModulePath    REG_EXPAND_SZ    %ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules
+    TEMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    TMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    USERNAME    REG_SZ    SYSTEM
+    windir    REG_EXPAND_SZ    %SystemRoot%

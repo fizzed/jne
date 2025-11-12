@@ -5,11 +5,11 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
-public class RemoteSshSystemExecutor extends LocalSystemExecutor {
+public class SystemExecutorSsh extends SystemExecutorLocal {
 
     private final String host;
 
-    public RemoteSshSystemExecutor(String host) {
+    public SystemExecutorSsh(String host) {
         this.host = host;
     }
 

@@ -26,7 +26,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,7 +37,7 @@ class WindowsRegistryTest {
 
     @Test @EnabledOnOs(OS.WINDOWS)
     public void queryUserEnvironmentVariables() throws Exception {
-        final WindowsRegistry wr = WindowsRegistry.queryUserEnvironmentVariables(new LocalSystemExecutor());
+        final WindowsRegistry wr = WindowsRegistry.queryUserEnvironmentVariables(new SystemExecutorLocal());
 
         //env.forEach((k,v) -> System.out.println(k + "=" + v));
 
@@ -47,7 +46,7 @@ class WindowsRegistryTest {
 
     @Test @EnabledOnOs(OS.WINDOWS)
     public void querySystemEnvironmentVariables() throws Exception {
-        final WindowsRegistry wr = WindowsRegistry.querySystemEnvironmentVariables(new LocalSystemExecutor());
+        final WindowsRegistry wr = WindowsRegistry.querySystemEnvironmentVariables(new SystemExecutorLocal());
 
         //env.forEach((k,v) -> System.out.println(k + "=" + v));
 
@@ -100,6 +99,25 @@ class WindowsRegistryTest {
         assertThat(wr.getValues(), hasEntry("UBR", "6901"));
         assertThat(wr.getValues(), hasEntry("CurrentBuildNumber", "26200"));
         assertThat(wr.getValues(), hasEntry("InstallDate", "1730175994"));
+        assertThat(wr.getValues(), hasEntry("LCUVer", "10.0.26100.6901"));
+        assertThat(wr.getValues(), hasEntry("BuildLabEx", "26100.1.amd64fre.ge_release.240331-1435"));
+
+        // should also be case insensitive too
+        assertThat(wr.getValues().get("displayversion"), is("25H2"));
+    }
+
+    @Test
+    public void parseCurrentVersion11QueryViaSsh() throws IOException {
+        String output = Resources.stringUTF8("/com/fizzed/jne/internal/WindowsCurrentVersionRegQuery11ViaSsh.txt");
+
+        final WindowsRegistry wr = WindowsRegistry.parse(output);
+
+        assertThat(wr.getValues(), aMapWithSize(33));
+        assertThat(wr.getValues(), hasEntry("DisplayVersion", "25H2"));
+        assertThat(wr.getValues(), hasEntry("ProductId", "00330-80000-00000-AA402"));
+        assertThat(wr.getValues(), hasEntry("UBR", "6901"));
+        assertThat(wr.getValues(), hasEntry("CurrentBuildNumber", "26200"));
+        assertThat(wr.getValues(), hasEntry("InstallDate", "1732551623"));
         assertThat(wr.getValues(), hasEntry("LCUVer", "10.0.26100.6901"));
         assertThat(wr.getValues(), hasEntry("BuildLabEx", "26100.1.amd64fre.ge_release.240331-1435"));
 
