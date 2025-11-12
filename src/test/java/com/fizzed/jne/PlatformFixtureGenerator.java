@@ -63,13 +63,14 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "ubuntu2510";
         final String host = "localhost";*/
 
-        final String fixtureName = "freebsd13";
-        final String host = "bmh-build-x64-freebsd13-1";
+        /*final String fixtureName = "freebsd13";
+        final String host = "bmh-build-x64-freebsd13-1";*/
 
-//        final String host = "bmh-build-x64-openbsd-baseline";
-//        final String host = "bmh-build-x64-openbsd-latest";
-//        final String host = "bmh-build-riscv64-linux-latest";
-//        final String host = "bmh-build-arm64-linux-baseline";
+        /*final String fixtureName = "openbsd78";
+        final String host = "bmh-build-x64-openbsd78-1";*/
+
+        final String fixtureName = "alpine315";
+        final String host = "bmh-build-x64-alpine315-1";
 
         final SystemExecutor systemExecutor = new SystemExecutorSsh(host);
 

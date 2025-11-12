@@ -1,2 +1,0 @@
-	/lib/ld-musl-x86_64.so.1 (0x7be0201c2000)
-	libc.musl-x86_64.so.1 => /lib/ld-musl-x86_64.so.1 (0x7be0201c2000)

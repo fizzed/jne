@@ -128,9 +128,62 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.17.0.5")));
         assertThat(platformInfo.getUname(), is("Linux f599af415e3f 6.17.0-5-generic #5-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 22 10:00:33 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux"));
         assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
-        // this fails
         assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.23")));
+    }
 
+    @Test
+    public void ubuntu1804() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/ubuntu1804/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Ubuntu"));
+        assertThat(platformInfo.getDisplayName(), is("Ubuntu 18.04.6 LTS (Bionic Beaver)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("18.04")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.17.0.5")));
+        assertThat(platformInfo.getUname(), is("Linux ec3ba564e1d9 6.17.0-5-generic #5-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 22 10:00:33 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.27")));
+    }
+
+    @Test
+    public void ubuntu2510() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/ubuntu2510/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Ubuntu"));
+        assertThat(platformInfo.getDisplayName(), is("Ubuntu 25.10 (Questing Quokka)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("25.10")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.17.0.6")));
+        assertThat(platformInfo.getUname(), is("Linux bmh-jjlauer-4 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.42")));
+    }
+
+
+    @Test
+    public void alpine315() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/alpine315/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Alpine Linux"));
+        assertThat(platformInfo.getDisplayName(), is("Alpine Linux v3.15"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("3.15.11")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("5.15.140")));
+        assertThat(platformInfo.getUname(), is("Linux bmh-build-x64-alpine315-1 5.15.140-0-virt #1-Alpine SMP Wed, 29 Nov 2023 21:47:33 +0000 x86_64 Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.MUSL));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("1.2.2")));
     }
 
 }

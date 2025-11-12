@@ -379,19 +379,20 @@ public class PlatformInfo {
         try {
             log.trace("Trying to detect libc version via 'ldd /bin/ls' output...");
             final String lddOutput = systemExecutor.execProcess("ldd", "/bin/ls");
-            final String soPath = LibCs.parseLibCPath(lddOutput);
-            libC = LibCs.parseLibC(lddOutput);
+            final LibCs.PathResult pathResult = LibCs.parsePath(lddOutput);
 
-            if (libC != null) {
+            if (pathResult != null && pathResult.getLibC() != null) {
+                libC = pathResult.getLibC();
                 // we now literally execute the .so and it'll print out version info that we can parse
                 try {
-                    final String libcOutput = systemExecutor.execProcess(Collections.emptyList(), soPath);
-                    final String versionString = LibCs.parseLibCVersion(libcOutput);
+                    log.trace("Detected libc {} with path {} (will now try to detect version...)", pathResult.getLibC(), pathResult.getPath());
+                    final String libcOutput = systemExecutor.execProcess(Collections.emptyList(), pathResult.getPath());
+                    final String versionString = LibCs.parseVersion(libcOutput);
                     if (versionString != null) {
                         version = SemanticVersion.parse(versionString);
                     }
                 } catch (Exception ex) {
-                    log.trace("Unable to execute {} to detect libc version: {}", soPath, ex.getMessage());
+                    log.trace("Unable to execute {} to detect libc version: {}", pathResult.getPath(), ex.getMessage());
                 }
             }
         } catch (Exception e) {
