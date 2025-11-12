@@ -23,6 +23,10 @@ public interface SystemExecutor {
         return execProcess(Collections.singletonList(0), command);
     }
 
+    default String execProcess(List<String> commands) throws Exception {
+        return execProcess(Collections.singletonList(0), commands.toArray(new String[0]));
+    }
+
     String execProcess(List<Integer> exitValues, String... command) throws Exception;
 
 }

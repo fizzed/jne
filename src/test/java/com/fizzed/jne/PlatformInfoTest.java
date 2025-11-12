@@ -22,7 +22,6 @@ package com.fizzed.jne;
 
 import com.fizzed.crux.util.Resources;
 import com.fizzed.jne.internal.SystemExecutorFixture;
-import com.fizzed.jne.internal.SystemExecutorSsh;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -123,8 +122,14 @@ public class PlatformInfoTest {
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
-        assertThat(platformInfo.getName(), is(""));
-        assertThat(platformInfo.getDisplayName(), is(""));
+        assertThat(platformInfo.getName(), is("Ubuntu"));
+        assertThat(platformInfo.getDisplayName(), is("Ubuntu 16.04.7 LTS (Xenial Xerus)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("16.04")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.17.0.5")));
+        assertThat(platformInfo.getUname(), is("Linux f599af415e3f 6.17.0-5-generic #5-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 22 10:00:33 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        // this fails
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.23")));
 
     }
 

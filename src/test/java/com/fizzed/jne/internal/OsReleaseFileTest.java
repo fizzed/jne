@@ -11,8 +11,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class OsReleaseFileTest {
 
     @Test
-    void parseUbuntu2510() throws Exception {
-        Path file = Resources.file("/com/fizzed/jne/internal/OsRelease-Ubuntu25.10.txt");
+    void ubuntu2510() throws Exception {
+        Path file = Resources.file("/fixtures/platforms/ubuntu2510/cat-etcosrelease.txt");
 
         OsReleaseFile osReleaseFile = OsReleaseFile.parse(file);
 
@@ -23,8 +23,8 @@ public class OsReleaseFileTest {
     }
 
     @Test
-    void parseFedora43() throws Exception {
-        Path file = Resources.file("/com/fizzed/jne/internal/OsRelease-Fedora43.txt");
+    void fedora43() throws Exception {
+        Path file = Resources.file("/fixtures/platforms/fedora43/cat-etcosrelease.txt");
 
         OsReleaseFile osReleaseFile = OsReleaseFile.parse(file);
 
@@ -35,8 +35,8 @@ public class OsReleaseFileTest {
     }
 
     @Test
-    void parseFreeBSD13() throws Exception {
-        Path file = Resources.file("/com/fizzed/jne/internal/OsRelease-FreeBSD13.txt");
+    void freeBSD13() throws Exception {
+        Path file = Resources.file("/fixtures/platforms/freebsd13/cat-etcosrelease.txt");
 
         OsReleaseFile osReleaseFile = OsReleaseFile.parse(file);
 

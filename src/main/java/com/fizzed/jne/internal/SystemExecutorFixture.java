@@ -48,37 +48,31 @@ public class SystemExecutorFixture implements SystemExecutor {
         return sb.toString();
     }
 
-    @Override
-    public String catFile(String file) throws Exception {
-        String name = createName("cat", file);
+    private String processFixtureIO(String name, String output) throws Exception {
         Path fixtureFile = this.fixtureDir.resolve(name);
-        // generate mode?
         if (this.underlyingExecutor != null) {
-            String output = this.underlyingExecutor.catFile(file);
             Files.write(fixtureFile, output.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            log.info("Writing fixture file: {}", fixtureFile);
+            log.debug("Writing fixture file: {}", fixtureFile);
             return output;
         } else {
-            log.info("Reading fixture file: {}", fixtureFile);
+            log.debug("Reading fixture file: {}", fixtureFile);
             final byte[] bytes = Files.readAllBytes(fixtureFile);
             return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 
     @Override
+    public String catFile(String file) throws Exception {
+        String name = createName("cat", file);
+        String output = this.underlyingExecutor != null ? this.underlyingExecutor.catFile(file) : null;
+        return processFixtureIO(name, output);
+    }
+
+    @Override
     public String execProcess(List<Integer> exitValues, String... command) throws Exception {
         String name = createName("exec", command);
-        Path fixtureFile = this.fixtureDir.resolve(name);
-        if (this.underlyingExecutor != null) {
-            String output = this.underlyingExecutor.execProcess(exitValues, command);
-            Files.write(fixtureFile, output.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            log.info("Writing fixture file: {}", fixtureFile);
-            return output;
-        } else {
-            log.info("Reading fixture file: {}", fixtureFile);
-            final byte[] bytes = Files.readAllBytes(fixtureFile);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
+        String output = this.underlyingExecutor != null ? this.underlyingExecutor.execProcess(exitValues, command) : null;
+        return processFixtureIO(name, output);
     }
 
 }

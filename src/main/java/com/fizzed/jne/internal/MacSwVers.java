@@ -28,12 +28,12 @@ public class MacSwVers {
     /**
      * Parses the multi-line string output from the "sw_vers" command.
      *
-     * @param swVersOutput The complete string output from "sw_vers".
+     * @param content The complete string output from "sw_vers".
      * @return A populated SwVer object.
      * @throws IllegalArgumentException if the input is null or empty.
      */
-    public static MacSwVers parse(String swVersOutput) {
-        if (swVersOutput == null || swVersOutput.trim().isEmpty()) {
+    public static MacSwVers parse(String content) {
+        if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("sw_vers output cannot be null or empty.");
         }
 
@@ -42,7 +42,7 @@ public class MacSwVers {
         Map<String, String> values = new HashMap<>();
 
         // Use Java 8 compatible stream by splitting on newline characters
-        Arrays.stream(swVersOutput.split("\n"))
+        Arrays.stream(content.split("\n"))
             .map(String::trim)
             .filter(line -> line.contains(":")) // Ensure the line is a K/V pair
             .forEach(line -> {

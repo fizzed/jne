@@ -42,7 +42,7 @@ class ShellBuilderTest {
     static private final Logger log = LoggerFactory.getLogger(ShellBuilderTest.class);
 
     @Test
-    public void bourneExportEnvVar() throws IOException, InterruptedException {
+    public void bourneExportEnvVar() throws Exception {
         // if /bin/sh is available, we will run this test
         final Path shellExe = Utils.which("sh");
 
@@ -58,14 +58,14 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
         }
     }
 
     @Test
-    public void bourneAddEnvPath() throws IOException, InterruptedException {
+    public void bourneAddEnvPath() throws Exception {
         // if /bin/sh is available, we will run this test
         final Path shellExe = Utils.which("sh");
 
@@ -88,7 +88,7 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }
@@ -99,7 +99,7 @@ class ShellBuilderTest {
     //
 
     @Test
-    public void zshExportEnvVar() throws IOException, InterruptedException {
+    public void zshExportEnvVar() throws Exception {
         // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("zsh");
 
@@ -115,14 +115,14 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
         }
     }
 
     @Test
-    public void zshAddEnvPath() throws IOException, InterruptedException {
+    public void zshAddEnvPath() throws Exception {
         // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("zsh");
 
@@ -145,7 +145,7 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }
@@ -156,7 +156,7 @@ class ShellBuilderTest {
     //
 
     @Test
-    public void cshExportEnvVar() throws IOException, InterruptedException {
+    public void cshExportEnvVar() throws Exception {
         // if /bin/csh is available, we will run this test
         final Path shellExe = Utils.which("csh");
 
@@ -172,14 +172,14 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
         }
     }
 
     @Test
-    public void cshAddEnvPath() throws IOException, InterruptedException {
+    public void cshAddEnvPath() throws Exception {
         // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("csh");
 
@@ -202,7 +202,7 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }
@@ -213,7 +213,7 @@ class ShellBuilderTest {
     //
 
     @Test
-    public void tcshExportEnvVar() throws IOException, InterruptedException {
+    public void tcshExportEnvVar() throws Exception {
         // if /bin/csh is available, we will run this test
         final Path shellExe = Utils.which("tcsh");
 
@@ -229,14 +229,14 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
         }
     }
 
     @Test
-    public void tcshAddEnvPath() throws IOException, InterruptedException {
+    public void tcshAddEnvPath() throws Exception {
         // if /bin/zsh is available, we will run this test
         final Path shellExe = Utils.which("tcsh");
 
@@ -259,7 +259,7 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }
@@ -270,7 +270,7 @@ class ShellBuilderTest {
     //
 
     @Test
-    public void kshExportEnvVar() throws IOException, InterruptedException {
+    public void kshExportEnvVar() throws Exception {
         // if /bin/ksh is available, we will run this test
         final Path shellExe = Utils.which("ksh");
 
@@ -286,14 +286,14 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("Hello World"));
         }
     }
 
     @Test
-    public void kshAddEnvPath() throws IOException, InterruptedException {
+    public void kshAddEnvPath() throws Exception {
         // if /bin/ksh is available, we will run this test
         final Path shellExe = Utils.which("ksh");
 
@@ -316,7 +316,7 @@ class ShellBuilderTest {
 
             Utils.writeLinesToFile(temporaryPath.getPath(), shellLines, false);
 
-            final String output = Utils.execAndGetOutput(asList(shellExe.toString(), temporaryPath.getPath().toString()));
+            final String output = SystemExecutor.LOCAL.execProcess(asList(shellExe.toString(), temporaryPath.getPath().toString()));
 
             assertThat(output.trim(), is("/home/jjlauer/.local/bin:/usr/bin:/usr/local/bin:/opt/bin"));
         }

@@ -1,0 +1,4 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName
+    (Default)    REG_SZ    mnmsrvc
+    ComputerName    REG_SZ    BMH-BUILD-X64-W

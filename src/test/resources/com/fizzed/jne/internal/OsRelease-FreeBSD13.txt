@@ -1,9 +1,0 @@
-NAME=FreeBSD
-VERSION="13.5-RELEASE-p6"
-VERSION_ID="13.5"
-ID=freebsd
-ANSI_COLOR="0;31"
-PRETTY_NAME="FreeBSD 13.5-RELEASE-p6"
-CPE_NAME="cpe:/o:freebsd:freebsd:13.5"
-HOME_URL="https://FreeBSD.org/"
-BUG_REPORT_URL="https://bugs.FreeBSD.org/"

@@ -130,6 +130,11 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             }
         }
 
+        // if numParts is 0, this is invalid
+        if (numParts.isEmpty()) {
+            throw new IllegalArgumentException("Invalid version string [" + originalSource + "]");
+        }
+
         // 4. Populate version numbers
         int major = (numParts.size() > 0) ? numParts.get(0) : 0;
         int minor = (numParts.size() > 1) ? numParts.get(1) : 0;
@@ -209,14 +214,13 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         return major == that.major &&
             minor == that.minor &&
             patch == that.patch &&
-            revision == that.revision &&
-            Objects.equals(flavor, that.flavor);
+            revision == that.revision;
     }
 
     @Override
     public int hashCode() {
         // Build metadata is NOT included in hashCode(), per SemVer spec
-        return Objects.hash(major, minor, patch, revision, flavor);
+        return Objects.hash(major, minor, patch, revision);
     }
 
     @Override

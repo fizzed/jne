@@ -1,8 +1,6 @@
 package com.fizzed.jne;
 
-import com.fizzed.jne.internal.SystemExecutor;
-import com.fizzed.jne.internal.SystemExecutorFixture;
-import com.fizzed.jne.internal.SystemExecutorSsh;
+import com.fizzed.jne.internal.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class PlatformInfoFixtureGenerator {
-    static private final Logger log = LoggerFactory.getLogger(PlatformInfoFixtureGenerator.class);
+public class PlatformFixtureGenerator {
+    static private final Logger log = LoggerFactory.getLogger(PlatformFixtureGenerator.class);
 
     static public void main(String[] args) throws Exception {
 //        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
@@ -39,17 +37,34 @@ public class PlatformInfoFixtureGenerator {
 
 //        final SystemExecutor systemExecutor = new SystemExecutorLocalContainer("podman", containerImage);
 
-
-//        final String host = "bmh-build-x64-windows-baseline";
+        // real hosts
 
         /*final String fixtureName = "windows11";
         final String host = "bmh-build-x64-windows-latest";*/
 
+        /*final String fixtureName = "windows10";
+        final String host = "bmh-build-x64-win10-1";*/
+
+        /*final String fixtureName = "windows7";
+        final String host = "bmh-build-x64-win7-1";*/
+
         /*final String fixtureName = "freebsd13";
         final String host = "bmh-build-x64-freebsd-baseline";*/
 
-        final String fixtureName = "macos11";
-        final String host = "bmh-build-x64-macos11-1";
+        /*final String fixtureName = "macos11";
+        final String host = "bmh-build-x64-macos11-1";*/
+
+        /*final String fixtureName = "macos15";
+        final String host = "bmh-build-x64-macos15-1";*/
+
+        /*final String fixtureName = "fedora43";
+        final String host = "bmh-dev-x64-fedora43-1";*/
+
+        /*final String fixtureName = "ubuntu2510";
+        final String host = "localhost";*/
+
+        final String fixtureName = "freebsd13";
+        final String host = "bmh-build-x64-freebsd13-1";
 
 //        final String host = "bmh-build-x64-openbsd-baseline";
 //        final String host = "bmh-build-x64-openbsd-latest";
@@ -67,6 +82,12 @@ public class PlatformInfoFixtureGenerator {
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(fixtureDir, systemExecutor);
 
         final PlatformInfo platformInfoAll = PlatformInfo.detectAll(fixtureExecutor);
+        // additional execs so we have that data for other tests too
+        EtcPasswd.detect(fixtureExecutor);
+        // builder we don't care about, nothing is sensitive
+        try {
+            MacDscl.readByHomeDirectory(Paths.get("/Users/builder"), fixtureExecutor);
+        } catch (Exception e) { /* ignore */ }
 
         log.info("");
         log.info("Platform Info (using detectAll):");

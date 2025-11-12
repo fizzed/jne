@@ -74,7 +74,8 @@ public class Utils {
         return null;
     }
 
-    static public String execAndGetOutput(List<String> commands) throws IOException, InterruptedException {
+    // provided by SystemExecutor.LOCAL now
+   /* static public String execAndGetOutput(List<String> commands) throws IOException, InterruptedException {
         // Create a ProcessBuilder instance
         final ProcessBuilder processBuilder = new ProcessBuilder(commands.toArray(new String[0]));
 
@@ -108,7 +109,7 @@ public class Utils {
         }
 
         return output.toString();
-    }
+    }*/
 
     static public boolean searchEnvVar(String name, String value) {
         return searchEnvVar(System.getenv(), name, value);

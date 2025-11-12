@@ -20,10 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
-import com.fizzed.jne.internal.SystemExecutorLocal;
-import com.fizzed.jne.internal.ShellBuilder;
-import com.fizzed.jne.internal.Utils;
-import com.fizzed.jne.internal.WindowsRegistry;
+import com.fizzed.jne.internal.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -332,7 +329,12 @@ public class InstallEnvironment {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
-                    Utils.execAndGetOutput(envVarCmd);
+                    //Utils.execAndGetOutput(envVarCmd);
+                    try {
+                        SystemExecutor.LOCAL.execProcess(envVarCmd);
+                    } catch (Exception e) {
+                        throw new IOException("Unable to set environment variable", e);
+                    }
                     log.info("  set {}={}", var.getName(), var.getValue());
                 } else {
                     log.info("  set {}={} (skipped as this already was present)", var.getName(), var.getValue());
@@ -357,7 +359,12 @@ public class InstallEnvironment {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
-                    Utils.execAndGetOutput(envVarCmd);
+                    //Utils.execAndGetOutput(envVarCmd);
+                    try {
+                        SystemExecutor.LOCAL.execProcess(envVarCmd);
+                    } catch (Exception e) {
+                        throw new IOException("Unable to set environment variable", e);
+                    }
                     log.info("  {} PATH {}", path.isPrepend() ? "prepend" : "append", path.getValue());
                 } else {
                     log.info("  {} PATH {} (skipped as this was already present)", path.isPrepend() ? "prepend" : "append", path.getValue());

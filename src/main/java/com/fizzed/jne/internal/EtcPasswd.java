@@ -71,38 +71,40 @@ public class EtcPasswd {
     }
 
     static public EtcPasswd detect() {
-        final Path etcPasswdFile = Paths.get("/etc/passwd");
+        return detect(SystemExecutor.LOCAL);
+    }
 
-        if (Files.exists(etcPasswdFile)) {
-            try {
-                return parse(etcPasswdFile);
-            } catch (IOException e) {
-                // do nothing, ignore, but we should log this
-                log.debug("Unable to parse etc passwd file: {}", e.getMessage());
-            }
+    static public EtcPasswd detect(SystemExecutor systemExecutor) {
+        try {
+            String output = systemExecutor.catFile("/etc/passwd");
+            return parse(output);
+        } catch (Exception e) {
+            // do nothing, ignore, but we should log this
+            log.debug("Unable to parse etc passwd file: {}", e.getMessage());
         }
 
         return null;
     }
 
     static public EtcPasswd parse(Path file) throws IOException {
+        String content = Utils.readFileToString(file);
+        return parse(content);
+    }
+
+    static public EtcPasswd parse(String content) throws IOException {
         List<Entry> entries = new ArrayList<>();
 
-        try (Stream<String> lines = Files.lines(file)) {
-            final Iterator<String> it = lines.iterator();
-            while (it.hasNext()) {
-                final String line = it.next();
-                final String[] parts = line.split(":");
-                if (parts.length == 7) {
-                    final Entry entry = new Entry();
-                    entry.setUsername(parts[0]);
-                    entry.setUserId(Integer.valueOf(parts[2]));
-                    entry.setGroupId(Integer.valueOf(parts[3]));
-                    entry.setName(parts[4]);
-                    entry.setHome(parts[5]);
-                    entry.setShell(parts[6]);
-                    entries.add(entry);
-                }
+        for (String line : content.split("\n")) {
+            final String[] parts = line.split(":");
+            if (parts.length == 7) {
+                final Entry entry = new Entry();
+                entry.setUsername(parts[0]);
+                entry.setUserId(Integer.valueOf(parts[2]));
+                entry.setGroupId(Integer.valueOf(parts[3]));
+                entry.setName(parts[4]);
+                entry.setHome(parts[5]);
+                entry.setShell(parts[6]);
+                entries.add(entry);
             }
         }
 
