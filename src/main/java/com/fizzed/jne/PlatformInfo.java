@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
@@ -347,7 +348,7 @@ public class PlatformInfo {
         // ldd /bin/ls is a technique that apparently works well for GLIBC or MUSL
         try {
             log.trace("Trying to detect libc version via 'ldd /bin/ls' output...");
-            final String lddOutput = systemExecutor.execProcess("ldd", "/bin/ls");
+            final String lddOutput = systemExecutor.execProcess(Collections.emptyList(), "ldd", "/bin/ls");
             final String soPath = LibCs.parseLibCPath(lddOutput);
             libC = LibCs.parseLibC(lddOutput);
 

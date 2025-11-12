@@ -40,7 +40,7 @@ public class LocalSystemExecutor implements SystemExecutor {
         // Wait for the process to complete
         int exitCode = process.waitFor();
 
-        if (!exitValues.contains(exitCode)) {
+        if (exitValues != null && !exitValues.isEmpty() && !exitValues.contains(exitCode)) {
             throw new Exception("Unexpected exit code " + exitCode);
         }
 
