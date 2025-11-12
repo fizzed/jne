@@ -284,7 +284,7 @@ public class PlatformInfo {
                 String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
                 osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
                 name = osReleaseFile.getName();
-                displayName = osReleaseFile.getPrettyName();
+                displayName = name + " " + osReleaseFile.getVersion();
                 try {
                     version = SemanticVersion.parse(osReleaseFile.getVersionId());
                 } catch (Exception ex) {
