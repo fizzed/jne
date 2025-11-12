@@ -298,7 +298,18 @@ public class PlatformInfo {
                 String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
                 osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
                 name = osReleaseFile.getName();
-                displayName = name + " " + osReleaseFile.getVersion();
+                // if the version isn't null, we'll use that to build our display name
+                if (osReleaseFile.getVersion() != null) {
+                    displayName = name + " " + osReleaseFile.getVersion();
+                } else if (osReleaseFile.getPrettyName() != null) {
+                    displayName = osReleaseFile.getPrettyName();
+                } else if (osReleaseFile.getVersionId() != null) {
+                    displayName = name + " " + osReleaseFile.getVersionId();
+                } else {
+                    // just fallback to the name
+                    displayName = name;
+                }
+
                 try {
                     version = SemanticVersion.parse(osReleaseFile.getVersionId());
                 } catch (Exception ex) {
