@@ -63,13 +63,6 @@ class JavaVersionTest {
         } catch (IllegalArgumentException e) {
             // expected
         }
-
-        try {
-            JavaVersion.parse("1.B");
-            fail();
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
     }
 
     @Test
@@ -140,6 +133,7 @@ class JavaVersionTest {
         assertThat(v.getSecurity(), is(13));
         assertThat(v.getBuild(), is(14));
         assertThat(v.toString(), is("25.2.13.14"));
+        assertThat(v.getSource(), is("25.2.13+14"));
 
         // another alternative we've seen too
         v = JavaVersion.parse("25+14");
@@ -148,6 +142,15 @@ class JavaVersionTest {
         assertThat(v.getSecurity(), is(0));
         assertThat(v.getBuild(), is(14));
         assertThat(v.toString(), is("25.0.0.14"));
+
+        // version on netbsd
+        v = JavaVersion.parse(" 25-internal ");
+        assertThat(v.getMajor(), is(25));
+        assertThat(v.getMinor(), is(0));
+        assertThat(v.getSecurity(), is(0));
+        assertThat(v.getBuild(), is(0));
+        assertThat(v.toString(), is("25.0.0"));
+        assertThat(v.getSource(), is("25-internal"));
     }
 
     @Test
