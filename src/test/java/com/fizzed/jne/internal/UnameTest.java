@@ -2,6 +2,8 @@ package com.fizzed.jne.internal;
 
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,13 +51,9 @@ public class UnameTest {
         assertEquals("x86_64", u.getMachine());
 
         // GNU-specific fields
-        assertNotNull(u.getProcessor());
-        assertNotNull(u.getHardwarePlatform());
-        assertNotNull(u.getOperatingSystem());
-
-        assertEquals("unknown", u.getProcessor());
-        assertEquals("unknown", u.getHardwarePlatform());
-        assertEquals("GNU/Linux", u.getOperatingSystem());
+        assertNull(u.getProcessor());
+        assertNull(u.getHardwarePlatform());
+        assertThat(u.getOperatingSystem(), is("GNU/Linux"));
         assertEquals(linuxOutput, u.getSource());
     }
 
@@ -255,6 +253,24 @@ public class UnameTest {
         assertNull(u.getProcessor());
         assertNull(u.getHardwarePlatform());
         assertNull(u.getOperatingSystem());
+    }
+
+    @Test
+    public void parseAlpineLinux322() {
+        String alpineOutput = "Linux bmh-build-x64-alpine322-1 6.12.55-0-virt #1-Alpine SMP PREEMPT_DYNAMIC 2025-10-27 09:36:08 x86_64 Linux";
+        Uname u = Uname.parse(alpineOutput);
+
+        assertNotNull(u);
+        assertEquals("Linux", u.getSysname());
+        assertEquals("bmh-build-x64-alpine322-1", u.getNodename());
+        assertEquals("6.12.55-0-virt", u.getVersion());
+        assertEquals("#1-Alpine SMP PREEMPT_DYNAMIC 2025-10-27 09:36:08", u.getFlavor());
+        assertEquals("x86_64", u.getMachine());
+
+        // GNU-specific fields should be null
+        assertNull(u.getProcessor());
+        assertNull(u.getHardwarePlatform());
+        assertThat(u.getOperatingSystem(), is("Linux"));
     }
 
     @Test

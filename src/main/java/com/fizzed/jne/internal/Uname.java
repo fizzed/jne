@@ -99,7 +99,7 @@ public class Uname {
         // The last field is the Operating System.
         String lastField = parts[parts.length - 1];
 
-        if ("Linux".equals(sysname) && lastField.startsWith("GNU")) {
+        if ("Linux".equals(sysname) && (lastField.startsWith("GNU") || lastField.toLowerCase().contains("linux"))) {
             // GNU/Linux: s n r [greedy v] m [p] [i] o
             operatingSystem = parts[parts.length - 1];
 
@@ -119,8 +119,8 @@ public class Uname {
                 // Can't find year, fall back to old minimal logic
                 machine = parts[parts.length - 2];
                 version = joinParts(parts, 3, parts.length - 3);
-                processor = "unknown";
-                hardwarePlatform = "unknown";
+                processor = null;
+                hardwarePlatform = null;
             } else {
                 // Found the year. 'v' is everything up to and including it.
                 version = joinParts(parts, 3, yearIndex);
@@ -138,18 +138,18 @@ public class Uname {
                     // m p (or m i)
                     machine = parts[yearIndex + 1];
                     processor = parts[yearIndex + 2];
-                    hardwarePlatform = "unknown"; // Assume 'i' is missing
+                    hardwarePlatform = null; // Assume 'i' is missing
                 } else if (fieldsAfterYear == 1) {
                     // m
                     machine = parts[yearIndex + 1];
-                    processor = "unknown";
-                    hardwarePlatform = "unknown";
+                    processor = null;
+                    hardwarePlatform = null;
                 } else {
                     // No fields after year? Fallback.
                     machine = parts[parts.length - 2];
                     version = joinParts(parts, 3, parts.length - 3);
-                    processor = "unknown";
-                    hardwarePlatform = "unknown";
+                    processor = null;
+                    hardwarePlatform = null;
                 }
             }
         } else {

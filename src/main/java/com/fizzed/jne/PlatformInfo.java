@@ -264,9 +264,24 @@ public class PlatformInfo {
         if (uname != null) {
             try {
                 log.trace("Detecting os & arch from 'uname -a' output...");
+
+                // try first with limited fields
                 NativeTarget nativeTarget = NativeTarget.detectFromText(uname.getSysname() + " " + uname.getOperatingSystem() + " " + uname.getMachine() + " " + uname.getHardwarePlatform());
                 operatingSystem = nativeTarget.getOperatingSystem();
                 hardwareArchitecture = nativeTarget.getHardwareArchitecture();
+
+                if (operatingSystem == null) {
+                    // try with the whole thing
+                    nativeTarget = NativeTarget.detectFromText(uname.getSource());
+                    operatingSystem = nativeTarget.getOperatingSystem();
+                }
+
+                if (hardwareArchitecture == null) {
+                    // try with the whole thing
+                    nativeTarget = NativeTarget.detectFromText(uname.getSource());
+                    hardwareArchitecture = nativeTarget.getHardwareArchitecture();
+                }
+
                 try {
                     version = SemanticVersion.parse(uname.getVersion());
                 } catch (Exception ex) {
