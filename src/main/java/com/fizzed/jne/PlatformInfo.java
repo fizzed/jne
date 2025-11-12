@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 public class PlatformInfo {
@@ -157,7 +158,7 @@ public class PlatformInfo {
         // try uname first (if that fails, we are likely on windows)
         try {
             log.trace("Trying 'uname -a' to detect system platform...");
-            final String unameOutput = systemExecutor.execProcess("uname", "-a");
+            final String unameOutput = systemExecutor.execProcess(asList(0), "uname", "-a");
             try {
                 uname = Uname.parse(unameOutput);
             } catch (Exception ex) {

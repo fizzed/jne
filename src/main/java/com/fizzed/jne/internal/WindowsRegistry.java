@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static java.util.Arrays.asList;
+
 public class WindowsRegistry {
     static private final Logger log = LoggerFactory.getLogger(WindowsRegistry.class);
 
@@ -63,7 +65,7 @@ public class WindowsRegistry {
     }
 
     static public WindowsRegistry query(SystemExecutor systemExecutor, String key) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "\"" + key + "\"");
+        final String output = systemExecutor.execProcess(asList(0), "reg.exe", "query", "\"" + key + "\"");
         return parse(output);
     }
 

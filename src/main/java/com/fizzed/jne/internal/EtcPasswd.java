@@ -95,6 +95,7 @@ public class EtcPasswd {
         List<Entry> entries = new ArrayList<>();
 
         for (String line : content.split("\n")) {
+            line = line.trim(); // trim any leading/trailing whitespace
             final String[] parts = line.split(":");
             if (parts.length == 7) {
                 final Entry entry = new Entry();
