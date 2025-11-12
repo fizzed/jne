@@ -53,19 +53,19 @@ public class WindowsRegistry {
     }
 
     static public WindowsRegistry querySystemEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
+        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\"");
 
         return parse(output);
     }
 
     static public WindowsRegistry queryCurrentVersion(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\"");
 
         return parse(output);
     }
 
     static public WindowsRegistry queryComputerName(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName");
+        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName\"");
 
         return parse(output);
     }
