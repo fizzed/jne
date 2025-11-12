@@ -348,14 +348,14 @@ public class PlatformInfo {
         // ldd /bin/ls is a technique that apparently works well for GLIBC or MUSL
         try {
             log.trace("Trying to detect libc version via 'ldd /bin/ls' output...");
-            final String lddOutput = systemExecutor.execProcess(Collections.emptyList(), "ldd", "/bin/ls");
+            final String lddOutput = systemExecutor.execProcess("ldd", "/bin/ls");
             final String soPath = LibCs.parseLibCPath(lddOutput);
             libC = LibCs.parseLibC(lddOutput);
 
             if (libC != null) {
                 // we now literally execute the .so and it'll print out version info that we can parse
                 try {
-                    final String libcOutput = systemExecutor.execProcess(soPath);
+                    final String libcOutput = systemExecutor.execProcess(Collections.emptyList(), soPath);
                     final String versionString = LibCs.parseLibCVersion(libcOutput);
                     if (versionString != null) {
                         version = SemanticVersion.parse(versionString);
