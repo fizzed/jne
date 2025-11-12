@@ -113,6 +113,10 @@ public class PlatformInfoTest {
         }
     }
 
+    //
+    // Real World Tests
+    //
+
     @Test
     public void ubuntu1604() throws Exception {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu1604/exec-uname-a.txt").getParent();
@@ -167,7 +171,6 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.42")));
     }
 
-
     @Test
     public void alpine315() throws Exception {
         final Path dir = Resources.file("/fixtures/platforms/alpine315/exec-uname-a.txt").getParent();
@@ -184,6 +187,96 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getUname(), is("Linux bmh-build-x64-alpine315-1 5.15.140-0-virt #1-Alpine SMP Wed, 29 Nov 2023 21:47:33 +0000 x86_64 Linux"));
         assertThat(platformInfo.getLibC(), is(LibC.MUSL));
         assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("1.2.2")));
+    }
+
+    @Test
+    public void macos11() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/macos11/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("macOS"));
+        assertThat(platformInfo.getDisplayName(), is("macOS 11.7.2 (Big Sur)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("11.7.2")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("20.6")));
+        assertThat(platformInfo.getUname(), is("Darwin bmh-build-x64-macos11-1.lauer.lan 20.6.0 Darwin Kernel Version 20.6.0: Sun Nov  6 23:17:00 PST 2022; root:xnu-7195.141.46~1/RELEASE_X86_64 x86_64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void freebsd13() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/freebsd13/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.FREEBSD));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("FreeBSD"));
+        assertThat(platformInfo.getDisplayName(), is("FreeBSD 13.5-RELEASE-p6"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("13.5")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("FreeBSD bmh-build-x64-freebsd13-1 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void openbsd78() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/openbsd78/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.OPENBSD));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("OpenBSD"));
+        assertThat(platformInfo.getDisplayName(), is("OpenBSD 7.8"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("7.8")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("OpenBSD bmh-build-x64-openbsd78-1 7.8 GENERIC.MP#54 amd64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void windows11() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/windows11/locate.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.WINDOWS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Windows"));
+        assertThat(platformInfo.getDisplayName(), is("Windows 11 Pro (25H2)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("11.0.26200")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("10.0.26200")));
+        assertThat(platformInfo.getUname(), is("Windows BMH-BUILD-X64-W 11.0.26200 Windows 11 Pro (25H2) AMD64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void windows7() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/windows7/locate.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.WINDOWS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Windows"));
+        assertThat(platformInfo.getDisplayName(), is("Windows 7 Professional"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("7.0.7601")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.1.7601")));
+        assertThat(platformInfo.getUname(), is("Windows BMH-BUILD-X64-W 7.0.7601 Windows 7 Professional AMD64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }
 
 }

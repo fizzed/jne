@@ -54,6 +54,9 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "macos11";
         final String host = "bmh-build-x64-macos11-1";*/
 
+        final String fixtureName = "macos12-arm64";
+        final String host = "bmh-build-arm64-macos12-1";
+
         /*final String fixtureName = "macos15";
         final String host = "bmh-build-x64-macos15-1";*/
 
@@ -69,8 +72,8 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "openbsd78";
         final String host = "bmh-build-x64-openbsd78-1";*/
 
-        final String fixtureName = "alpine315";
-        final String host = "bmh-build-x64-alpine315-1";
+        /*final String fixtureName = "alpine315";
+        final String host = "bmh-build-x64-alpine315-1";*/
 
         final SystemExecutor systemExecutor = new SystemExecutorSsh(host);
 
