@@ -38,18 +38,12 @@ class WindowsRegistryTest {
     @Test @EnabledOnOs(OS.WINDOWS)
     public void queryUserEnvironmentVariables() throws Exception {
         final WindowsRegistry wr = WindowsRegistry.queryUserEnvironmentVariables(new SystemExecutorLocal());
-
-        //env.forEach((k,v) -> System.out.println(k + "=" + v));
-
-        // we're just happy it runs
+        assertThat(wr.getValues().size(), greaterThan(1));
     }
 
     @Test @EnabledOnOs(OS.WINDOWS)
     public void querySystemEnvironmentVariables() throws Exception {
         final WindowsRegistry wr = WindowsRegistry.querySystemEnvironmentVariables(new SystemExecutorLocal());
-
-        //env.forEach((k,v) -> System.out.println(k + "=" + v));
-
         assertThat(wr.getValues().size(), greaterThan(1));
     }
 
@@ -107,22 +101,38 @@ class WindowsRegistryTest {
     }
 
     @Test
-    public void parseCurrentVersion11QueryViaSsh() throws IOException {
-        String output = Resources.stringUTF8("/com/fizzed/jne/internal/WindowsCurrentVersionRegQuery11ViaSsh.txt");
+    public void parseQueryWithNewlinesAtStartButNotAtEnd() throws IOException {
+        String output = "" +
+            "\n" +
+            "\n" +
+            "\n" +
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\n" +
+            "    SystemRoot    REG_SZ    C:\\WINDOWS\n" +
+            "    BaseBuildRevisionNumber    REG_DWORD    0x1";
 
         final WindowsRegistry wr = WindowsRegistry.parse(output);
 
-        assertThat(wr.getValues(), aMapWithSize(33));
-        assertThat(wr.getValues(), hasEntry("DisplayVersion", "25H2"));
-        assertThat(wr.getValues(), hasEntry("ProductId", "00330-80000-00000-AA402"));
-        assertThat(wr.getValues(), hasEntry("UBR", "6901"));
-        assertThat(wr.getValues(), hasEntry("CurrentBuildNumber", "26200"));
-        assertThat(wr.getValues(), hasEntry("InstallDate", "1732551623"));
-        assertThat(wr.getValues(), hasEntry("LCUVer", "10.0.26100.6901"));
-        assertThat(wr.getValues(), hasEntry("BuildLabEx", "26100.1.amd64fre.ge_release.240331-1435"));
+        assertThat(wr.getValues(), aMapWithSize(2));
+        assertThat(wr.getValues(), hasEntry("SystemRoot", "C:\\WINDOWS"));
+        assertThat(wr.getValues(), hasEntry("BaseBuildRevisionNumber", "1"));
+    }
 
-        // should also be case insensitive too
-        assertThat(wr.getValues().get("displayversion"), is("25H2"));
+    @Test
+    public void parseQueryWithNewlinesAtEnd() throws IOException {
+        String output = "" +
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\n" +
+            "    SystemRoot    REG_SZ    C:\\WINDOWS\n" +
+            "    BaseBuildRevisionNumber    REG_DWORD    0x1\n" +
+            "    Key REG_SZ" +
+            "\n" +
+            "\n";
+
+        final WindowsRegistry wr = WindowsRegistry.parse(output);
+
+        assertThat(wr.getValues(), aMapWithSize(3));
+        assertThat(wr.getValues(), hasEntry("SystemRoot", "C:\\WINDOWS"));
+        assertThat(wr.getValues(), hasEntry("BaseBuildRevisionNumber", "1"));
+        assertThat(wr.getValues(), hasEntry("Key", null));
     }
 
 }

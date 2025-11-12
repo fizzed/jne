@@ -47,26 +47,23 @@ public class WindowsRegistry {
     // helper methods
 
     static public WindowsRegistry queryUserEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "HKEY_CURRENT_USER\\Environment");
-
-        return parse(output);
+        return query(systemExecutor, "HKEY_CURRENT_USER\\Environment");
     }
 
     static public WindowsRegistry querySystemEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\"");
-
-        return parse(output);
+        return query(systemExecutor, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
     }
 
     static public WindowsRegistry queryCurrentVersion(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\"");
-
-        return parse(output);
+        return query(systemExecutor, "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
     }
 
     static public WindowsRegistry queryComputerName(SystemExecutor systemExecutor) throws Exception {
-        final String output = systemExecutor.execProcess("reg.exe", "query", "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName\"");
+        return query(systemExecutor, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName");
+    }
 
+    static public WindowsRegistry query(SystemExecutor systemExecutor, String key) throws Exception {
+        final String output = systemExecutor.execProcess("reg.exe", "query", "\"" + key + "\"");
         return parse(output);
     }
 
@@ -75,9 +72,12 @@ public class WindowsRegistry {
 
         // process output line by line
         int pos = 0;
-        int nextNewlinePos = output.indexOf('\n', pos);
-        while (nextNewlinePos >= 0) {
-            String line = output.substring(pos, nextNewlinePos);
+        while (pos < output.length()) {
+            // we want to read the next line
+            int nextNewlinePos = output.indexOf('\n', pos);
+            String line = output.substring(pos, nextNewlinePos >= 0 ? nextNewlinePos : output.length());
+            pos += line.length() + 1;
+
             // trim it to make it easier to parse
             line = line.trim();
 
@@ -89,26 +89,31 @@ public class WindowsRegistry {
             } else if (line.contains("REG_")) {
                 // this is a line with a value we will want to process
                 // e.g. Path    REG_EXPAND_SZ    C:\Opt\bin;%PATH%
-                final String[] parts = line.split("\\s+(REG_[_\\w]+)\\s+");
-                if (parts.length == 2) {
-                    final String name =  parts[0].trim();
-                    final String type = line.substring(parts[0].length(), line.length() - parts[1].length()).trim();
-                    final String value = parseType(type, parts[1]);
+                int regStartPos = line.indexOf("REG_");
+                if (regStartPos >= 0) {
+                    int regEndPos = Utils.indexOfAny(line, regStartPos+1, ' ', '\t', '\r', '\n');   // any whitespace works
+                    // correct endPos in case REG_ part IS the last part of the line
+                    regEndPos = regEndPos >= 0 ? regEndPos : line.length();
+
+                    final String name = line.substring(0, regStartPos).trim();
+                    final String type = line.substring(regStartPos, regEndPos).trim();
+
+                    // the value may or may not exist
+                    final String value;
+                    if (regEndPos < line.length()-1) {
+                        value = parseType(type, line.substring(regEndPos+1).trim());
+                    } else {
+                        value = null;
+                    }
+
                     values.put(name, value);
-                } else if (parts.length == 1) {
-                    values.put(parts[0], null);     // empty value
                 } else {
                     log.warn("Unable to parse reg query output line: {}", line);
                 }
-//                log.debug("part0: {}", parts[0]);
-//                log.debug("part1: {}", parts[1]);
             } else {
                 // hmmm... this should really never happen
                 log.warn("Unexpected windows req query line: {}", line);
             }
-
-            pos = nextNewlinePos + 1;
-            nextNewlinePos = output.indexOf('\n', pos);
         }
 
         return new WindowsRegistry(values);

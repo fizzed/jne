@@ -58,6 +58,31 @@ public class Utils {
         return value;
     }
 
+    static public int indexOfAny(String s, int fromIndex, char... chars) {
+        if (s == null || chars == null || chars.length == 0) {
+            return -1;
+        }
+
+        final int len = s.length();
+
+        if (fromIndex < 0) {
+            fromIndex = 0;
+        } else if (fromIndex >= len) {
+            return -1;
+        }
+
+        for (int i = fromIndex; i < len; i++) {
+            char c = s.charAt(i);
+            for (char search : chars) {
+                if (c == search) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
     static public Path which(String nameOfExeOrBin) {
         // search PATH for existence of an executable
         final String path = System.getenv("PATH");
