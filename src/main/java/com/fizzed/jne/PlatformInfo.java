@@ -498,9 +498,9 @@ public class PlatformInfo {
         ABI abi = null;
 
         if (os == OperatingSystem.LINUX) {
-            final LinuxLibC linuxLibC = detectLinuxLibC();
-            if (linuxLibC != null) {
-                switch (linuxLibC) {
+            final LibC libC = detectLinuxLibC();
+            if (libC != null) {
+                switch (libC) {
                     case MUSL:
                         abi = ABI.MUSL;
                         break;
@@ -525,23 +525,23 @@ public class PlatformInfo {
     // LibC Detection
     //
 
-    static private final MemoizedInitializer<LinuxLibC> linuxLibCRef = new MemoizedInitializer<>();
+    static private final MemoizedInitializer<LibC> linuxLibCRef = new MemoizedInitializer<>();
 
-    static public LinuxLibC detectLinuxLibC() {
-        return linuxLibCRef.once(new MemoizedInitializer.Initializer<LinuxLibC>() {
+    static public LibC detectLinuxLibC() {
+        return linuxLibCRef.once(new MemoizedInitializer.Initializer<LibC>() {
             @Override
-            public LinuxLibC init() {
+            public LibC init() {
                 // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
                 LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
 
-                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LibC.UNKNOWN) {
                     return detectedFilesResult.getLibc();
                 }
 
                 // step 2: search /lib/ directory for MUSL and/or architecture
                 detectedFilesResult = detectLinuxLibFiles();
 
-                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LinuxLibC.UNKNOWN) {
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LibC.UNKNOWN) {
                     return detectedFilesResult.getLibc();
                 }
 
@@ -552,20 +552,20 @@ public class PlatformInfo {
 
                 // fallback: we will assume this is GLIBC
                 log.debug("Will assume we are running on GLIBC");
-                return LinuxLibC.GLIBC;
+                return LibC.GLIBC;
             }
         });
     }
 
     static public class LinuxDetectedFilesResult {
-        private LinuxLibC libc;
+        private LibC libc;
         private HardwareArchitecture arch;
 
-        public LinuxLibC getLibc() {
+        public LibC getLibc() {
             return libc;
         }
 
-        public void setLibc(LinuxLibC libc) {
+        public void setLibc(LibC libc) {
             this.libc = libc;
         }
 
@@ -617,7 +617,7 @@ public class PlatformInfo {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
                                     log.debug("Detected libc MUSL via /lib dir strategy (in {} ms)", (System.currentTimeMillis() - now));
-                                    result.setLibc(LinuxLibC.MUSL);
+                                    result.setLibc(LibC.MUSL);
                                 }
                             }
 
@@ -687,7 +687,7 @@ public class PlatformInfo {
                                 // only try detecting this once
                                 if (result.getLibc() == null) {
                                     log.debug("Detected libc MUSL via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
-                                    result.setLibc(LinuxLibC.MUSL);
+                                    result.setLibc(LibC.MUSL);
                                 }
                             } else if (realMapFilePath.contains("/libc")) {
                                 possiblyFoundGlibc = true;
@@ -718,12 +718,12 @@ public class PlatformInfo {
 
         if (possiblyFoundGlibc) {
             log.debug("Detected libc GLIBC via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
-            result.setLibc(LinuxLibC.GLIBC);
+            result.setLibc(LibC.GLIBC);
         }
 
         if (result.getLibc() == null) {
             log.debug("Unable to detect libc via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
-            result.setLibc(LinuxLibC.UNKNOWN);
+            result.setLibc(LibC.UNKNOWN);
         }
 
         return result;

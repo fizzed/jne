@@ -21,8 +21,6 @@ package com.fizzed.jne;
  */
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,11 +77,11 @@ public class PlatformInfoTest {
         OperatingSystem operatingSystem = PlatformInfo.doDetectOperatingSystem();
 
         // this should actually not fail on any operating system
-        LinuxLibC libc = PlatformInfo.detectLinuxLibC();
+        LibC libc = PlatformInfo.detectLinuxLibC();
 
         if (operatingSystem == OperatingSystem.LINUX) {
             assertThat(libc, is(not(nullValue())));
-            assertThat(libc, is(not(LinuxLibC.UNKNOWN)));
+            assertThat(libc, is(not(LibC.UNKNOWN)));
         } else {
             assertThat(libc, is(nullValue()));
         }
