@@ -141,6 +141,8 @@ public class PlatformInfo {
      *         If the platform cannot be determined, the returned object may contain null values or default configurations.
      */
     static public PlatformInfo detectAll(SystemExecutor systemExecutor) {
+        final long startTime = System.currentTimeMillis();
+
         // we should now be able to detect the operating system and architecture
         OperatingSystem operatingSystem = null;
         HardwareArchitecture hardwareArchitecture = null;
@@ -363,6 +365,8 @@ public class PlatformInfo {
                 libCVersion = libcResult.getVersion();
             }
         }
+
+        log.trace("Completed detecting platform info in {} ms", (System.currentTimeMillis() - startTime));
 
         return new PlatformInfo(operatingSystem, hardwareArchitecture, name, displayName, version, kernelVersion, ofNullable(uname).map(Uname::getSource).orElse(null), libC, libCVersion);
     }
