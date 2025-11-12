@@ -499,16 +499,13 @@ public class PlatformInfo {
 
         if (os == OperatingSystem.LINUX) {
             final LibC libC = detectLinuxLibC();
-            if (libC != null) {
-                switch (libC) {
-                    case MUSL:
-                        abi = ABI.MUSL;
-                        break;
-                    case GLIBC:
-                    case UNKNOWN:
-                        abi = ABI.GNU;
-                        break;
-                }
+            switch (ofNullable(libC).orElse(LibC.GLIBC)) {
+                case MUSL:
+                    abi = ABI.MUSL;
+                    break;
+                case GLIBC:
+                    abi = ABI.GNU;
+                    break;
             }
         }
 
@@ -534,14 +531,14 @@ public class PlatformInfo {
                 // step 1: use /proc/self/mapped_files available in newer/some kernels to see what libs are loaded
                 LinuxDetectedFilesResult detectedFilesResult = detectLinuxMappedFiles();
 
-                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LibC.UNKNOWN) {
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null) {
                     return detectedFilesResult.getLibc();
                 }
 
                 // step 2: search /lib/ directory for MUSL and/or architecture
                 detectedFilesResult = detectLinuxLibFiles();
 
-                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null && detectedFilesResult.getLibc() != LibC.UNKNOWN) {
+                if (detectedFilesResult != null && detectedFilesResult.getLibc() != null) {
                     return detectedFilesResult.getLibc();
                 }
 
@@ -723,7 +720,6 @@ public class PlatformInfo {
 
         if (result.getLibc() == null) {
             log.debug("Unable to detect libc via mapped files strategy (in {} ms)", (System.currentTimeMillis() - now));
-            result.setLibc(LibC.UNKNOWN);
         }
 
         return result;

@@ -81,7 +81,6 @@ public class PlatformInfoTest {
 
         if (operatingSystem == OperatingSystem.LINUX) {
             assertThat(libc, is(not(nullValue())));
-            assertThat(libc, is(not(LibC.UNKNOWN)));
         } else {
             assertThat(libc, is(nullValue()));
         }
