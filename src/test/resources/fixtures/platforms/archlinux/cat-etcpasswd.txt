@@ -1,0 +1,17 @@
+root:x:0:0::/root:/usr/bin/bash
+alpm:x:979:979:Arch Linux Package Management:/:/usr/bin/nologin
+bin:x:1:1::/:/usr/bin/nologin
+daemon:x:2:2::/:/usr/bin/nologin
+mail:x:8:12::/var/spool/mail:/usr/bin/nologin
+ftp:x:14:11::/srv/ftp:/usr/bin/nologin
+http:x:33:33::/srv/http:/usr/bin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/usr/bin/nologin
+dbus:x:81:81:System Message Bus:/:/usr/bin/nologin
+systemd-coredump:x:978:978:systemd Core Dumper:/:/usr/bin/nologin
+systemd-network:x:977:977:systemd Network Management:/:/usr/bin/nologin
+systemd-oom:x:976:976:systemd Userspace OOM Killer:/:/usr/bin/nologin
+systemd-journal-remote:x:975:975:systemd Journal Remote:/:/usr/bin/nologin
+systemd-resolve:x:974:974:systemd Resolver:/:/usr/bin/nologin
+systemd-timesync:x:973:973:systemd Time Synchronization:/:/usr/bin/nologin
+tss:x:972:972:tss user for tpm2:/:/usr/bin/nologin
+uuidd:x:971:971:UUID generator helper daemon:/var/lib/libuuid:/usr/bin/nologin

@@ -172,6 +172,60 @@ public class PlatformInfoTest {
     }
 
     @Test
+    public void ubuntu2404_arm64() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/ubuntu2404-arm64/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(platformInfo.getName(), is("Ubuntu"));
+        assertThat(platformInfo.getDisplayName(), is("Ubuntu 24.04.3 LTS (Noble Numbat)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("24.04")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.8.0.87")));
+        assertThat(platformInfo.getUname(), is("Linux bmh-build-arm64-ubuntu24-1 6.8.0-87-generic #88-Ubuntu SMP PREEMPT_DYNAMIC Sat Oct 11 09:16:38 UTC 2025 aarch64 aarch64 aarch64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.39")));
+    }
+
+    @Test
+    public void ubuntu2404_riscv64() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/ubuntu2404-riscv64/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.RISCV64));
+        assertThat(platformInfo.getName(), is("Ubuntu"));
+        assertThat(platformInfo.getDisplayName(), is("Ubuntu 24.04.3 LTS (Noble Numbat)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("24.04")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.14.0.35")));
+        assertThat(platformInfo.getUname(), is("Linux bmh-build-riscv64-ubuntu24-1 6.14.0-35-generic #35.1~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Oct 16 08:15:18 UTC riscv64 riscv64 riscv64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.39")));
+    }
+
+    @Test
+    public void fedora42_arm64() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/fedora42-arm64/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(platformInfo.getName(), is("Fedora Linux Asahi Remix"));
+        assertThat(platformInfo.getDisplayName(), is("Fedora Linux Asahi Remix 42 (Forty Two [Adams])"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("42")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.16.8.400")));
+        assertThat(platformInfo.getUname(), is("Linux bmh-mini-2 6.16.8-400.asahi.fc42.aarch64+16k #1 SMP PREEMPT_DYNAMIC Sun Sep 21 20:31:36 UTC 2025 aarch64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.GLIBC));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("2.41")));
+    }
+
+    @Test
     public void alpine315() throws Exception {
         final Path dir = Resources.file("/fixtures/platforms/alpine315/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
@@ -203,6 +257,42 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("11.7.2")));
         assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("20.6")));
         assertThat(platformInfo.getUname(), is("Darwin bmh-build-x64-macos11-1.lauer.lan 20.6.0 Darwin Kernel Version 20.6.0: Sun Nov  6 23:17:00 PST 2022; root:xnu-7195.141.46~1/RELEASE_X86_64 x86_64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void macos15() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/macos15/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("macOS"));
+        assertThat(platformInfo.getDisplayName(), is("macOS 15.1 (Sequoia)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("15.1")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("24.1")));
+        assertThat(platformInfo.getUname(), is("Darwin bmh-build-x64-macos15-1.lauer.lan 24.1.0 Darwin Kernel Version 24.1.0: Thu Oct 10 21:02:27 PDT 2024; root:xnu-11215.41.3~2/RELEASE_X86_64 x86_64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void macos15arm64() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/macos15-arm64/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
+        assertThat(platformInfo.getName(), is("macOS"));
+        assertThat(platformInfo.getDisplayName(), is("macOS 15.7.1 (Sequoia)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("15.7.1")));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("24.6")));
+        assertThat(platformInfo.getUname(), is("Darwin bmh-dev-arm64-macos15-1.lauer.lan 24.6.0 Darwin Kernel Version 24.6.0: Mon Aug 11 21:16:05 PDT 2025; root:xnu-11417.140.69.701.11~1/RELEASE_ARM64_VMAPPLE arm64"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }
@@ -277,6 +367,24 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getUname(), is("Windows BMH-BUILD-X64-W 7.0.7601 Windows 7 Professional AMD64"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void voidLinux() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/voidlinux/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("Void"));
+        assertThat(platformInfo.getDisplayName(), is("Void Linux"));
+        assertThat(platformInfo.getVersion(), is(nullValue()));
+        assertThat(platformInfo.getKernelVersion(), is(SemanticVersion.parse("6.17.0.6")));
+        assertThat(platformInfo.getUname(), is("Linux 3febf31f2dfb 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux"));
+        assertThat(platformInfo.getLibC(), is(LibC.MUSL));
+        assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("1.2.5")));
     }
 
 }

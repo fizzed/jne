@@ -59,10 +59,11 @@ public class UnameTest {
 
     @Test
     public void parseMacos() {
-        String macosOutput = "Darwin My-MacBook.local 23.1.0 Darwin Kernel Version 23.1.0: Mon Oct 9 21:27:24 PDT 2023; root:xnu-10002.41.9~6/RELEASE_X86_64 x86_64";
+        String macosOutput = "\n Darwin My-MacBook.local 23.1.0 Darwin Kernel Version 23.1.0: Mon Oct 9 21:27:24 PDT 2023; root:xnu-10002.41.9~6/RELEASE_X86_64 x86_64\n\n  ";
         Uname u = Uname.parse(macosOutput);
 
         assertNotNull(u);
+        assertThat(u.getSource(), is(macosOutput.trim()));
         assertEquals("Darwin", u.getSysname());
         assertEquals("My-MacBook.local", u.getNodename());
         assertEquals("23.1.0", u.getVersion());

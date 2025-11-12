@@ -1,0 +1,4 @@
+	/lib/ld-musl-x86_64.so.1 (0x70c3de205000)
+	libacl.so.1 => /lib/libacl.so.1 (0x70c3de1e3000)
+	libncursesw.so.6 => /lib/libncursesw.so.6 (0x70c3de173000)
+	libc.so => /lib/ld-musl-x86_64.so.1 (0x70c3de205000)

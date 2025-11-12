@@ -1,0 +1,4 @@
+musl libc (x86_64)
+Version 1.2.5
+Dynamic Program Loader
+Usage: /lib/ld-musl-x86_64.so.1 [options] [--] pathname [args]

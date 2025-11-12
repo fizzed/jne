@@ -1,0 +1,3 @@
+	/lib/ld-musl-x86_64.so.1 (0x790218284000)
+	libcap.so.2 => /lib/libcap.so.2 (0x790218240000)
+	libc.so => /lib/ld-musl-x86_64.so.1 (0x790218284000)

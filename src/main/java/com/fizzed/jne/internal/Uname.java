@@ -65,17 +65,18 @@ public class Uname {
     /**
      * Parses the full output of "uname -a" and returns a Uname object.
      *
-     * @param output The complete string returned by the "uname -a" command.
+     * @param content The complete string returned by the "uname -a" command.
      * @return A populated Uname object.
      * @throws IllegalArgumentException if the input string is invalid.
      */
-    public static Uname parse(String output) {
-        if (output == null || output.trim().isEmpty()) {
-            throw new IllegalArgumentException("Input string cannot be null or empty.");
+    public static Uname parse(String content) {
+        // make sure input is trimmed
+        if (content == null) {
+            throw new IllegalArgumentException("Input string cannot be null");
         }
 
-        String originalInput = output;
-        String[] parts = output.trim().split("\\s+");
+        content = content.trim();
+        String[] parts = content.split("\\s+");
 
         if (parts.length < 5) {
             throw new IllegalArgumentException(
@@ -166,7 +167,7 @@ public class Uname {
         }
 
         return new Uname(sysname, nodename, release, version, machine,
-            processor, hardwarePlatform, operatingSystem, originalInput);
+            processor, hardwarePlatform, operatingSystem, content);
     }
 
     /**

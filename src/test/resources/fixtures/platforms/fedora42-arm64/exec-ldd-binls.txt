@@ -1,0 +1,6 @@
+	linux-vdso.so.1 (0x0000ffff9392c000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x0000ffff93870000)
+	libcap.so.2 => /lib64/libcap.so.2 (0x0000ffff93840000)
+	libc.so.6 => /lib64/libc.so.6 (0x0000ffff93670000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff93930000)
+	libpcre2-8.so.0 => /lib64/libpcre2-8.so.0 (0x0000ffff935b0000)

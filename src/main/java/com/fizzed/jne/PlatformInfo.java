@@ -368,6 +368,11 @@ public class PlatformInfo {
 
         log.trace("Completed detecting platform info in {} ms", (System.currentTimeMillis() - startTime));
 
+        // did it work?
+        if (operatingSystem == null || hardwareArchitecture == null) {
+            throw new IllegalStateException("Unable to detect platform details (both os and arch were null)");
+        }
+
         return new PlatformInfo(operatingSystem, hardwareArchitecture, name, displayName, version, kernelVersion, ofNullable(uname).map(Uname::getSource).orElse(null), libC, libCVersion);
     }
 

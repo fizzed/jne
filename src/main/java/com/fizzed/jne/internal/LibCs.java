@@ -56,15 +56,15 @@ public class LibCs {
 
             // Check for the most common C library names
             LibC libC = null;
-            if (libName.startsWith("libc.so")) {
-                // glibc (e.g., libc.so.6)
-                libC = LibC.GLIBC;
+            if (libName.contains("libc") && line.contains("musl")) {     // need whole line to confirm
+                // musl (e.g., libc.musl-x86_64.so.1)
+                libC = LibC.MUSL;
             } else if (libName.startsWith("libuclibc.so")) {
                 // uclibc (e.g., libuClibc.so.1)
                 libC = LibC.UCLIBC;
-            } else if (libName.contains("libc") && libName.contains("musl")) {
-                // musl (e.g., libc.musl-x86_64.so.1)
-                libC = LibC.MUSL;
+            } else if (libName.startsWith("libc.so")) {
+                // glibc (e.g., libc.so.6)
+                libC = LibC.GLIBC;
             }
 
             if (libC == null) {

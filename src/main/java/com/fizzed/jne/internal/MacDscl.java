@@ -84,7 +84,9 @@ public class MacDscl {
 
     static public MacDscl readByHomeDirectory(Path homeDir, SystemExecutor systemExecutor) throws Exception {
         // dscl . -read $homeDir
-        final String output = systemExecutor.execProcess("dscl", ".", "-read", homeDir.toString());
+        // its WAY faster if we limit what we want to query to specific attributes, otherwise things like massive JPEG photos could be returned
+        final String output = systemExecutor.execProcess(
+            "dscl", ".", "-read", homeDir.toString(), "NFSHomeDirectory", "UserShell", "RealName", "UniqueID", "PrimaryGroupID");
 
         return parse(output);
     }

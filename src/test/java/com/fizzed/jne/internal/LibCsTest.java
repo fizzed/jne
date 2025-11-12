@@ -104,4 +104,14 @@ class LibCsTest {
         assertThat(version, is("1.2.2"));
     }
 
+    @Test
+    public void pathVoidLinux() throws Exception {
+        String content = Resources.stringUTF8("/fixtures/platforms/voidlinux/exec-ldd-binls.txt");
+
+        final LibCs.PathResult result = LibCs.parsePath(content);
+
+        assertThat(result.getLibC(), is(LibC.MUSL));
+        assertThat(result.getPath(), is("/lib/ld-musl-x86_64.so.1"));
+    }
+
 }

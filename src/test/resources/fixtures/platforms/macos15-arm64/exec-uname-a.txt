@@ -1,0 +1,1 @@
+Darwin bmh-dev-arm64-macos15-1.lauer.lan 24.6.0 Darwin Kernel Version 24.6.0: Mon Aug 11 21:16:05 PDT 2025; root:xnu-11417.140.69.701.11~1/RELEASE_ARM64_VMAPPLE arm64
