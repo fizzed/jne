@@ -1,5 +1,12 @@
 # Java Native Extractor by Fizzed
 
+## 4.8.0 - 2025-11-13
+ - New PlatformInfo properties for OS arch, version, and libc detection support.
+ - BREAKING CHANGE: Renamed LinuxLibC enum to just LibC
+ - Refactor how WindowsRegistry return values are parsed
+ - New SemanticVersion class for parsing version strings
+ - Fix parsing of JavaVersion to remove non-digits so something like "21-internal" is parsed as "21"
+
 ## 4.7.0 - 2025-11-04
  - Fixed issue with UserEnvironment falls back to lookup by userId in case USER env var not set (e.g. in a container)
 
