@@ -1,0 +1,5 @@
+	/usr/lib/arm-linux-gnueabihf/libarmmem-${PLATFORM}.so => /usr/lib/arm-linux-gnueabihf/libarmmem-v6l.so (0xb6f00000)
+	libselinux.so.1 => /lib/arm-linux-gnueabihf/libselinux.so.1 (0xb6eb0000)
+	libc.so.6 => /lib/arm-linux-gnueabihf/libc.so.6 (0xb6d37000)
+	/lib/ld-linux-armhf.so.3 (0xb6f23000)
+	libpcre2-8.so.0 => /lib/arm-linux-gnueabihf/libpcre2-8.so.0 (0xb6c90000)

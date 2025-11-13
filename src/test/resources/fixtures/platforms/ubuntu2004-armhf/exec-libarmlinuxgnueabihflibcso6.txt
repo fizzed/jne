@@ -1,0 +1,9 @@
+GNU C Library (Ubuntu GLIBC 2.31-0ubuntu9.9) stable release version 2.31.
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+Compiled by GNU CC version 9.4.0.
+libc ABIs: UNIQUE ABSOLUTE
+For bug reporting instructions, please see:
+<https://bugs.launchpad.net/ubuntu/+source/glibc/+bugs>.

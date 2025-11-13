@@ -75,8 +75,8 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "ubuntu2510";
         final String host = "localhost";*/
 
-        final String fixtureName = "ubuntu2404";
-        final String host = "bmh-build-x64-ubuntu24-1";
+        /*final String fixtureName = "ubuntu2404";
+        final String host = "bmh-build-x64-ubuntu24-1";*/
 
         /*final String fixtureName = "fedora42-arm64";
         final String host = "bmh-mini-2";*/
@@ -86,6 +86,12 @@ public class PlatformFixtureGenerator {
 
         /*final String fixtureName = "ubuntu2404-riscv64";
         final String host = "bmh-build-riscv64-ubuntu24-1";*/
+
+        /*final String fixtureName = "rpios-armhf";
+        final String host = "bmh-build-armhf-rpios-1";*/
+
+        final String fixtureName = "ubuntu2004-armhf";
+        final String host = "bmh-build-armhf-ubuntu20-1";
 
         /*final String fixtureName = "freebsd13";
         final String host = "bmh-build-x64-freebsd13-1";*/
