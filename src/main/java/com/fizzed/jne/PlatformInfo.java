@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
@@ -100,29 +103,27 @@ public class PlatformInfo {
     // Static Detection Methods
     //
 
-    static private final MemoizedInitializer<PlatformInfo> platformInfoRef = new MemoizedInitializer<>();
+    public enum Detect {
+        VERSION,
+        LIBC
+    }
 
     /**
-     * Detects all platform-specific information related to the operating system
-     * and hardware architecture of the host system. This method internally uses
-     * a memoized initialization mechanism to ensure that detection is performed
-     * only once, providing cached results for subsequent calls. It is an
-     * efficient way to retrieve platform details by leveraging the memoization
-     * framework to avoid redundant computations.
+     * IMPORTANT: This method does a fresh "detect" every time it's called, which is somewhat expensive. For faster
+     * local-only detection, you may find other static methods in this class faster and will return cached results.
      *
-     * @return a {@link PlatformInfo} object containing detailed information about the
-     *         platform, including the operating system, hardware architecture,
-     *         kernel version, and other related properties. If the platform details
-     *         cannot be detected, the method may return an object with null or
-     *         default values for its attributes.
+     * Detects the platform details of the operating system and hardware architecture of the host system
+     * by utilizing the provided {@link SystemExecutor} for executing system-level commands. The method
+     * tries to determine the platform by executing standard commands (like 'uname') and by querying
+     * platform-specific information such as the Windows Registry if necessary.
+     *
+     * @param detects
+     * @return a {@link PlatformInfo} object containing detailed information about the platform,
+     *         including the operating system, hardware architecture, kernel version, and other properties.
+     *         If the platform cannot be determined, the returned object may contain null values or default configurations.
      */
-    static public PlatformInfo detectAll() {
-        return platformInfoRef.once(new MemoizedInitializer.Initializer<PlatformInfo>() {
-            @Override
-            public PlatformInfo init() {
-                return detectAll(SystemExecutor.LOCAL);
-            }
-        });
+    static public PlatformInfo detect(Detect... detects) {
+        return detect(SystemExecutor.LOCAL, detects);
     }
 
     /**
@@ -141,10 +142,11 @@ public class PlatformInfo {
      *         including the operating system, hardware architecture, kernel version, and other properties.
      *         If the platform cannot be determined, the returned object may contain null values or default configurations.
      */
-    static public PlatformInfo detectAll(SystemExecutor systemExecutor) {
+    static public PlatformInfo detect(SystemExecutor systemExecutor, Detect... detects) {
         final long startTime = System.currentTimeMillis();
 
         // we should now be able to detect the operating system and architecture
+        final Set<Detect> detectSet = EnumSet.copyOf(Arrays.asList(detects));
         OperatingSystem operatingSystem = null;
         HardwareArchitecture hardwareArchitecture = null;
         String name = null;
@@ -358,12 +360,14 @@ public class PlatformInfo {
             }
         }
 
-        if (operatingSystem == OperatingSystem.LINUX) {
-            // let's try to detect the libc version
-            LibCResult libcResult = detectLibC(systemExecutor);
-            if (libcResult != null) {
-                libC = libcResult.getLibC();
-                libCVersion = libcResult.getVersion();
+        if (detectSet.contains(Detect.LIBC)) {
+            if (operatingSystem == OperatingSystem.LINUX) {
+                // let's try to detect the libc version
+                LibCResult libcResult = detectLibC(systemExecutor);
+                if (libcResult != null) {
+                    libC = libcResult.getLibC();
+                    libCVersion = libcResult.getVersion();
+                }
             }
         }
 
@@ -428,7 +432,7 @@ public class PlatformInfo {
      *   information (such as OS and architecture) is required, and a full platform
      *   detection process is unnecessary.
      * - For environments where detailed information is needed (e.g., kernel version
-     *   or library details), consider using {@link #detectAll()}.
+     *   or library details), consider using {@link #detect)}.
      *
      * @return a {@link PlatformInfo} object containing only the operating system
      *         and hardware architecture details of the host system. Other properties
