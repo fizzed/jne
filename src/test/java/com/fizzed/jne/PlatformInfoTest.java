@@ -39,7 +39,7 @@ public class PlatformInfoTest {
     @Test
     public void detectAll() {
         PlatformInfo platformInfoBasic = PlatformInfo.detectBasic();
-        PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+        PlatformInfo platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
 
         // os & arch should be the same
         assertThat(platformInfoBasic.getOperatingSystem(), is(platformInfoAll.getOperatingSystem()));
@@ -50,7 +50,7 @@ public class PlatformInfoTest {
     @Test
     @EnabledOnOs(OS.LINUX)
     public void detectAllLibCVersion() {
-        PlatformInfo platformInfoAll = PlatformInfo.detectAll();
+        PlatformInfo platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
 
         // libc and libc version should not be null
         assertThat(platformInfoAll.getLibC(), is(not(nullValue())));
@@ -122,7 +122,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu1604/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -140,7 +140,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu1804/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -158,7 +158,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu2510/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -176,7 +176,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu2404-arm64/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
@@ -194,7 +194,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/ubuntu2404-riscv64/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.RISCV64));
@@ -212,7 +212,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/fedora42-arm64/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
@@ -230,7 +230,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/alpine315/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -248,7 +248,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/macos11/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -266,7 +266,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/macos15/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -284,7 +284,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/macos15-arm64/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.MACOS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.ARM64));
@@ -302,7 +302,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/freebsd13/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.FREEBSD));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -320,7 +320,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/openbsd78/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.OPENBSD));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -338,7 +338,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/windows11/locate.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.WINDOWS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -356,7 +356,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/windows7/locate.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.WINDOWS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
@@ -374,7 +374,7 @@ public class PlatformInfoTest {
         final Path dir = Resources.file("/fixtures/platforms/voidlinux/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
 
-        final PlatformInfo platformInfo = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.LINUX));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));

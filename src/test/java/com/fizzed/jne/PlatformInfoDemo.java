@@ -57,7 +57,7 @@ public class PlatformInfoDemo {
 //        final String host = "bmh-build-x64-openbsd-latest";
 //        final String host = "bmh-build-riscv64-linux-latest";
 //        final String host = "bmh-build-arm64-linux-baseline";
-        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(new SystemExecutorSsh(host));
+        final PlatformInfo platformInfoAll = PlatformInfo.detect(new SystemExecutorSsh(host), PlatformInfo.Detect.ALL);
 
         log.info("");
         log.info("Platform Info (using detectAll):");

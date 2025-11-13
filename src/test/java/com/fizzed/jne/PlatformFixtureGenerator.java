@@ -104,7 +104,7 @@ public class PlatformFixtureGenerator {
         Files.createDirectories(fixtureDir);
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(fixtureDir, systemExecutor);
 
-        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(fixtureExecutor);
+        final PlatformInfo platformInfoAll = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
         // additional execs so we have that data for other tests too
         EtcPasswd.detect(fixtureExecutor);
         // builder we don't care about, nothing is sensitive

@@ -105,7 +105,8 @@ public class PlatformInfo {
 
     public enum Detect {
         VERSION,
-        LIBC
+        LIBC,
+        ALL
     }
 
     /**
@@ -360,7 +361,7 @@ public class PlatformInfo {
             }
         }
 
-        if (detectSet.contains(Detect.LIBC)) {
+        if (detectSet.contains(Detect.ALL) || detectSet.contains(Detect.LIBC)) {
             if (operatingSystem == OperatingSystem.LINUX) {
                 // let's try to detect the libc version
                 LibCResult libcResult = detectLibC(systemExecutor);
