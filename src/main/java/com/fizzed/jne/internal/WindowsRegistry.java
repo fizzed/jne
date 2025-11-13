@@ -32,59 +32,109 @@ import static java.util.Arrays.asList;
 public class WindowsRegistry {
     static private final Logger log = LoggerFactory.getLogger(WindowsRegistry.class);
 
-    static public Map<String,String> queryUserEnvironmentVariables() throws IOException, InterruptedException {
-        // reg query HKEY_CURRENT_USER\Environment
-        final String output = Utils.execAndGetOutput(asList("reg.exe", "query", "HKEY_CURRENT_USER\\Environment"));
+    private final Map<String,String> values;
 
-        return parseEnvironmentVariableRegQueryOutput(output);
+    public WindowsRegistry(Map<String,String> values) {
+        this.values = values;
     }
 
-    static public Map<String,String> querySystemEnvironmentVariables() throws IOException, InterruptedException {
-        // reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
-        final String output = Utils.execAndGetOutput(asList("reg.exe", "query", "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"));
-
-        return parseEnvironmentVariableRegQueryOutput(output);
+    public Map<String,String> getValues() {
+        return this.values;
     }
 
-    static public Map<String,String> parseEnvironmentVariableRegQueryOutput(String output) throws IOException {
-        final Map<String,String> env = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    public String get(String key) {
+        return this.values.get(key);
+    }
+
+    // helper methods
+
+    static public WindowsRegistry queryUserEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
+        return query(systemExecutor, "HKEY_CURRENT_USER\\Environment");
+    }
+
+    static public WindowsRegistry querySystemEnvironmentVariables(SystemExecutor systemExecutor) throws Exception {
+        return query(systemExecutor, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
+    }
+
+    static public WindowsRegistry queryCurrentVersion(SystemExecutor systemExecutor) throws Exception {
+        return query(systemExecutor, "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+    }
+
+    static public WindowsRegistry queryComputerName(SystemExecutor systemExecutor) throws Exception {
+        return query(systemExecutor, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName");
+    }
+
+    static public WindowsRegistry query(SystemExecutor systemExecutor, String key) throws Exception {
+        final String output = systemExecutor.execProcess(asList(0), "reg.exe", "query", "\"" + key + "\"");
+        return parse(output);
+    }
+
+    static public WindowsRegistry parse(String output) throws IOException {
+        final Map<String,String> values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         // process output line by line
         int pos = 0;
-        int nextNewlinePos = output.indexOf('\n', pos);
-        while (nextNewlinePos > 0) {
-            String line = output.substring(pos, nextNewlinePos);
+        while (pos < output.length()) {
+            // we want to read the next line
+            int nextNewlinePos = output.indexOf('\n', pos);
+            String line = output.substring(pos, nextNewlinePos >= 0 ? nextNewlinePos : output.length());
+            pos += line.length() + 1;
+
             // trim it to make it easier to parse
             line = line.trim();
-
-//            log.debug("parsing environment variable line: {}", line);
 
             // it may only be whitespace, which we can skip
             if (line.isEmpty()) {
                 // safely skip it
-            } else if (line.startsWith("HKEY_CURRENT_USER\\") || line.startsWith("HKEY_LOCAL_MACHINE\\")) {
+            } else if (line.startsWith("HKEY_")) {
                 // we can skip this line
             } else if (line.contains("REG_")) {
                 // this is a line with a value we will want to process
                 // e.g. Path    REG_EXPAND_SZ    C:\Opt\bin;%PATH%
-                final String[] parts = line.split("\\s+(REG_\\w+)\\s+");
-                if (parts.length == 2) {
-                    env.put(parts[0], parts[1]);
+                int regStartPos = line.indexOf("REG_");
+                if (regStartPos >= 0) {
+                    int regEndPos = Utils.indexOfAny(line, regStartPos+1, ' ', '\t', '\r', '\n');   // any whitespace works
+                    // correct endPos in case REG_ part IS the last part of the line
+                    regEndPos = regEndPos >= 0 ? regEndPos : line.length();
+
+                    final String name = line.substring(0, regStartPos).trim();
+                    final String type = line.substring(regStartPos, regEndPos).trim();
+
+                    // the value may or may not exist
+                    final String value;
+                    if (regEndPos < line.length()-1) {
+                        value = parseType(type, line.substring(regEndPos+1).trim());
+                    } else {
+                        value = null;
+                    }
+
+                    values.put(name, value);
                 } else {
                     log.warn("Unable to parse reg query output line: {}", line);
                 }
-//                log.debug("part0: {}", parts[0]);
-//                log.debug("part1: {}", parts[1]);
             } else {
                 // hmmm... this should really never happen
                 log.warn("Unexpected windows req query line: {}", line);
             }
-
-            pos = nextNewlinePos + 1;
-            nextNewlinePos = output.indexOf('\n', pos);
         }
 
-        return env;
+        return new WindowsRegistry(values);
+    }
+
+    static public String parseType(String type, String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+
+        if ("REG_DWORD".equalsIgnoreCase(type)) {
+            String hex = value.substring(2);
+            // 2. Parse the hex string into an integer
+            int dwordValue = Integer.parseInt(hex, 16); // 16 = Radix 16 (hex)
+            // 3. Convert the integer to a final decimal string
+            return Integer.toString(dwordValue);
+        }
+
+        return value;
     }
 
 }

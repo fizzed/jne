@@ -20,9 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
-import com.fizzed.jne.internal.ShellBuilder;
-import com.fizzed.jne.internal.Utils;
-import com.fizzed.jne.internal.WindowsRegistry;
+import com.fizzed.jne.internal.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -310,24 +308,33 @@ public class InstallEnvironment {
             log.info("");
 
             // we are going to query the user OR system env vars via registry
-            final Map<String,String> currentEnvInRegistry;
-            if (this.scope == EnvScope.USER) {
-                currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables();
-            } else {
-                currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables();
+            final WindowsRegistry currentEnvInRegistry;
+            try {
+                if (this.scope == EnvScope.USER) {
+                    currentEnvInRegistry = WindowsRegistry.queryUserEnvironmentVariables(new SystemExecutorLocal());
+                } else {
+                    currentEnvInRegistry = WindowsRegistry.querySystemEnvironmentVariables(new SystemExecutorLocal());
+                }
+            } catch (Exception e) {
+                throw new IOException("Unable to query environment variables for " + this.scope.toString().toLowerCase() + " scope", e);
             }
 
             // shell is irrelevant on windows, env vars and PATH are setup in the registry
             // e.g. setx MY_VARIABLE "MyValue" OR setx MY_VARIABLE "MyValue" /M
             for (EnvVar var : vars) {
-                final boolean exists = Utils.searchEnvVar(currentEnvInRegistry, var.getName(), var.getValue());
+                final boolean exists = Utils.searchEnvVar(currentEnvInRegistry.getValues(), var.getName(), var.getValue());
                 if (!exists) {
                     final List<String> envVarCmd = new ArrayList<>(asList("setx", var.getName(), var.getValue()));
                     if (this.scope == EnvScope.SYSTEM) {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
-                    Utils.execAndGetOutput(envVarCmd);
+                    //Utils.execAndGetOutput(envVarCmd);
+                    try {
+                        SystemExecutor.LOCAL.execProcess(envVarCmd);
+                    } catch (Exception e) {
+                        throw new IOException("Unable to set environment variable", e);
+                    }
                     log.info("  set {}={}", var.getName(), var.getValue());
                 } else {
                     log.info("  set {}={} (skipped as this already was present)", var.getName(), var.getValue());
@@ -352,7 +359,12 @@ public class InstallEnvironment {
                         // we just tack on a /M to make it system-wide
                         envVarCmd.add("/M");
                     }
-                    Utils.execAndGetOutput(envVarCmd);
+                    //Utils.execAndGetOutput(envVarCmd);
+                    try {
+                        SystemExecutor.LOCAL.execProcess(envVarCmd);
+                    } catch (Exception e) {
+                        throw new IOException("Unable to set environment variable", e);
+                    }
                     log.info("  {} PATH {}", path.isPrepend() ? "prepend" : "append", path.getValue());
                 } else {
                     log.info("  {} PATH {} (skipped as this was already present)", path.isPrepend() ? "prepend" : "append", path.getValue());

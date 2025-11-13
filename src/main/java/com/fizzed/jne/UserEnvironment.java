@@ -22,6 +22,7 @@ package com.fizzed.jne;
 
 import com.fizzed.jne.internal.EtcPasswd;
 import com.fizzed.jne.internal.MacDscl;
+import com.fizzed.jne.internal.SystemExecutor;
 import com.fizzed.jne.internal.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +142,8 @@ public class UserEnvironment {
             } else {
                 // e.g. id -u is zero
                 try {
-                    String output = Utils.execAndGetOutput(asList("id", "-u")).trim();
+                    //String output = Utils.execAndGetOutput(asList("id", "-u")).trim();
+                    String output = SystemExecutor.LOCAL.execProcess("id", "-u").trim();
                     if ("0".equals(output)) {
                         userEnvironment.elevated = true;
                     }

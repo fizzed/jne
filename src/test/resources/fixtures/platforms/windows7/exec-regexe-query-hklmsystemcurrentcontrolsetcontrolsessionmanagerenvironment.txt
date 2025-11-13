@@ -1,0 +1,20 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+    ComSpec    REG_EXPAND_SZ    %SystemRoot%\system32\cmd.exe
+    FP_NO_HOST_CHECK    REG_SZ    NO
+    JAVA_HOME    REG_SZ    C:\Program Files\Zulu\zulu-11\
+    NUMBER_OF_PROCESSORS    REG_SZ    2
+    OS    REG_SZ    Windows_NT
+    Path    REG_EXPAND_SZ    C:\cygwin64\bin;C:\Program Files\OpenSSH\;C:\opt\apache-maven-3.8.7\bin;C:\Program Files\Zulu\zulu-11\bin\;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;C:\Program Files\Git\cmd
+    PATHEXT    REG_SZ    .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+    PROCESSOR_ARCHITECTURE    REG_SZ    AMD64
+    PROCESSOR_IDENTIFIER    REG_SZ    Intel64 Family 6 Model 79 Stepping 1, GenuineIntel
+    PROCESSOR_LEVEL    REG_SZ    6
+    PROCESSOR_REVISION    REG_SZ    4f01
+    PSModulePath    REG_EXPAND_SZ    %SystemRoot%\system32\WindowsPowerShell\v1.0\Modules\
+    TEMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    TMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    USERNAME    REG_SZ    SYSTEM
+    windir    REG_EXPAND_SZ    %SystemRoot%
+    windows_tracing_flags    REG_SZ    3
+    windows_tracing_logfile    REG_SZ    C:\BVTBin\Tests\installpackage\csilogfile.log

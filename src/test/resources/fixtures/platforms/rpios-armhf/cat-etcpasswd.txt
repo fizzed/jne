@@ -14,6 +14,15 @@ www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
 list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
 irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
-gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+_apt:x:42:65534::/nonexistent:/usr/sbin/nologin
 nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
-_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+systemd-network:x:998:998:systemd Network Management:/:/usr/sbin/nologin
+systemd-timesync:x:997:997:systemd Time Synchronization:/:/usr/sbin/nologin
+messagebus:x:100:107::/nonexistent:/usr/sbin/nologin
+_rpc:x:101:65534::/run/rpcbind:/usr/sbin/nologin
+statd:x:102:65534::/var/lib/nfs:/usr/sbin/nologin
+sshd:x:103:65534::/run/sshd:/usr/sbin/nologin
+avahi:x:104:110:Avahi mDNS daemon,,,:/run/avahi-daemon:/usr/sbin/nologin
+polkitd:x:996:996:polkit:/nonexistent:/usr/sbin/nologin
+dnsmasq:x:105:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+builder:x:1000:1000:,,,:/home/builder:/bin/bash

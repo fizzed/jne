@@ -23,7 +23,6 @@ package com.fizzed.jne.internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.Mac;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -80,22 +79,28 @@ public class MacDscl {
     }
 
     static public MacDscl readByHomeDirectory(Path homeDir) throws Exception {
-        // dscl . -read $homeDir
-        final List<String> commands = asList("dscl", ".", "-read", homeDir.toAbsolutePath().toString());
-
-        final String output = Utils.execAndGetOutput(commands);
-
-        return readOutput(output);
+        return readByHomeDirectory(homeDir, SystemExecutor.LOCAL);
     }
 
-    static public MacDscl readOutput(String output) {
-        MacDscl v = new MacDscl();
+    static public MacDscl readByHomeDirectory(Path homeDir, SystemExecutor systemExecutor) throws Exception {
+        // dscl . -read $homeDir
+        // its WAY faster if we limit what we want to query to specific attributes, otherwise things like massive JPEG photos could be returned
+        final String output = systemExecutor.execProcess(
+            "dscl", ".", "-read", homeDir.toString(), "NFSHomeDirectory", "UserShell", "RealName", "UniqueID", "PrimaryGroupID");
+
+        return parse(output);
+    }
+
+    static public MacDscl parse(String content) {
+        final MacDscl v = new MacDscl();
 
         // process output line by line
         int pos = 0;
-        int nextNewlinePos = output.indexOf('\n', pos);
-        while (nextNewlinePos > 0) {
-            String line = output.substring(pos, nextNewlinePos);
+        int nextNewlinePos = content.indexOf('\n', pos);
+        while (nextNewlinePos >= 0 || pos < content.length()) {
+            // make sure we read till the last line
+            int lineEndPos = nextNewlinePos >= 0 ? nextNewlinePos : content.length();
+            String line = content.substring(pos, lineEndPos);
 
             if (line.startsWith("UserShell:")) {
                 v.shell = Paths.get(line.substring(10).trim());
@@ -106,15 +111,20 @@ public class MacDscl {
             } else if (line.startsWith("PrimaryGroupID:")) {
                 v.primaryGroupId = Integer.valueOf(line.substring(15).trim());
             } else if (line.startsWith("RealName:")) {
-                // this one is interesting, because we actually want the next line
-                int _nextNewLinePos = output.indexOf('\n', nextNewlinePos+1);
-                if (_nextNewLinePos > 0) {
-                    v.realName = output.substring(nextNewlinePos+1, _nextNewLinePos).trim();
+                // this one is interesting, we *may* want the next line, but not always
+                String maybeRealName = line.substring(9).trim();
+                if (!maybeRealName.trim().isEmpty()) {
+                    v.realName = maybeRealName;
+                } else {
+                    int _nextNewLinePos = content.indexOf('\n', nextNewlinePos + 1);
+                    if (_nextNewLinePos > 0) {
+                        v.realName = content.substring(nextNewlinePos + 1, _nextNewLinePos).trim();
+                    }
                 }
             }
 
-            pos = nextNewlinePos + 1;
-            nextNewlinePos = output.indexOf('\n', pos);
+            pos = lineEndPos + 1;
+            nextNewlinePos = content.indexOf('\n', pos);
         }
 
         return v;

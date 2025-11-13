@@ -1,0 +1,5 @@
+NFSHomeDirectory: /Users/builder
+PrimaryGroupID: 20
+RealName: Builder
+UniqueID: 501
+UserShell: /bin/zsh

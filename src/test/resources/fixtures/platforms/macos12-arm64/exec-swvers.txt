@@ -1,0 +1,3 @@
+ProductName:	macOS
+ProductVersion:	12.7.6
+BuildVersion:	21H1320

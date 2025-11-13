@@ -20,6 +20,7 @@ package com.fizzed.jne;
  * #L%
  */
 
+import com.fizzed.jne.internal.SystemExecutorSsh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,21 +28,29 @@ public class PlatformInfoDemo {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfoDemo.class);
 
     static public void main(String[] args) throws Exception {
-        // do this twice to verify its only done once
-        PlatformInfo.detectOperatingSystem();
-        OperatingSystem os = PlatformInfo.detectOperatingSystem();
+        final PlatformInfo platformInfoBasic = PlatformInfo.detectBasic();
 
-        // do this twice to verify its only done once
-        PlatformInfo.detectHardwareArchitecture();
-        HardwareArchitecture arch = PlatformInfo.detectHardwareArchitecture();
+        log.info("");
+        log.info("Platform Info (using detectBasic):");
+        log.info("  operatingSystem: {}", platformInfoBasic.getOperatingSystem());
+        log.info("  hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
+        log.info("  libC: {}", platformInfoBasic.getLibC());
 
-        // do this twice to verify its only done once
-        PlatformInfo.detectLinuxLibC();
-        LinuxLibC libc = PlatformInfo.detectLinuxLibC();
+        final PlatformInfo platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
 
-        log.info("OS: {}", os);
-        log.info("Arch: {}", arch);
-        log.info("LibC: {}", libc);
+        log.info("");
+        log.info("Platform Info (using detectAll):");
+        log.info("  operatingSystem: {}", platformInfoAll.getOperatingSystem());
+        log.info("  hardwareArchitecture: {}", platformInfoAll.getHardwareArchitecture());
+        log.info("  name: {}", platformInfoAll.getName());
+        log.info("  displayName: {}", platformInfoAll.getDisplayName());
+        log.info("  version: {}", platformInfoAll.getVersion());
+        log.info("  kernelVersion: {}", platformInfoAll.getKernelVersion());
+        log.info("  uname: {}", platformInfoAll.getUname());
+        log.info("  libC: {}", platformInfoAll.getLibC());
+        log.info("  libCVersion: {}", platformInfoAll.getLibCVersion());
+
+        log.info("");
     }
 
 }

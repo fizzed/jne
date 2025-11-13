@@ -146,35 +146,42 @@ public class JavaVersion implements Comparable<JavaVersion> {
         int security = 0;
         int build = 0;
 
+        // save original source version string
+        final String sourceVersion = version.trim();
+
         try {
-            String sourceVersion = version;
+            // cleanup string, remove everything but numbers, periods, underscores, dashes, plus signs
+            version = version.replaceAll("[^0-9\\-_\\.\\+]", "");
+            // we also need the version to end with a number
+            // remove everything till the last number
+            version = version.replaceAll("[^0-9]+$", "");
 
             // does it end with a +NUM ?
             int plusPos = version.lastIndexOf('+');
             String buildNumberString = null;
             if (plusPos > 0) {
                 buildNumberString = version.substring(plusPos + 1);
-                sourceVersion = version.substring(0, plusPos);
+                version = version.substring(0, plusPos);
             }
 
             // pre-Java 9 version number
             if (version.startsWith("1.")) {
                 // e.g. 1.8.0_352 which we normalize to the modern format so we can use its parsing routing
-                sourceVersion = version.substring(2).replace('_', '.').replace('-', '.');
+                version = version.substring(2).replace('_', '.').replace('-', '.');
             }
 
-            final int len = sourceVersion.length();
-            int periodPos1 = sourceVersion.indexOf('.');
-            major = Integer.parseInt(sourceVersion.substring(0, periodPos1 > 0 ? periodPos1 : len));
+            final int len = version.length();
+            int periodPos1 = version.indexOf('.');
+            major = Integer.parseInt(version.substring(0, periodPos1 > 0 ? periodPos1 : len));
             if (periodPos1 > 0 && periodPos1 < len-1) {
-                int periodPos2 = sourceVersion.indexOf('.', periodPos1+1);
-                minor = Integer.parseInt(sourceVersion.substring(periodPos1+1, periodPos2 > 0 ? periodPos2 : len));
+                int periodPos2 = version.indexOf('.', periodPos1+1);
+                minor = Integer.parseInt(version.substring(periodPos1+1, periodPos2 > 0 ? periodPos2 : len));
                 if (periodPos2 > 0 && periodPos2 < len-1) {
-                    int periodPos3 = sourceVersion.indexOf('.', periodPos2+1);
-                    security = Integer.parseInt(sourceVersion.substring(periodPos2+1, periodPos3 > 0 ? periodPos3 : len));
+                    int periodPos3 = version.indexOf('.', periodPos2+1);
+                    security = Integer.parseInt(version.substring(periodPos2+1, periodPos3 > 0 ? periodPos3 : len));
                     if (periodPos3 > 0 && periodPos3 < len-1) {
                         // e.g. 9.0.1.1
-                        build = Integer.parseInt(sourceVersion.substring(periodPos3+1));
+                        build = Integer.parseInt(version.substring(periodPos3+1));
                     } else {
                         // e.g. 9.0.1
                     }
@@ -193,7 +200,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
             throw new IllegalArgumentException("java version [" + version + "] invalid format: not of X.X.X", e);
         }
 
-        return new JavaVersion(version, major, minor, security, build);
+        return new JavaVersion(sourceVersion, major, minor, security, build);
     }
 
 }

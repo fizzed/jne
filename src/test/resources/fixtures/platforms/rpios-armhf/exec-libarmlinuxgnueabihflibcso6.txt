@@ -1,0 +1,10 @@
+GNU C Library (Debian GLIBC 2.36-9+rpt2+deb12u3) stable release version 2.36.
+Copyright (C) 2022 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+Compiled by GNU CC version 12.2.0.
+libc ABIs: UNIQUE ABSOLUTE
+Minimum supported kernel: 3.2.0
+For bug reporting instructions, please see:
+<http://www.debian.org/Bugs/>.

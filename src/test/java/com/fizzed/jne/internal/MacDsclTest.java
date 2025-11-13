@@ -32,10 +32,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 class MacDsclTest {
 
     @Test
-    public void parseOutput() throws IOException {
+    public void example() throws IOException {
         String output = Resources.stringUTF8("/com/fizzed/jne/internal/MacDsclExampleOutput.txt");
 
-        MacDscl macDscl = MacDscl.readOutput(output);
+        MacDscl macDscl = MacDscl.parse(output);
 
         assertThat(macDscl.getShell(), is(Paths.get("/bin/zsh")));
         assertThat(macDscl.getHomeDir(), is(Paths.get("/Users/jjlauer")));
@@ -43,4 +43,31 @@ class MacDsclTest {
         assertThat(macDscl.getUniqueId(), is(501));
         assertThat(macDscl.getPrimaryGroupId(), is(20));
     }
+
+    @Test
+    public void macos11() throws IOException {
+        String output = Resources.stringUTF8("/fixtures/platforms/macos11/exec-dscl--read-usersbuilder.txt");
+
+        MacDscl macDscl = MacDscl.parse(output);
+
+        assertThat(macDscl.getShell(), is(Paths.get("/bin/zsh")));
+        assertThat(macDscl.getHomeDir(), is(Paths.get("/Users/builder")));
+        assertThat(macDscl.getRealName(), is("builder"));
+        assertThat(macDscl.getUniqueId(), is(502));
+        assertThat(macDscl.getPrimaryGroupId(), is(20));
+    }
+
+    @Test
+    public void macos15() throws IOException {
+        String output = Resources.stringUTF8("/fixtures/platforms/macos15/exec-dscl--read-usersbuilder.txt");
+
+        MacDscl macDscl = MacDscl.parse(output);
+
+        assertThat(macDscl.getShell(), is(Paths.get("/bin/zsh")));
+        assertThat(macDscl.getHomeDir(), is(Paths.get("/Users/builder")));
+        assertThat(macDscl.getRealName(), is("Builder"));
+        assertThat(macDscl.getUniqueId(), is(502));
+        assertThat(macDscl.getPrimaryGroupId(), is(20));
+    }
+
 }

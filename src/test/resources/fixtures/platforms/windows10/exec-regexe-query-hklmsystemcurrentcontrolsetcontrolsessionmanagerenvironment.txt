@@ -1,0 +1,19 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+    ComSpec    REG_EXPAND_SZ    %SystemRoot%\system32\cmd.exe
+    DriverData    REG_SZ    C:\Windows\System32\Drivers\DriverData
+    JAVA_HOME    REG_SZ    C:\Program Files\Java\jdk-current
+    NUMBER_OF_PROCESSORS    REG_SZ    8
+    OS    REG_SZ    Windows_NT
+    Path    REG_EXPAND_SZ    C:\Opt\maven\bin;C:\Program Files\Java\jdk-current\bin;C:\Program Files\Zulu\zulu-25\bin\;C:\Program Files\Zulu\zulu-21\bin\;C:\Program Files\Zulu\zulu-17\bin\;C:\Program Files\Zulu\zulu-11\bin\;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;%SYSTEMROOT%\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\opt\apache-maven-3.8.7\bin;C:\cygwin64\bin;
+    PATHEXT    REG_SZ    .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+    PROCESSOR_ARCHITECTURE    REG_SZ    AMD64
+    PROCESSOR_IDENTIFIER    REG_SZ    Intel64 Family 6 Model 79 Stepping 1, GenuineIntel
+    PROCESSOR_LEVEL    REG_SZ    6
+    PROCESSOR_REVISION    REG_SZ    4f01
+    PSModulePath    REG_EXPAND_SZ    %ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules
+    TEMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    TMP    REG_EXPAND_SZ    %SystemRoot%\TEMP
+    USERNAME    REG_SZ    SYSTEM
+    windir    REG_EXPAND_SZ    %SystemRoot%
+    M2_HOME    REG_SZ    C:\Opt\maven

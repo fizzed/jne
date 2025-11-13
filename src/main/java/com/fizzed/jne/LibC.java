@@ -20,22 +20,13 @@ package com.fizzed.jne;
  * #L%
  */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * For Linux this is the LibC implementation in use such as GLIBC or MUSL.
  */
-public enum LinuxLibC {
+public enum LibC {
 
-    UNKNOWN,
     GLIBC,
-    MUSL;
+    MUSL,
+    UCLIBC;
 
 }
