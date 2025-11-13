@@ -29,22 +29,54 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PlatformInfoTest {
     static private final Logger log = LoggerFactory.getLogger(PlatformInfoTest.class);
 
+    // on these platforms the kernel version should be populated
+    static public final Set<OperatingSystem> OPERATING_SYSTEMS_WITH_KERNEL = new HashSet<>(asList(
+        OperatingSystem.LINUX, OperatingSystem.MACOS, OperatingSystem.WINDOWS, OperatingSystem.ANDROID
+    ));
+
+    static public final Set<OperatingSystem> OPERATING_SYSTEMS_WITH_LIBC = new HashSet<>(asList(
+        OperatingSystem.LINUX
+    ));
+
     @Test
-    public void detectAll() {
+    public void detectAllMatchesBasicDetect() {
         PlatformInfo platformInfoBasic = PlatformInfo.detectBasic();
         PlatformInfo platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
 
-        // os & arch should be the same
+        // os & arch should be the same as basic detection
         assertThat(platformInfoBasic.getOperatingSystem(), is(platformInfoAll.getOperatingSystem()));
         assertThat(platformInfoBasic.getHardwareArchitecture(), is(platformInfoAll.getHardwareArchitecture()));
         assertThat(platformInfoBasic.getLibC(), is(platformInfoAll.getLibC()));
+    }
+
+    @Test
+    public void detectAllHasValues() {
+        PlatformInfo platformInfo = PlatformInfo.detect(PlatformInfo.Detect.ALL);
+
+        // os & arch should be the same as basic detection
+        assertThat(platformInfo.getOperatingSystem(), is(not(nullValue())));
+        assertThat(platformInfo.getHardwareArchitecture(), is(not(nullValue())));
+        assertThat(platformInfo.getUname(), is(not(nullValue())));
+        assertThat(platformInfo.getName(), is(not(nullValue())));
+        assertThat(platformInfo.getDisplayName(), is(not(nullValue())));
+        assertThat(platformInfo.getVersion(), is(not(nullValue())));
+        if (OPERATING_SYSTEMS_WITH_KERNEL.contains(platformInfo.getOperatingSystem())) {
+            assertThat(platformInfo.getKernelVersion(), is(not(nullValue())));
+        }
+        if (OPERATING_SYSTEMS_WITH_LIBC.contains(platformInfo.getOperatingSystem())) {
+            assertThat(platformInfo.getLibC(), is(not(nullValue())));
+            assertThat(platformInfo.getLibCVersion(), is(not(nullValue())));
+        }
     }
 
     @Test
