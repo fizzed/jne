@@ -22,8 +22,8 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "voidlinux";
         final String containerImage = "ghcr.io/void-linux/void-musl:latest";*/
 
-        final String fixtureName = "chimera";
-        final String containerImage = "docker.io/chimeralinux/chimera:latest";
+        /*final String fixtureName = "chimera";
+        final String containerImage = "docker.io/chimeralinux/chimera:latest";*/
 
         /*final String fixtureName = "archlinux";
         final String containerImage = "docker.io/archlinux:latest";*/
@@ -40,7 +40,8 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "alpine312";
         final String containerImage = "docker.io/alpine:3.12";*/
 
-        final SystemExecutor systemExecutor = new SystemExecutorLocalContainer("podman", containerImage);
+//        final SystemExecutor systemExecutor = new SystemExecutorLocalContainer("podman", containerImage);
+
 
         // real hosts
 
@@ -74,6 +75,9 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "ubuntu2510";
         final String host = "localhost";*/
 
+        final String fixtureName = "ubuntu2404";
+        final String host = "bmh-build-x64-ubuntu24-1";
+
         /*final String fixtureName = "fedora42-arm64";
         final String host = "bmh-mini-2";*/
 
@@ -92,7 +96,7 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "alpine315";
         final String host = "bmh-build-x64-alpine315-1";*/
 
-//        final SystemExecutor systemExecutor = new SystemExecutorSsh(host);
+        final SystemExecutor systemExecutor = new SystemExecutorSsh(host);
 
 
         final Path fixtureRootDir = Paths.get("src/test/resources/fixtures/platforms");

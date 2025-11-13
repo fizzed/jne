@@ -20,6 +20,7 @@ import static com.fizzed.blaze.incubating.VisualStudios.vcVars;
 import static com.fizzed.blaze.incubating.VisualStudios.vcVarsExec;
 import static com.fizzed.blaze.maven.MavenProjects.mavenClasspath;
 import static com.fizzed.blaze.util.Globber.globber;
+import static com.fizzed.buildx.prepare.PrepareHostForContainerRecipes.copyMavenSettings;
 import static java.util.Arrays.asList;
 
 
@@ -125,11 +126,9 @@ public class blaze extends PublicBlaze {
 
     @Task(group="maintainers", order = 51, value="Builds native libraries and executables for various os/arch combos")
     public void cross_build_natives() throws Exception {
-        final boolean serial = this.config.flag("serial").orElse(false);
-
         new Buildx(this.crossBuildTargets)
-            .parallel(!serial)
-            .execute((target, project) -> {
+            .prepareHostForContainer(copyMavenSettings())
+            .execute((host, project, target) -> {
                 // target name is like "linux-x64" which represents the os-arch we want to build a native for
                 final String os = target.getName().split("-")[0];
                 final String arch = target.getName().split("-")[1];
