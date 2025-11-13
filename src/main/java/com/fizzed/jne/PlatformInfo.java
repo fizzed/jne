@@ -160,7 +160,7 @@ public class PlatformInfo {
 
         // try uname first (if that fails, we are likely on windows)
         try {
-            log.trace("Trying 'uname -a' to detect system platform...");
+            log.debug("Trying 'uname -a' to detect system platform...");
             final String unameOutput = systemExecutor.execProcess(asList(0), "uname", "-a");
             try {
                 uname = Uname.parse(unameOutput);
@@ -169,7 +169,7 @@ public class PlatformInfo {
                 uname = null;
             }
         } catch (Exception e) {
-            log.trace("Unable to execute 'uname -a' to detect system platform: {}", e.getMessage());
+            log.debug("Unable to execute 'uname -a' to detect system platform: {}", e.getMessage());
             uname = null;
         }
 
@@ -178,7 +178,7 @@ public class PlatformInfo {
         if (uname == null || (uname.getSource().toLowerCase().contains("cygwin") || uname.getSource().toLowerCase().contains("msys"))) {
             // on windows, we can grab a better version via the registry via 2 queries
             try {
-                log.trace("Trying windows registry to detect system platform...");
+                log.debug("Trying windows registry to detect system platform...");
                 WindowsRegistry windowsRegistryCurrentVersion = WindowsRegistry.queryCurrentVersion(systemExecutor);
                 WindowsRegistry windowsRegistrySystemEnvironment = WindowsRegistry.querySystemEnvironmentVariables(systemExecutor);
                 WindowsRegistry windowsRegistryComputerName = WindowsRegistry.queryComputerName(systemExecutor);
@@ -262,14 +262,14 @@ public class PlatformInfo {
                 name = "Windows";
                 displayName = productName;
             } catch (Exception e) {
-                log.trace("Unable to query windows registry to detect system platform: {}", e.getMessage());
+                log.debug("Unable to query windows registry to detect system platform: {}", e.getMessage());
             }
         }
 
         // with uname, we can detect os & arch
         if (uname != null) {
             try {
-                log.trace("Detecting os & arch from 'uname -a' output...");
+                log.debug("Detecting os & arch from 'uname -a' output...");
 
                 // try first with limited fields
                 NativeTarget nativeTarget = NativeTarget.detectFromText(uname.getSysname() + " " + uname.getOperatingSystem() + " " + uname.getMachine() + " " + uname.getHardwarePlatform());
@@ -314,7 +314,7 @@ public class PlatformInfo {
         OsReleaseFile osReleaseFile = null;
         // only try this on platforms we know have it
         if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.FREEBSD) {
-            log.trace("Trying /etc/os-release to detect platform info...");
+            log.debug("Trying /etc/os-release to detect platform info...");
             try {
                 String osReleaseFileOutput = systemExecutor.catFile("/etc/os-release");
                 osReleaseFile = OsReleaseFile.parse(osReleaseFileOutput);
@@ -337,13 +337,13 @@ public class PlatformInfo {
                     log.warn("Unable to parse /etc/os-release VERSION_ID: {}", ex.getMessage());
                 }
             } catch (Exception e) {
-                log.trace("Unable to read /etc/os-release file: {}", e.getMessage());
+                log.debug("Unable to read /etc/os-release file: {}", e.getMessage());
             }
         }
 
         // on macos, we can grab a better version
         if (operatingSystem == OperatingSystem.MACOS) {
-            log.trace("Trying macos 'sw_vers' to detect platform info...");
+            log.debug("Trying macos 'sw_vers' to detect platform info...");
             MacSwVers swVers = null;
             try {
                 String swVersOutput = systemExecutor.execProcess("sw_vers");
@@ -357,7 +357,7 @@ public class PlatformInfo {
                     displayName += " (" + versionName + ")";
                 }
             } catch (Exception e) {
-                log.trace("Unable to execute 'sw_ver' to detect system platform: {}", e.getMessage());
+                log.warn("Unable to execute 'sw_ver' to detect system platform: {}", e.getMessage());
             }
         }
 
@@ -372,7 +372,7 @@ public class PlatformInfo {
             }
         }
 
-        log.trace("Completed detecting platform info in {} ms", (System.currentTimeMillis() - startTime));
+        log.debug("Completed detecting platform info in {} ms", (System.currentTimeMillis() - startTime));
 
         // did it work?
         if (operatingSystem == null || hardwareArchitecture == null) {
@@ -388,7 +388,7 @@ public class PlatformInfo {
 
         // ldd /bin/ls is a technique that apparently works well for GLIBC or MUSL
         try {
-            log.trace("Trying to detect libc version via 'ldd /bin/ls' output...");
+            log.debug("Trying to detect libc version via 'ldd /bin/ls' output...");
             final String lddOutput = systemExecutor.execProcess("ldd", "/bin/ls");
             final LibCs.PathResult pathResult = LibCs.parsePath(lddOutput);
 
@@ -396,18 +396,18 @@ public class PlatformInfo {
                 libC = pathResult.getLibC();
                 // we now literally execute the .so and it'll print out version info that we can parse
                 try {
-                    log.trace("Detected libc {} with path {} (will now try to detect version...)", pathResult.getLibC(), pathResult.getPath());
+                    log.debug("Detected libc {} with path {} (will now try to detect version...)", pathResult.getLibC(), pathResult.getPath());
                     final String libcOutput = systemExecutor.execProcess(Collections.emptyList(), pathResult.getPath());
                     final String versionString = LibCs.parseVersion(libcOutput);
                     if (versionString != null) {
                         version = SemanticVersion.parse(versionString);
                     }
                 } catch (Exception ex) {
-                    log.trace("Unable to execute {} to detect libc version: {}", pathResult.getPath(), ex.getMessage());
+                    log.warn("Unable to execute {} to detect libc version: {}", pathResult.getPath(), ex.getMessage());
                 }
             }
         } catch (Exception e) {
-            log.trace("Unable to execute 'ldd' to detect libc version: {}", e.getMessage());
+            log.debug("Unable to execute 'ldd' to detect libc version: {}", e.getMessage());
         }
 
         if (libC != null) {

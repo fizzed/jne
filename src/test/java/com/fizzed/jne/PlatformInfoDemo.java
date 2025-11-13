@@ -36,28 +36,7 @@ public class PlatformInfoDemo {
         log.info("  hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
         log.info("  libC: {}", platformInfoBasic.getLibC());
 
-//        final PlatformInfo platformInfoAll = PlatformInfo.detectAll();
-
-        // detect stuff via a container :-)
-//        final String containerImage = "docker.io/alpine:3.10";                        // musl
-//        final String containerImage = "ghcr.io/void-linux/void-musl:latest";          // musl
-//        final String containerImage = "docker.io/chimeralinux/chimera:latest";          // musl
-//        final String containerImage = "docker.io/ubuntu:16.04";                         // glibc version fails :-(
-//        final String containerImage = "docker.io/ubuntu:18.04";
-//        final String containerImage = "docker.io/ubuntu:20.04";
-//        final PlatformInfo platformInfoAll = PlatformInfo.detectAll(
-//            new LocalContainerSystemExecutor("podman", containerImage));
-
-        final String host = "bmh-build-arm64-windows-latest";
-//        final String host = "bmh-build-x64-win7-1";
-//        final String host = "bmh-build-x64-windows-baseline";
-//        final String host = "bmh-build-x64-windows-latest";
-//        final String host = "bmh-build-x64-freebsd-baseline";
-//        final String host = "bmh-build-x64-openbsd-baseline";
-//        final String host = "bmh-build-x64-openbsd-latest";
-//        final String host = "bmh-build-riscv64-linux-latest";
-//        final String host = "bmh-build-arm64-linux-baseline";
-        final PlatformInfo platformInfoAll = PlatformInfo.detect(new SystemExecutorSsh(host), PlatformInfo.Detect.ALL);
+        final PlatformInfo platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
 
         log.info("");
         log.info("Platform Info (using detectAll):");
