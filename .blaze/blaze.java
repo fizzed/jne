@@ -83,8 +83,11 @@ public class blaze extends PublicBlaze {
             }
         } else {
             String cmd = "make";
-            // freebsd and openbsd, we need to use gmake
-            if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD) {
+            // on the bsds we need to use gmake
+            if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.NETBSD
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.DRAGONFLYBSD) {
                 cmd = "gmake";
             }
 
