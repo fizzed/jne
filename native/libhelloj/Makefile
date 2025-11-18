@@ -30,6 +30,11 @@ ifeq ($(UNAME_S),OpenBSD)
     EXTRA_CXXFLAGS =
     CXX = clang++
 endif
+ifeq ($(UNAME_S),NetBSD)
+    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/netbsd
+    EXTRA_CXXFLAGS =
+    CXX = cc
+endif
 
 all:
 	$(CXX) -shared -fPIC -Wall -pedantic -O3 $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(JAVA_INCLUDE) -o libhelloj.$(SHAREDFILEEXT) -lc helloj_HelloLib.cpp
