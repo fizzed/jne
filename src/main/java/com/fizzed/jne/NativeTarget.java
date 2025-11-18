@@ -178,6 +178,10 @@ public class NativeTarget {
             case LINUX:
             case FREEBSD:
             case OPENBSD:
+            case NETBSD:
+            case DRAGONFLYBSD:
+            case ANDROID:
+            case AIX:
             case SOLARIS:
                 return ".so";
             case MACOS:
@@ -222,8 +226,12 @@ public class NativeTarget {
             case WINDOWS:
                 return name + ".dll";
             case LINUX:
+            case ANDROID:
             case FREEBSD:
             case OPENBSD:
+            case NETBSD:
+            case DRAGONFLYBSD:
+            case AIX:
             case SOLARIS:
                 return "lib" + name + ".so";
             case MACOS:
@@ -308,6 +316,12 @@ public class NativeTarget {
                 break;
             case OPENBSD:
                 vendorOsEnv = "unknown-openbsd";
+                break;
+            case NETBSD:
+                vendorOsEnv = "unknown-netbsd";
+                break;
+            case DRAGONFLYBSD:
+                vendorOsEnv = "unknown-dragonflybsd";
                 break;
             case SOLARIS:
                 vendorOsEnv = "sun-solaris";
