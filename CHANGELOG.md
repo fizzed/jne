@@ -1,5 +1,8 @@
 # Java Native Extractor by Fizzed
 
+## 4.10.0 - 2025-11-19
+ - Move permissions and chmod to internal package
+
 ## 4.9.0 - 2025-11-19
  - Add support for detecting os/arch/java homes/environment for Haiku, DragonFlyBSD, Solaris/Illumos, and NetBSD
  - Change defaults for library resolve in NativeTarget to assume its a .so
