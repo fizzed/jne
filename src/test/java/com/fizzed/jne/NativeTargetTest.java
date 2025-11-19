@@ -157,6 +157,7 @@ class NativeTargetTest {
         assertThat(nt.resolveExecutableFileName("hello"), is("hello"));
     }
 
+
     @Test
     public void toRustTarget() {
         NativeTarget nt;

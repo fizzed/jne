@@ -416,6 +416,11 @@ public class JavaHomes {
                 // OpenBSD (e.g. /usr/local/jdk-17)
                 locateJavaHomesFromDir(maybeJavaHomes, usrLocalPath, "jdk.*");
                 break;
+            case NETBSD:
+                Path usrPkgJavaPath = Paths.get("/usr/pkg/java");
+                // /usr/pkg/java/openjdk21
+                locateJavaHomesFromDir(maybeJavaHomes, usrPkgJavaPath, "openjdk.*");
+                break;
         }
 
         final List<JavaHome> javaHomes = new ArrayList<>();
