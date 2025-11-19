@@ -719,6 +719,11 @@ public class InstallEnvironment {
             // unlike linux, freebsd puts stuff in /usr/local, which also is like /opt
             ie.applicationRootDir = ie.localRootDir;
             ie.optRootDir = ie.applicationRootDir;
+        } else if (os == OperatingSystem.SOLARIS) {
+            ie.localRootDir = Paths.get("/opt/local");
+            ie.systemRootDir = Paths.get("/usr");
+            ie.applicationRootDir = Paths.get("/opt");
+            ie.optRootDir = ie.applicationRootDir;
         } else if (os == OperatingSystem.MACOS) {
             ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
