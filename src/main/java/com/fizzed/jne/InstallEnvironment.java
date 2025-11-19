@@ -701,10 +701,18 @@ public class InstallEnvironment {
         if (scope == EnvScope.USER) {
             // regardless of operating system, user-specific installs all go to same place
             final UserEnvironment ue = UserEnvironment.detectLogical();
-            ie.localRootDir = ue.getHomeDir().resolve(".local");
-            ie.systemRootDir = ie.localRootDir;
-            ie.applicationRootDir = ue.getHomeDir().resolve("Applications");
-            ie.optRootDir = ie.localRootDir;
+
+            if (os == OperatingSystem.HAIKU) {
+                ie.localRootDir = ue.getHomeDir().resolve("config/non-packaged/");
+                ie.systemRootDir = ie.localRootDir;
+                ie.applicationRootDir = ie.localRootDir;
+                ie.optRootDir = ie.localRootDir;
+            } else {
+                ie.localRootDir = ue.getHomeDir().resolve(".local");
+                ie.systemRootDir = ie.localRootDir;
+                ie.applicationRootDir = ue.getHomeDir().resolve("Applications");
+                ie.optRootDir = ie.localRootDir;
+            }
         } else if (os == OperatingSystem.LINUX) {
             ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
