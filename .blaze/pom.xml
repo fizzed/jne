@@ -68,12 +68,7 @@
     <dependency>
       <groupId>com.fizzed</groupId>
       <artifactId>blaze-public-project</artifactId>
-      <version>4.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fizzed</groupId>
-      <artifactId>jne</artifactId>
-      <version>4.8.1-SNAPSHOT</version>
+      <version>4.4.0</version>
     </dependency>
   </dependencies>
 </project>
