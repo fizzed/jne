@@ -588,6 +588,11 @@ public class PlatformInfo {
     static private final ConcurrentHashMap<OperatingSystem,ABI> abiRefs = new ConcurrentHashMap<>();
 
     static public ABI detectAbi(OperatingSystem os) {
+        // null OS will get null ABI
+        if (os == null) {
+            return null;
+        }
+
         return abiRefs.computeIfAbsent(os, PlatformInfo::doDetectAbi);
     }
 

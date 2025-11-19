@@ -145,6 +145,13 @@ public class PlatformInfoTest {
         }
     }
 
+    @Test
+    public void detectABIWithNullOs() {
+        ABI abi = PlatformInfo.detectAbi(null);
+
+        assertThat(abi, is(nullValue()));
+    }
+
     //
     // Real World Tests
     //
