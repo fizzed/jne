@@ -427,6 +427,11 @@ public class JavaHomes {
                 // /usr/jdk/instances/openjdk25
                 locateJavaHomesFromDir(maybeJavaHomes, usrJdkInstancesPath, "openjdk.*");
                 break;
+            case HAIKU:
+                Path bootSystemLibPath = Paths.get("/boot/system/lib");
+                // /boot/system/lib/openjdk21
+                locateJavaHomesFromDir(maybeJavaHomes, bootSystemLibPath, "openjdk.*");
+                break;
         }
 
         final List<JavaHome> javaHomes = new ArrayList<>();
