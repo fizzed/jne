@@ -1,4 +1,4 @@
-package com.fizzed.jne;
+package com.fizzed.jne.internal;
 
 /*-
  * #%L
