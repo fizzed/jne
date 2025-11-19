@@ -410,6 +410,7 @@ public class JavaHomes {
                 break;
             case FREEBSD:
             case OPENBSD:
+            case DRAGONFLYBSD:
                 Path usrLocalPath = Paths.get("/usr/local");
                 // FreeBSD (e.g. /usr/local/openjdk11)
                 locateJavaHomesFromDir(maybeJavaHomes, usrLocalPath, "openjdk.*");
