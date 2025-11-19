@@ -453,11 +453,11 @@ public class PlatformInfoTest {
 
         assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.SOLARIS));
         assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
-        assertThat(platformInfo.getName(), is("NetBSD"));
-        assertThat(platformInfo.getDisplayName(), is("NetBSD 10.1"));
-        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("10.1")));
+        assertThat(platformInfo.getName(), is("SunOS"));
+        assertThat(platformInfo.getDisplayName(), is("OpenIndiana Hipster 2025.10 (powered by illumos)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("5.11")));
         assertThat(platformInfo.getKernelVersion(), is(nullValue()));
-        assertThat(platformInfo.getUname(), is("NetBSD host 10.1 NetBSD 10.1 (GENERIC) #0: Mon Dec 16 13:08:11 UTC 2024  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64"));
+        assertThat(platformInfo.getUname(), is("SunOS host 5.11 illumos-68259130da i86pc i386 i86pc"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }

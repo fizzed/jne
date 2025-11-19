@@ -341,6 +341,41 @@ public class PlatformInfo {
             }
         }
 
+        // on solaris/illumnos, uname does everything we need, but for historical reasons it will always report its
+        // hardware architecture as i386 for some reason, we can detect it better with 'isainfo -k', plus we can probably
+        // grab more information from the /etc/release file available on many illumnos-based distros
+        if (operatingSystem == OperatingSystem.SOLARIS) {
+            // detect better hardware architecture
+            try {
+                String isaInfo = systemExecutor.execProcess("isainfo", "-k");
+                NativeTarget nativeTarget = NativeTarget.detectFromText(isaInfo);
+                if (nativeTarget.getHardwareArchitecture() != null) {
+                    hardwareArchitecture = nativeTarget.getHardwareArchitecture();
+                }
+            } catch (Exception e) {
+                log.warn("Unable to detect more accurate hardware architecture from 'isainfo -k' output: {}", e.getMessage());
+            }
+
+            // there could be a /etc/release file
+            log.debug("Trying /etc/release to detect platform info...");
+            try {
+                String releaseFileOutput = systemExecutor.catFile("/etc/release");
+                // the first line usually contains the display name of the distro
+                if (releaseFileOutput != null && releaseFileOutput.contains("\n")) {
+                    String[] releaseFileOutputLines = releaseFileOutput.split("\n");
+                    if (releaseFileOutputLines.length > 1) {
+                        String maybeDisplayName = releaseFileOutputLines[0].trim();
+                        // this line should have some kind of digit in it
+                        if (maybeDisplayName.matches(".*\\d+.*")) {
+                            displayName = maybeDisplayName;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Unable to read /etc/release file: {}", e.getMessage());
+            }
+        }
+
         // on macos, we can grab a better version
         if (operatingSystem == OperatingSystem.MACOS) {
             log.debug("Trying macos 'sw_vers' to detect platform info...");
