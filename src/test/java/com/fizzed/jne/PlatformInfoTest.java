@@ -145,6 +145,13 @@ public class PlatformInfoTest {
         }
     }
 
+    @Test
+    public void detectABIWithNullOs() {
+        ABI abi = PlatformInfo.detectAbi(null);
+
+        assertThat(abi, is(nullValue()));
+    }
+
     //
     // Real World Tests
     //
@@ -342,7 +349,7 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getDisplayName(), is("FreeBSD 13.5-RELEASE-p6"));
         assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("13.5")));
         assertThat(platformInfo.getKernelVersion(), is(nullValue()));
-        assertThat(platformInfo.getUname(), is("FreeBSD bmh-build-x64-freebsd13-1 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64"));
+        assertThat(platformInfo.getUname(), is("FreeBSD host 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }
@@ -417,6 +424,42 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getUname(), is("Linux 3febf31f2dfb 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux"));
         assertThat(platformInfo.getLibC(), is(LibC.MUSL));
         assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("1.2.5")));
+    }
+
+    @Test
+    public void netbsd10() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/netbsd10/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.NETBSD));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("NetBSD"));
+        assertThat(platformInfo.getDisplayName(), is("NetBSD 10.1"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("10.1")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("NetBSD host 10.1 NetBSD 10.1 (GENERIC) #0: Mon Dec 16 13:08:11 UTC 2024  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void indy25() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/indy25/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.SOLARIS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("SunOS"));
+        assertThat(platformInfo.getDisplayName(), is("OpenIndiana Hipster 2025.10 (powered by illumos)"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("5.11")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("SunOS host 5.11 illumos-68259130da i86pc i386 i86pc"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }
 
 }

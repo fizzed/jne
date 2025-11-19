@@ -44,7 +44,8 @@ public class ExeTest {
         // use one-time use temporary directory
         final File catExeFile = JNE.findExecutable("jcat");
 
-        assertThat(catExeFile, is(not(nullValue())));
+        assertThat("Unable to find 'jcat' in resources (likely means its not compiled for this platform/os yet?)",
+            catExeFile, is(not(nullValue())));
 
         // use "cat" to print out an expected file
         final Path expectedTxtFile = new File(JneDemo.class.getResource("/test.txt").toURI()).toPath();

@@ -1,0 +1,4 @@
+             OpenIndiana Hipster 2025.10 (powered by illumos)
+        OpenIndiana Project, part of The Illumos Foundation (C) 2010-2025
+                        Use is subject to license terms.
+                           Assembled 26 October 2025

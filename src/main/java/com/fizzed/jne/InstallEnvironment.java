@@ -701,10 +701,18 @@ public class InstallEnvironment {
         if (scope == EnvScope.USER) {
             // regardless of operating system, user-specific installs all go to same place
             final UserEnvironment ue = UserEnvironment.detectLogical();
-            ie.localRootDir = ue.getHomeDir().resolve(".local");
-            ie.systemRootDir = ie.localRootDir;
-            ie.applicationRootDir = ue.getHomeDir().resolve("Applications");
-            ie.optRootDir = ie.localRootDir;
+
+            if (os == OperatingSystem.HAIKU) {
+                ie.localRootDir = ue.getHomeDir().resolve("config/non-packaged/");
+                ie.systemRootDir = ie.localRootDir;
+                ie.applicationRootDir = ie.localRootDir;
+                ie.optRootDir = ie.localRootDir;
+            } else {
+                ie.localRootDir = ue.getHomeDir().resolve(".local");
+                ie.systemRootDir = ie.localRootDir;
+                ie.applicationRootDir = ue.getHomeDir().resolve("Applications");
+                ie.optRootDir = ie.localRootDir;
+            }
         } else if (os == OperatingSystem.LINUX) {
             ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
@@ -718,6 +726,17 @@ public class InstallEnvironment {
             ie.systemRootDir = Paths.get("/usr");
             // unlike linux, freebsd puts stuff in /usr/local, which also is like /opt
             ie.applicationRootDir = ie.localRootDir;
+            ie.optRootDir = ie.applicationRootDir;
+        } else if (os == OperatingSystem.SOLARIS) {
+            ie.localRootDir = Paths.get("/opt/local");
+            ie.systemRootDir = Paths.get("/usr");
+            ie.applicationRootDir = Paths.get("/opt");
+            ie.optRootDir = ie.applicationRootDir;
+        } else if (os == OperatingSystem.HAIKU) {
+            // these are very unique paths
+            ie.localRootDir = Paths.get("/boot/system/non-packaged");
+            ie.systemRootDir = Paths.get("/");
+            ie.applicationRootDir = Paths.get("/boot/system/non-packaged");
             ie.optRootDir = ie.applicationRootDir;
         } else if (os == OperatingSystem.MACOS) {
             ie.localRootDir = Paths.get("/usr/local");

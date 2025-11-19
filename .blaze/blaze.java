@@ -31,6 +31,13 @@ public class blaze extends PublicBlaze {
     private final MavenProject maven = MavenProjects.mavenProject(withBaseDir("../pom.xml")).run();
 
     @Task(group="project", order=0, value="Runs a demo of detecting all JDKs on this host")
+    public void run_detect() throws Exception {
+        final MavenClasspath classpath = mavenClasspath(maven, "runtime", "compile").run();
+
+        exec("java", "-cp", classpath, "com.fizzed.jne.DetectMain").run();
+    }
+
+    @Task(group="project", order=0, value="Runs a demo of detecting all JDKs on this host")
     public void demo_java_homes() throws Exception {
         final MavenClasspath classpath = mavenClasspath(maven, "test", "test-compile").run();
 
@@ -83,11 +90,13 @@ public class blaze extends PublicBlaze {
             }
         } else {
             String cmd = "make";
+
             // on the bsds we need to use gmake
             if (nativeTarget.getOperatingSystem() == OperatingSystem.FREEBSD
                     || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD
                     || nativeTarget.getOperatingSystem() == OperatingSystem.NETBSD
-                    || nativeTarget.getOperatingSystem() == OperatingSystem.DRAGONFLYBSD) {
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.DRAGONFLYBSD
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.SOLARIS) {
                 cmd = "gmake";
             }
 

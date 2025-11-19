@@ -31,10 +31,11 @@ public enum OperatingSystem {
     FREEBSD("FreeBSD", null),
     OPENBSD("OpenBSD", null),
     NETBSD("NetBSD", null),
-    DRAGONFLYBSD("DragonFlyBSD", null),
+    DRAGONFLYBSD("DragonFlyBSD", new String[] { "DragonFly" }, new String[] { "dflybsd" }),
     SOLARIS("Solaris", new String[] { "sun" }, new String[] { "sunos" }),
     AIX("AIX", null),
-    ANDROID("Android", null);
+    ANDROID("Android", null),
+    HAIKU("Haiku", null);
 
     private final String descriptor;
     private final String[] aliases;

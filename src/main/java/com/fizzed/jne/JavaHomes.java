@@ -410,11 +410,27 @@ public class JavaHomes {
                 break;
             case FREEBSD:
             case OPENBSD:
+            case DRAGONFLYBSD:
                 Path usrLocalPath = Paths.get("/usr/local");
                 // FreeBSD (e.g. /usr/local/openjdk11)
                 locateJavaHomesFromDir(maybeJavaHomes, usrLocalPath, "openjdk.*");
                 // OpenBSD (e.g. /usr/local/jdk-17)
                 locateJavaHomesFromDir(maybeJavaHomes, usrLocalPath, "jdk.*");
+                break;
+            case NETBSD:
+                Path usrPkgJavaPath = Paths.get("/usr/pkg/java");
+                // /usr/pkg/java/openjdk21
+                locateJavaHomesFromDir(maybeJavaHomes, usrPkgJavaPath, "openjdk.*");
+                break;
+            case SOLARIS:
+                Path usrJdkInstancesPath = Paths.get("/usr/jdk/instances");
+                // /usr/jdk/instances/openjdk25
+                locateJavaHomesFromDir(maybeJavaHomes, usrJdkInstancesPath, "openjdk.*");
+                break;
+            case HAIKU:
+                Path bootSystemLibPath = Paths.get("/boot/system/lib");
+                // /boot/system/lib/openjdk21
+                locateJavaHomesFromDir(maybeJavaHomes, bootSystemLibPath, "openjdk.*");
                 break;
         }
 
