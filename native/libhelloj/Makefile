@@ -13,25 +13,21 @@ EXTRA_CXXFLAGS := -z noexecstack
 CXXFLAGS :=
 CFLAGS :=
 JAVA_INCLUDE := -I${JAVA_HOME}/include
+# we also need an architecture/os dependant path as well that mirrors the uname
+UNAME_S_LOWER := $(shell echo $(UNAME_S) | tr '[:upper:]' '[:lower:]')
+JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/${UNAME_S_LOWER}
 ifeq ($(UNAME_S),Darwin)
-    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/darwin
 	SHAREDFILEEXT = dylib
 	EXTRA_CXXFLAGS =
 endif
-ifeq ($(UNAME_S),Linux)
-    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/linux
-endif
 ifeq ($(UNAME_S),FreeBSD)
-    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/freebsd
     CXX = clang++
 endif
 ifeq ($(UNAME_S),OpenBSD)
-    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/openbsd
     EXTRA_CXXFLAGS =
     CXX = clang++
 endif
 ifeq ($(UNAME_S),NetBSD)
-    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/netbsd
     EXTRA_CXXFLAGS =
     CXX = cc
 endif
