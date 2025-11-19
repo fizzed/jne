@@ -34,7 +34,8 @@ public enum OperatingSystem {
     DRAGONFLYBSD("DragonFlyBSD", null),
     SOLARIS("Solaris", new String[] { "sun" }, new String[] { "sunos" }),
     AIX("AIX", null),
-    ANDROID("Android", null);
+    ANDROID("Android", null),
+    HAIKU("Haiku", null);
 
     private final String descriptor;
     private final String[] aliases;
