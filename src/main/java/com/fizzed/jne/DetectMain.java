@@ -135,7 +135,10 @@ public class DetectMain {
             logInfo("hardwareArchitecture: {}", v.getHardwareArchitecture());
             logInfo("abi: {}", v.getAbi());
             logInfo("executableFileExt: {}", v.getExecutableFileExtension());
+            logInfo("executableFile (example): {}", v.resolveExecutableFileName("example"));
             logInfo("libraryFileExt: {}", v.getLibraryFileExtension());
+            logInfo("libraryFile (example): {}", v.resolveLibraryFileName("example"));
+            logInfo("resourcePathsForLibrary (example): {}", v.resolveResourcePaths("/jne", v.resolveLibraryFileName("example")));
             logInfo("jneTarget: {}", v.toJneTarget());
             logInfo("rustTarget: {}", v.toRustTarget());
             logInfo("autoConfTarget: {}", v.toAutoConfTarget());
