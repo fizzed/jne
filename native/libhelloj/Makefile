@@ -31,6 +31,10 @@ ifeq ($(UNAME_S),NetBSD)
     EXTRA_CXXFLAGS =
     CXX = cc
 endif
+ifeq ($(UNAME_S),SunOS)
+    JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/solaris
+    CXX = clang++
+endif
 
 all:
 	$(CXX) -shared -fPIC -Wall -pedantic -O3 $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(JAVA_INCLUDE) -o libhelloj.$(SHAREDFILEEXT) -lc helloj_HelloLib.cpp
