@@ -89,7 +89,7 @@ public class blaze extends PublicBlaze {
                     || nativeTarget.getOperatingSystem() == OperatingSystem.OPENBSD
                     || nativeTarget.getOperatingSystem() == OperatingSystem.NETBSD
                     || nativeTarget.getOperatingSystem() == OperatingSystem.DRAGONFLYBSD
-                    || nativeTarget.getOperatingSystem() == OperatingSystem.HAIKU) {
+                    || nativeTarget.getOperatingSystem() == OperatingSystem.SOLARIS) {
                 cmd = "gmake";
             }
 
