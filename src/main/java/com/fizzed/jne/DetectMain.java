@@ -1,6 +1,8 @@
 package com.fizzed.jne;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 public class DetectMain {
 
@@ -159,23 +161,16 @@ public class DetectMain {
 
 
 
-        logInfo("###################################################################################################");
-        logInfo("Native Target Detected:");
-        logInfo("");
-        if (nativeTarget != null) {
-            logInfo("operatingSystem: {}", nativeTarget.getOperatingSystem());
-            logInfo("hardwareArchitecture: {}", nativeTarget.getHardwareArchitecture());
-            logInfo("abi: {}", nativeTarget.getAbi());
-            logInfo("executableFileExt: {}", nativeTarget.getExecutableFileExtension());
-            logInfo("libraryFileExt: {}", nativeTarget.getLibraryFileExtension());
-            logInfo("jneTarget: {}", nativeTarget.toJneTarget());
-            logInfo("rustTarget: {}", nativeTarget.toRustTarget());
-            logInfo("autoConfTarget: {}", nativeTarget.toAutoConfTarget());
-        } else {
-            logError("Unable to detect native target!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("Native Target", nativeTarget, v -> {
+            logInfo("operatingSystem: {}", v.getOperatingSystem());
+            logInfo("hardwareArchitecture: {}", v.getHardwareArchitecture());
+            logInfo("abi: {}", v.getAbi());
+            logInfo("executableFileExt: {}", v.getExecutableFileExtension());
+            logInfo("libraryFileExt: {}", v.getLibraryFileExtension());
+            logInfo("jneTarget: {}", v.toJneTarget());
+            logInfo("rustTarget: {}", v.toRustTarget());
+            logInfo("autoConfTarget: {}", v.toAutoConfTarget());
+        });
 
 
 
@@ -242,6 +237,25 @@ public class DetectMain {
         String f = format.replace("{}", "%s");
         String msg = String.format(f, args);
         System.out.println("[ERR ] " + msg);
+    }
+
+    static public <T> void logDetection(String title, T detection, Consumer<T> consumer) {
+        Objects.requireNonNull(title);
+        logInfo("###################################################################################################");
+        logInfo("{} Detected:", title);
+        logInfo("");
+        if (detection != null) {
+            // we also need to defend against exceptions while printing out info
+            try {
+                consumer.accept(detection);
+            } catch (Throwable t) {
+                logError("Unable to cleanly log detection: {}", t.getMessage(), t);
+            }
+        } else {
+            logError("Unable to detect {}!", title.toLowerCase());
+        }
+        logInfo("");
+        logInfo("###################################################################################################");
     }
 
     static public void logUserEnvironment(UserEnvironment userEnvironment) {
