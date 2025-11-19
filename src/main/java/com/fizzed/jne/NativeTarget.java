@@ -175,19 +175,11 @@ public class NativeTarget {
         switch (os) {
             case WINDOWS:
                 return ".dll";
-            case LINUX:
-            case FREEBSD:
-            case OPENBSD:
-            case NETBSD:
-            case DRAGONFLYBSD:
-            case ANDROID:
-            case AIX:
-            case SOLARIS:
-                return ".so";
             case MACOS:
                 return ".dylib";
+            // everything else uses .so, so this will be the new default
             default:
-                return null;
+                return ".so";
         }
     }
 
@@ -225,19 +217,11 @@ public class NativeTarget {
         switch (os) {
             case WINDOWS:
                 return name + ".dll";
-            case LINUX:
-            case ANDROID:
-            case FREEBSD:
-            case OPENBSD:
-            case NETBSD:
-            case DRAGONFLYBSD:
-            case AIX:
-            case SOLARIS:
-                return "lib" + name + ".so";
             case MACOS:
                 return "lib" + name + ".dylib";
+            // almost everything else uses .so, so this will be the new default
             default:
-                return name;
+                return "lib" + name + ".so";
         }
     }
 
