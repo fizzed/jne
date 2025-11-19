@@ -38,7 +38,16 @@ public class LibTest {
     static private final Logger log = LoggerFactory.getLogger(LibTest.class);
 
     @Test
-    public void helloj() throws Exception {
+    public void findLibrary() throws Exception {
+        // use one-time use temporary directory
+        final File libraryFile = JNE.findLibrary("helloj");
+
+        assertThat("Unable to find LIB 'helloj' in resources (likely means its not compiled for this platform/os yet?)",
+            libraryFile, is(not(nullValue())));
+    }
+
+    @Test
+    public void loadLibrary() throws Exception {
         // leverage JNE loader to load up the helloj lib
         LibLoader.loadLibrary();
 
