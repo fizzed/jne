@@ -349,7 +349,7 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getDisplayName(), is("FreeBSD 13.5-RELEASE-p6"));
         assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("13.5")));
         assertThat(platformInfo.getKernelVersion(), is(nullValue()));
-        assertThat(platformInfo.getUname(), is("FreeBSD bmh-build-x64-freebsd13-1 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64"));
+        assertThat(platformInfo.getUname(), is("FreeBSD host 13.5-RELEASE-p6 FreeBSD 13.5-RELEASE-p6 GENERIC amd64"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }

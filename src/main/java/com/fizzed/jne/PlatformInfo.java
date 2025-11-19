@@ -341,6 +341,20 @@ public class PlatformInfo {
             }
         }
 
+        // on netbsd, to get the better architecture, we need to call sysctl
+        if (operatingSystem == OperatingSystem.NETBSD) {
+            // detect better hardware architecture
+            try {
+                String sysctlMachineArchInfo = systemExecutor.execProcess("/sbin/sysctl", "-n", "hw.machine_arch");
+                NativeTarget nativeTarget = NativeTarget.detectFromText(sysctlMachineArchInfo);
+                if (nativeTarget.getHardwareArchitecture() != null) {
+                    hardwareArchitecture = nativeTarget.getHardwareArchitecture();
+                }
+            } catch (Exception e) {
+                log.warn("Unable to detect more accurate hardware architecture from 'sysctl -n hw.machine_arch' output: {}", e.getMessage());
+            }
+        }
+
         // on solaris/illumnos, uname does everything we need, but for historical reasons it will always report its
         // hardware architecture as i386 for some reason, we can detect it better with 'isainfo -k', plus we can probably
         // grab more information from the /etc/release file available on many illumnos-based distros
