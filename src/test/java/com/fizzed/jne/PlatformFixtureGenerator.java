@@ -90,8 +90,8 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "rpios-armhf";
         final String host = "bmh-build-armhf-rpios-1";*/
 
-        final String fixtureName = "ubuntu2004-armhf";
-        final String host = "bmh-build-armhf-ubuntu20-1";
+        /*final String fixtureName = "ubuntu2004-armhf";
+        final String host = "bmh-build-armhf-ubuntu20-1";*/
 
         /*final String fixtureName = "freebsd13";
         final String host = "bmh-build-x64-freebsd13-1";*/
@@ -101,6 +101,12 @@ public class PlatformFixtureGenerator {
 
         /*final String fixtureName = "alpine315";
         final String host = "bmh-build-x64-alpine315-1";*/
+
+        /*final String fixtureName = "netbsd10-x64";
+        final String host = "bmh-build-x64-netbsd10-1";*/
+
+        final String fixtureName = "indy25";
+        final String host = "bmh-dev-x64-indy25-1";
 
         final SystemExecutor systemExecutor = new SystemExecutorSsh(host);
 

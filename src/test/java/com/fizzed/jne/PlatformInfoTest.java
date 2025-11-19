@@ -426,4 +426,40 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getLibCVersion(), is(SemanticVersion.parse("1.2.5")));
     }
 
+    @Test
+    public void netbsd10() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/netbsd10/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.NETBSD));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("NetBSD"));
+        assertThat(platformInfo.getDisplayName(), is("NetBSD 10.1"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("10.1")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("NetBSD host 10.1 NetBSD 10.1 (GENERIC) #0: Mon Dec 16 13:08:11 UTC 2024  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void indy25() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/indy25/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.SOLARIS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("NetBSD"));
+        assertThat(platformInfo.getDisplayName(), is("NetBSD 10.1"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("10.1")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("NetBSD host 10.1 NetBSD 10.1 (GENERIC) #0: Mon Dec 16 13:08:11 UTC 2024  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
 }
