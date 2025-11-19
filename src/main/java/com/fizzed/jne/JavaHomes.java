@@ -421,6 +421,11 @@ public class JavaHomes {
                 // /usr/pkg/java/openjdk21
                 locateJavaHomesFromDir(maybeJavaHomes, usrPkgJavaPath, "openjdk.*");
                 break;
+            case SOLARIS:
+                Path usrJdkInstancesPath = Paths.get("/usr/jdk/instances");
+                // /usr/jdk/instances/openjdk25
+                locateJavaHomesFromDir(maybeJavaHomes, usrJdkInstancesPath, "openjdk.*");
+                break;
         }
 
         final List<JavaHome> javaHomes = new ArrayList<>();
