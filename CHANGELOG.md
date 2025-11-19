@@ -1,5 +1,12 @@
 # Java Native Extractor by Fizzed
 
+## 4.9.0 - 2025-11-19
+ - Add support for detecting os/arch/java homes/environment for Haiku, DragonFlyBSD, Solaris/Illumos, and NetBSD
+ - Change defaults for library resolve in NativeTarget to assume its a .so
+ - Improve makefiles for testing (jcat, and helloj lib)
+ - New DetectMain to demo every feature this library offers, plus lets us run tests on more platforms
+ - Update Java homes detection on solaris
+
 ## 4.8.0 - 2025-11-13
  - New PlatformInfo properties for OS arch, version, and libc detection support.
  - BREAKING CHANGE: Renamed LinuxLibC enum to just LibC
