@@ -9,8 +9,8 @@ public class DetectMain {
     static public void main(String[] args) throws Exception {
         // here are all the items we will attempt to detect
         List<JavaHome> javaHomes = null;
-        PlatformInfo platformInfoBasic = null;
-        PlatformInfo platformInfoAll = null;
+        PlatformInfo basicPlatformInfo = null;
+        PlatformInfo allPlatformInfo = null;
         NativeTarget nativeTarget = null;
         UserEnvironment logicalUserEnvironment = null;
         UserEnvironment effectiveUserEnvironment = null;
@@ -32,7 +32,7 @@ public class DetectMain {
         logInfo("###################################################################################################");
         logInfo("Detecting Basic Platform Info....");
         try {
-            platformInfoBasic = PlatformInfo.detectBasic();
+            basicPlatformInfo = PlatformInfo.detectBasic();
         } catch (Throwable t) {
             logError("Unable to detect basic platform info", t);
         }
@@ -41,7 +41,7 @@ public class DetectMain {
         logInfo("###################################################################################################");
         logInfo("Detecting All Platform Info....");
         try {
-            platformInfoAll = PlatformInfo.detect(PlatformInfo.Detect.ALL);
+            allPlatformInfo = PlatformInfo.detect(PlatformInfo.Detect.ALL);
         } catch (Throwable t) {
             logError("Unable to detect all platform info", t);
         }
@@ -94,11 +94,8 @@ public class DetectMain {
 
 
 
-        logInfo("###################################################################################################");
-        logInfo("Java Homes Detected:");
-        logInfo("");
-        if (javaHomes != null) {
-            for (JavaHome javaHome : javaHomes) {
+        logDetection("Java Homes", javaHomes, v -> {
+            for (JavaHome javaHome : v) {
                 logInfo("JavaHome: {}", javaHome.getDirectory());
                 logInfo("  javaExe: {}", javaHome.getJavaExe());
                 logInfo("  javacExe: {}", javaHome.getJavacExe());
@@ -109,56 +106,28 @@ public class DetectMain {
                 logInfo("  arch: {}", javaHome.getHardwareArchitecture());
                 logInfo("  distro: {}", javaHome.getDistribution());
                 logInfo("  vendor: {}", javaHome.getVendor());
-                /*logInfo("  releaseProperties:");
-                javaHome.getReleaseProperties().forEach((k, v) -> {
-                    if ("MODULES".equals(k) || "COMMIT_INFO".equals(k) || "SOURCE".equals(k)) {
-                        return;
-                    }
-                    logInfo("    {} -> {}", k, v);
-                });*/
             }
-        } else {
-            logError("Unable to detect java homes!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("Basic Platform Info Detected:");
-        logInfo("");
-        if (platformInfoBasic != null) {
-            logInfo("operatingSystem: {}", platformInfoBasic.getOperatingSystem());
-            logInfo("hardwareArchitecture: {}", platformInfoBasic.getHardwareArchitecture());
-            logInfo("libC: {}", platformInfoBasic.getLibC());
-        } else {
-            logError("Unable to detect basic platform info!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("Basic Platform Info", basicPlatformInfo, v -> {
+            logInfo("operatingSystem: {}", v.getOperatingSystem());
+            logInfo("hardwareArchitecture: {}", v.getHardwareArchitecture());
+            logInfo("libC: {}", v.getLibC());
+        });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("All Platform Info Detected:");
-        logInfo("");
-        if (platformInfoAll != null) {
-            logInfo("operatingSystem: {}", platformInfoAll.getOperatingSystem());
-            logInfo("hardwareArchitecture: {}", platformInfoAll.getHardwareArchitecture());
-            logInfo("name: {}", platformInfoAll.getName());
-            logInfo("displayName: {}", platformInfoAll.getDisplayName());
-            logInfo("version: {}", platformInfoAll.getVersion());
-            logInfo("kernelVersion: {}", platformInfoAll.getKernelVersion());
-            logInfo("uname: {}", platformInfoAll.getUname());
-            logInfo("libC: {}", platformInfoAll.getLibC());
-            logInfo("libCVersion: {}", platformInfoAll.getLibCVersion());
-        } else {
-            logError("Unable to detect all platform info!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
-
+        logDetection("All Platform Info", allPlatformInfo, v -> {
+            logInfo("operatingSystem: {}", v.getOperatingSystem());
+            logInfo("hardwareArchitecture: {}", v.getHardwareArchitecture());
+            logInfo("name: {}", v.getName());
+            logInfo("displayName: {}", v.getDisplayName());
+            logInfo("version: {}", v.getVersion());
+            logInfo("kernelVersion: {}", v.getKernelVersion());
+            logInfo("uname: {}", v.getUname());
+            logInfo("libC: {}", v.getLibC());
+            logInfo("libCVersion: {}", v.getLibCVersion());
+        });
 
 
         logDetection("Native Target", nativeTarget, v -> {
@@ -173,56 +142,24 @@ public class DetectMain {
         });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("Logical User Environment Detected:");
-        logInfo("");
-        if (logicalUserEnvironment != null) {
-            logUserEnvironment(logicalUserEnvironment);
-        } else {
-            logError("Unable to detect logical user environment!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("Logical User Environment", logicalUserEnvironment, v -> {
+            logUserEnvironment(v);
+        });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("Effective User Environment Detected:");
-        logInfo("");
-        if (effectiveUserEnvironment != null) {
-            logUserEnvironment(effectiveUserEnvironment);
-        } else {
-            logError("Unable to detect effective user environment!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("Effective User Environment", effectiveUserEnvironment, v -> {
+            logUserEnvironment(v);
+        });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("System Install Environment Detected:");
-        logInfo("");
-        if (systemInstallEnvironment != null) {
-            logInstallEnvironment(systemInstallEnvironment);
-        } else {
-            logError("Unable to detect system install environment!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("System Install Environment", systemInstallEnvironment, v -> {
+            logInstallEnvironment(v);
+        });
 
 
-
-        logInfo("###################################################################################################");
-        logInfo("User Install Environment Detected:");
-        logInfo("");
-        if (userInstallEnvironment != null) {
-            logInstallEnvironment(userInstallEnvironment);
-        } else {
-            logError("Unable to detect user install environment!");
-        }
-        logInfo("");
-        logInfo("###################################################################################################");
+        logDetection("User Install Environment", userInstallEnvironment, v -> {
+            logInstallEnvironment(v);
+        });
     }
 
     static public void logInfo(String format, Object... args) {
