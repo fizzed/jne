@@ -724,6 +724,12 @@ public class InstallEnvironment {
             ie.systemRootDir = Paths.get("/usr");
             ie.applicationRootDir = Paths.get("/opt");
             ie.optRootDir = ie.applicationRootDir;
+        } else if (os == OperatingSystem.HAIKU) {
+            // these are very unique paths
+            ie.localRootDir = Paths.get("/boot/system/non-packaged");
+            ie.systemRootDir = Paths.get("/");
+            ie.applicationRootDir = Paths.get("/boot/system/non-packaged");
+            ie.optRootDir = ie.applicationRootDir;
         } else if (os == OperatingSystem.MACOS) {
             ie.localRootDir = Paths.get("/usr/local");
             ie.systemRootDir = Paths.get("/usr");
