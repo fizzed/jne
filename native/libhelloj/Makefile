@@ -33,6 +33,7 @@ ifeq ($(UNAME_S),NetBSD)
 endif
 ifeq ($(UNAME_S),SunOS)
     JAVA_INCLUDE := ${JAVA_INCLUDE} -I${JAVA_HOME}/include/solaris
+    EXTRA_CXXFLAGS =
     #CXX = clang++
 endif
 
