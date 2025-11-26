@@ -18,9 +18,9 @@ The following Java versions and platforms are tested using GitHub workflows:
 
 The following platforms are tested using the [Fizzed, Inc.](http://fizzed.com) build system:
 
-[![Alpine x64](https://img.shields.io/badge/Linux_MUSL_x64-passing-brightgreen?style=flat-square)](buildx-results.txt)
-[![Alpine arm64](https://img.shields.io/badge/Linux_MUSL_arm64-passing-brightgreen?style=flat-square)](buildx-results.txt)
-[![Alpine riscv64](https://img.shields.io/badge/Linux_MUSL_riscv64-passing-brightgreen?style=flat-square)](buildx-results.txt)
+[![Alpine x64](https://img.shields.io/badge/Alpine_x64-passing-brightgreen?style=flat-square)](buildx-results.txt)
+[![Alpine arm64](https://img.shields.io/badge/Alpine_arm64-passing-brightgreen?style=flat-square)](buildx-results.txt)
+[![Alpine riscv64](https://img.shields.io/badge/Alpine_riscv64-passing-brightgreen?style=flat-square)](buildx-results.txt)
 [![FreeBSD x64](https://img.shields.io/badge/FreeBSD_x64-passing-brightgreen?style=flat-square)](buildx-results.txt)
 [![FreeBSD arm64](https://img.shields.io/badge/FreeBSD_arm64-passing-brightgreen?style=flat-square)](buildx-results.txt)
 [![Linux arm64](https://img.shields.io/badge/Linux_arm64-passing-brightgreen?style=flat-square)](buildx-results.txt)
