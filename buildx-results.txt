@@ -3,29 +3,24 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: acc8481a3e0f80cf7f738283a8ba30f6e2804715
-Date: 2025-11-29T20:47:21.379164131Z[UTC]
+Commit: a4d3e450c0eebc1577f55414b15054ff1b1f116e
+Date: 2025-11-30T15:23:59.568352582Z[UTC]
 
-linux-x64 (Ubuntu 22.04)................................................... success
+freebsd-x64 (FreeBSD 15)................................................... success
 
 Details =>
 
-Job #0 for linux-x64 (Ubuntu 22.04)
-  log file: .buildx-logs/1764449238264/job-0-linux-x64.log
-  host: <local>
-    os: linux
+Job #0 for freebsd-x64 (FreeBSD 15)
+  log file: .buildx-logs/1764516218991/job-0-freebsd-x64.log
+  host: bmh-build-x64-freebsd-latest
+    os: freebsd
     arch: x64
-    name: Ubuntu 25.10 (Questing Quokka)
-    libc: glibc 2.42
-    uname: Linux bmh-jjlauer-4 6.17.0-6-generic #6-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct  7 13:34:17 UTC 2025 x86_64 GNU/Linux
-    podman: 5.4.2
-  tags: [container]
+    name: FreeBSD 15.0-ALPHA1
+    uname: FreeBSD bmh-build-x64-freebsd15-1 15.0-ALPHA1 FreeBSD 15.0-ALPHA1 #0 stable/15-n280099-0b3d82579a01: Sat Sep  6 19:04:24 -00 2025     root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC amd64
+    podman: <not installed>
+  tags: [latest]
   data: <none>
-  container: docker.io/fizzed/buildx:x64-ubuntu22-jdk21
-    os: linux
-    arch: x64
-    name: ubuntu 22.04.5 lts (jammy jellyfish)
-    libc: glibc 2.35
+  container: <none>
 
   status: success
 
