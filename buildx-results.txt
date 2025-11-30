@@ -3,20 +3,20 @@ Buildx Results
 
 Cross platform tests based on https://github.com/fizzed/buildx
 
-Commit: a4d3e450c0eebc1577f55414b15054ff1b1f116e
-Date: 2025-11-30T15:23:59.568352582Z[UTC]
+Commit: 4fbbfd38c5421ed5486463b9fc93cd25765b709c
+Date: 2025-11-30T15:37:16.09279813Z[UTC]
 
-freebsd-x64 (FreeBSD 15)................................................... success
+netbsd-x64 (NetBSD 10)..................................................... success
 
 Details =>
 
-Job #0 for freebsd-x64 (FreeBSD 15)
-  log file: .buildx-logs/1764516218991/job-0-freebsd-x64.log
-  host: bmh-build-x64-freebsd-latest
-    os: freebsd
+Job #0 for netbsd-x64 (NetBSD 10)
+  log file: .buildx-logs/1764517028319/job-0-netbsd-x64.log
+  host: bmh-build-x64-netbsd-latest
+    os: netbsd
     arch: x64
-    name: FreeBSD 15.0-ALPHA1
-    uname: FreeBSD bmh-build-x64-freebsd15-1 15.0-ALPHA1 FreeBSD 15.0-ALPHA1 #0 stable/15-n280099-0b3d82579a01: Sat Sep  6 19:04:24 -00 2025     root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC amd64
+    name: NetBSD 10.1
+    uname: NetBSD bmh-build-x64-netbsd10-1 10.1 NetBSD 10.1 (GENERIC) #0: Mon Dec 16 13:08:11 UTC 2024  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
     podman: <not installed>
   tags: [latest]
   data: <none>
