@@ -344,7 +344,7 @@ public class PlatformInfo {
         }
 
         // on netbsd and freebsd, to get the better architecture, we need to call sysctl
-        if (operatingSystem == OperatingSystem.NETBSD || operatingSystem == OperatingSystem.FREEBSD) {
+        if (operatingSystem == OperatingSystem.NETBSD || operatingSystem == OperatingSystem.FREEBSD || operatingSystem == OperatingSystem.OPENBSD) {
             // detect better hardware architecture
             try {
                 String sysctlMachineArchInfo = systemExecutor.execProcess("/sbin/sysctl", "-n", "hw.machine_arch");
