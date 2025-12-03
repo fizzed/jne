@@ -156,7 +156,7 @@ Published to maven central use the following
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>jne</artifactId>
-    <version>4.10.0</version>
+    <version>4.11.0</version>
 </dependency>
 ```
 
