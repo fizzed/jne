@@ -102,8 +102,14 @@ public class PlatformFixtureGenerator {
         /*final String fixtureName = "alpine315";
         final String host = "bmh-build-x64-alpine315-1";*/
 
-        final String fixtureName = "netbsd10";
-        final String host = "bmh-build-x64-netbsd10-1";
+        /*final String fixtureName = "netbsd10";
+        final String host = "bmh-build-x64-netbsd10-1";*/
+
+        /*final String fixtureName = "omnios25";
+        final String host = "bmh-build-x64-omnios25-1";*/
+
+        final String fixtureName = "freebsd15-riscv64";
+        final String host = "bmh-build-riscv64-freebsd15-1";
 
         /*final String fixtureName = "indy25";
         final String host = "bmh-dev-x64-indy25-1";*/

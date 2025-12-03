@@ -1,0 +1,9 @@
+NAME=FreeBSD
+VERSION="15.0-BETA3"
+VERSION_ID="15.0"
+ID=freebsd
+ANSI_COLOR="0;31"
+PRETTY_NAME="FreeBSD 15.0-BETA3"
+CPE_NAME="cpe:/o:freebsd:freebsd:15.0"
+HOME_URL="https://FreeBSD.org/"
+BUG_REPORT_URL="https://bugs.FreeBSD.org/"

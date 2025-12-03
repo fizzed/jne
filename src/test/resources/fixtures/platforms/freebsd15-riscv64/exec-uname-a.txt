@@ -1,0 +1,1 @@
+FreeBSD bmh-build-riscv64-freebsd15-1 15.0-BETA3 FreeBSD 15.0-BETA3 releng/15.0-n280758-0fc5b401bdc7 GENERIC riscv

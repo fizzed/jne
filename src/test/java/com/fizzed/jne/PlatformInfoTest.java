@@ -355,6 +355,24 @@ public class PlatformInfoTest {
     }
 
     @Test
+    public void freebsd15_riscv64() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/freebsd15-riscv64/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.FREEBSD));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.RISCV64));
+        assertThat(platformInfo.getName(), is("FreeBSD"));
+        assertThat(platformInfo.getDisplayName(), is("FreeBSD 15.0-BETA3"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("15")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("FreeBSD bmh-build-riscv64-freebsd15-1 15.0-BETA3 FreeBSD 15.0-BETA3 releng/15.0-n280758-0fc5b401bdc7 GENERIC riscv"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
     public void openbsd78() throws Exception {
         final Path dir = Resources.file("/fixtures/platforms/openbsd78/exec-uname-a.txt").getParent();
         final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
@@ -458,6 +476,24 @@ public class PlatformInfoTest {
         assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("5.11")));
         assertThat(platformInfo.getKernelVersion(), is(nullValue()));
         assertThat(platformInfo.getUname(), is("SunOS host 5.11 illumos-68259130da i86pc i386 i86pc"));
+        assertThat(platformInfo.getLibC(), is(nullValue()));
+        assertThat(platformInfo.getLibCVersion(), is(nullValue()));
+    }
+
+    @Test
+    public void omnios25() throws Exception {
+        final Path dir = Resources.file("/fixtures/platforms/omnios25/exec-uname-a.txt").getParent();
+        final SystemExecutorFixture fixtureExecutor = new SystemExecutorFixture(dir);
+
+        final PlatformInfo platformInfo = PlatformInfo.detect(fixtureExecutor, PlatformInfo.Detect.ALL);
+
+        assertThat(platformInfo.getOperatingSystem(), is(OperatingSystem.SOLARIS));
+        assertThat(platformInfo.getHardwareArchitecture(), is(HardwareArchitecture.X64));
+        assertThat(platformInfo.getName(), is("SunOS"));
+        assertThat(platformInfo.getDisplayName(), is("OmniOS v11 r151056d"));
+        assertThat(platformInfo.getVersion(), is(SemanticVersion.parse("5.11")));
+        assertThat(platformInfo.getKernelVersion(), is(nullValue()));
+        assertThat(platformInfo.getUname(), is("SunOS host 5.11 omnios-r151056-9fd2b931e3 i86pc i386 i86pc"));
         assertThat(platformInfo.getLibC(), is(nullValue()));
         assertThat(platformInfo.getLibCVersion(), is(nullValue()));
     }

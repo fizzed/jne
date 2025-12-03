@@ -277,14 +277,16 @@ public class PlatformInfo {
                 hardwareArchitecture = nativeTarget.getHardwareArchitecture();
 
                 if (operatingSystem == null) {
-                    // try with the whole thing
-                    nativeTarget = NativeTarget.detectFromText(uname.getSource());
+                    // try with the whole thing, minus host though since the hostname itself could contain conflicting info
+                    String sourceWithoutHost = uname.getSource().replace(uname.getNodename(), "host");
+                    nativeTarget = NativeTarget.detectFromText(sourceWithoutHost);
                     operatingSystem = nativeTarget.getOperatingSystem();
                 }
 
                 if (hardwareArchitecture == null) {
-                    // try with the whole thing
-                    nativeTarget = NativeTarget.detectFromText(uname.getSource());
+                    // try with the whole thing, minus host though since the hostname itself could contain conflicting info
+                    String sourceWithoutHost = uname.getSource().replace(uname.getNodename(), "host");
+                    nativeTarget = NativeTarget.detectFromText(sourceWithoutHost);
                     hardwareArchitecture = nativeTarget.getHardwareArchitecture();
                 }
 
@@ -341,8 +343,8 @@ public class PlatformInfo {
             }
         }
 
-        // on netbsd, to get the better architecture, we need to call sysctl
-        if (operatingSystem == OperatingSystem.NETBSD) {
+        // on netbsd and freebsd, to get the better architecture, we need to call sysctl
+        if (operatingSystem == OperatingSystem.NETBSD || operatingSystem == OperatingSystem.FREEBSD) {
             // detect better hardware architecture
             try {
                 String sysctlMachineArchInfo = systemExecutor.execProcess("/sbin/sysctl", "-n", "hw.machine_arch");
